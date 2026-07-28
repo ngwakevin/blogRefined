@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { DashboardCommandCenter } from "@/components/dashboard/DashboardCommandCenter";
 import { openCreateProject, openCreateWorkspace } from "@/components/dashboard/DashboardModals";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { WorkspaceCard } from "@/components/dashboard/WorkspaceCard";
 import { useWorkspaceActions } from "@/components/dashboard/useWorkspaceActions";
 import {
   MODE_META,
-  PROJECT_COLORS,
   pinnedProjects,
-  projectModeMix,
+  projectModeBreakdown,
   projectWorkspaceCount,
   relativeTime
 } from "@/lib/dashboard-store";
@@ -53,10 +54,12 @@ export default function DashboardHome() {
     <DashboardShell active="home">
       <header className="dash-welcome">
         <p className="dash-welcome-kicker">Welcome back, {profile?.name ?? "there"}</p>
-        <h1>What do you want to redefine?</h1>
+        <h1>Ask Doc/ReDefined</h1>
       </header>
 
-      <DashboardCommandCenter statusText="Saved automatically" />
+      <Suspense fallback={null}>
+        <DashboardCommandCenter statusText="Saved automatically" />
+      </Suspense>
 
       {/* continue where you left off */}
       {hydrated ? (
@@ -160,13 +163,16 @@ export default function DashboardHome() {
               </span>
               New project
             </button>
-            <Link href="/new?prompt=Create%20an%20artifact%20for%20">
+            <button
+              type="button"
+              onClick={() => openCreateWorkspace({ prompt: "Create an artifact for " })}
+            >
               <span aria-hidden="true">
                 <svg viewBox="0 0 20 20"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" /></svg>
               </span>
               Create artifact
-            </Link>
-            <Link href="/workspaces?filter=audio">
+            </button>
+            <Link href="/audio-guides">
               <span aria-hidden="true">
                 <svg viewBox="0 0 20 20"><rect x="8" y="3" width="4" height="9" rx="2" /><path d="M5 9.5a5 5 0 0 0 10 0M10 14.5V17" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
               </span>
@@ -217,40 +223,18 @@ export default function DashboardHome() {
           </h2>
           <Link href="/projects">Manage projects</Link>
         </div>
-        <div className="dash-project-row">
-          {pinned.map((project) => {
-            const count = projectWorkspaceCount(project, records);
-            const mix = projectModeMix(project, records);
-            return (
-              <Link
-                key={project.id}
-                className="dash-project-card"
-                href={`/projects/${encodeURIComponent(project.id)}`}
-                style={{ "--proj-color": PROJECT_COLORS[project.color ?? "blue"] } as React.CSSProperties}
-              >
-                <span className="dash-project-icon" aria-hidden="true">
-                  <svg viewBox="0 0 20 20"><path d="M3 5.5A1.5 1.5 0 0 1 4.5 4h3.6l1.6 2h5.8A1.5 1.5 0 0 1 17 7.5v7A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5Z" /></svg>
-                </span>
-                <span className="dash-project-text">
-                  <strong>{project.name}</strong>
-                  <em>{project.description ?? `${count} workspace${count === 1 ? "" : "s"}`}</em>
-                  <small>
-                    {count} workspace{count === 1 ? "" : "s"} · {relativeTime(project.updatedAt)}
-                  </small>
-                </span>
-                {mix.length > 0 ? (
-                  <span className="dash-project-mix" aria-hidden="true">
-                    {mix.map((mode) => (
-                      <i key={mode} style={{ background: MODE_META[mode].color }} />
-                    ))}
-                  </span>
-                ) : null}
-              </Link>
-            );
-          })}
-          <button type="button" className="dash-project-card dash-project-new" onClick={openCreateProject}>
-            <span className="dash-project-plus" aria-hidden="true">+</span>
-            <span className="dash-project-text">
+        <div className="proj-color-grid">
+          {pinned.map((project) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              count={projectWorkspaceCount(project, records)}
+              modeMix={projectModeBreakdown(project, records)}
+            />
+          ))}
+          <button type="button" className="proj-color-new" onClick={openCreateProject}>
+            <span className="proj-color-plus" aria-hidden="true">+</span>
+            <span>
               <strong>New project</strong>
               <em>Create a new project</em>
             </span>

@@ -32,7 +32,8 @@ type DashboardShellProps = {
     | "starred"
     | "templates"
     | "trash"
-    | "learning";
+    | "learning"
+    | "settings";
   children: ReactNode;
 };
 
@@ -48,7 +49,7 @@ const MAIN_ITEMS: NavItem[] = [
   {
     id: "home",
     label: "Home",
-    href: "/",
+    href: "/dashboard",
     icon: (
       <svg viewBox="0 0 20 20"><path d="M3 9.5 10 3l7 6.5V17a1 1 0 0 1-1 1h-4v-5H8v5H4a1 1 0 0 1-1-1Z" /></svg>
     )
@@ -72,7 +73,7 @@ const MAIN_ITEMS: NavItem[] = [
   {
     id: "audio",
     label: "Audio Guides",
-    href: "/workspaces?filter=audio",
+    href: "/audio-guides",
     icon: (
       <svg viewBox="0 0 20 20"><rect x="8" y="3" width="4" height="9" rx="2" /><path d="M5 9.5a5 5 0 0 0 10 0M10 14.5V17" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
     )
@@ -80,7 +81,7 @@ const MAIN_ITEMS: NavItem[] = [
   {
     id: "artifacts",
     label: "Artifacts",
-    href: "/workspaces?filter=has-artifact",
+    href: "/artifacts",
     icon: (
       <svg viewBox="0 0 20 20"><path d="M5 3h7l3 3v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M7 10h6M7 13h4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
     )
@@ -295,6 +296,15 @@ export function DashboardShell({ active, children }: DashboardShellProps) {
           </button>
           {userMenuOpen ? (
             <div className="dash-user-menu">
+              <Link href="/settings/billing" onClick={() => setUserMenuOpen(false)}>
+                Billing &amp; usage
+              </Link>
+              <Link href="/pricing" onClick={() => setUserMenuOpen(false)}>
+                Plans &amp; pricing
+              </Link>
+              <Link href="/settings/ai-provider" onClick={() => setUserMenuOpen(false)}>
+                AI provider
+              </Link>
               <button
                 type="button"
                 onClick={() => {

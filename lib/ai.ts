@@ -1,4 +1,5 @@
 import { callAIProvider } from "@/lib/ai-provider";
+import { detectRawForbiddenSections, type LensId } from "@/lib/lens-contracts";
 import { normalizeFixWorkspaceResult } from "@/lib/normalize-ai-result";
 import {
   normalizeFollowUpResult,
@@ -22,23 +23,46 @@ import type {
 } from "@/lib/redefined";
 import type { FixWorkspaceResult } from "@/types/redefined";
 
-export async function generateFixWorkspaceWithAI(prompt: string): Promise<RedefinedResult> {
+/** Append an optional lens-contract instruction to a base system prompt. */
+function withLensInstruction(systemPrompt: string, extraInstruction?: string): string {
+  return extraInstruction ? `${systemPrompt}\n\n${extraInstruction}` : systemPrompt;
+}
+
+/** Record any foreign-lens sections present in the raw output into the caller's sink. */
+function collectRawForbidden(rawJson: unknown, lens: LensId, sink?: string[]) {
+  if (!sink) return;
+  for (const field of detectRawForbiddenSections(rawJson, lens)) {
+    if (!sink.includes(field)) sink.push(field);
+  }
+}
+
+export async function generateFixWorkspaceWithAI(
+  prompt: string,
+  extraInstruction?: string,
+  rawForbiddenOut?: string[]
+): Promise<RedefinedResult> {
   const aiText = await callAIProvider({
-    systemPrompt: buildFixWorkspaceSystemPrompt(),
+    systemPrompt: withLensInstruction(buildFixWorkspaceSystemPrompt(), extraInstruction),
     userPrompt: prompt
   });
   const rawJson = safeParseJson(aiText);
+  collectRawForbidden(rawJson, "fix", rawForbiddenOut);
   const normalized = normalizeFixWorkspaceResult(rawJson, prompt);
 
   return FixWorkspaceResultSchema.parse(normalized);
 }
 
-export async function generateUnderstandWorkspaceWithAI(prompt: string): Promise<RedefinedResult> {
+export async function generateUnderstandWorkspaceWithAI(
+  prompt: string,
+  extraInstruction?: string,
+  rawForbiddenOut?: string[]
+): Promise<RedefinedResult> {
   const aiText = await callAIProvider({
-    systemPrompt: buildUnderstandWorkspaceSystemPrompt(),
+    systemPrompt: withLensInstruction(buildUnderstandWorkspaceSystemPrompt(), extraInstruction),
     userPrompt: prompt
   });
   const rawJson = safeParseJson(aiText);
+  collectRawForbidden(rawJson, "understand", rawForbiddenOut);
   const normalized = normalizeUnderstandWorkspaceResult(rawJson, prompt);
   return UnderstandWorkspaceResultSchema.parse(normalized) as RedefinedResult;
 }
@@ -1162,16 +1186,19 @@ type ArtifactSourceContextInput = {
 
 export async function generateArtifactWorkspaceWithAI(
   prompt: string,
-  sourceContext?: ArtifactSourceContextInput
+  sourceContext?: ArtifactSourceContextInput,
+  extraInstruction?: string,
+  rawForbiddenOut?: string[]
 ): Promise<RedefinedResult> {
   const userPayload = sourceContext
     ? JSON.stringify({ prompt, sourceContext })
     : prompt;
   const aiText = await callAIProvider({
-    systemPrompt: buildArtifactWorkspaceSystemPrompt(prompt, sourceContext),
+    systemPrompt: withLensInstruction(buildArtifactWorkspaceSystemPrompt(prompt, sourceContext), extraInstruction),
     userPrompt: userPayload
   });
   const rawJson = safeParseJson(aiText);
+  collectRawForbidden(rawJson, "artifact", rawForbiddenOut);
   const normalized = normalizeArtifactWorkspaceResult(rawJson, prompt, sourceContext);
   return ArtifactWorkspaceResultSchema.parse(normalized) as RedefinedResult;
 }
@@ -1425,12 +1452,17 @@ function normalizeArtifactWorkspaceResult(
   };
 }
 
-export async function generateBuildWorkspaceWithAI(prompt: string): Promise<RedefinedResult> {
+export async function generateBuildWorkspaceWithAI(
+  prompt: string,
+  extraInstruction?: string,
+  rawForbiddenOut?: string[]
+): Promise<RedefinedResult> {
   const aiText = await callAIProvider({
-    systemPrompt: buildBuildWorkspaceSystemPrompt(),
+    systemPrompt: withLensInstruction(buildBuildWorkspaceSystemPrompt(), extraInstruction),
     userPrompt: prompt
   });
   const rawJson = safeParseJson(aiText);
+  collectRawForbidden(rawJson, "build", rawForbiddenOut);
   const normalized = normalizeBuildWorkspaceResult(rawJson, prompt);
   return BuildWorkspaceResultSchema.parse(normalized) as RedefinedResult;
 }

@@ -7,23 +7,30 @@ import {
   type FormEvent,
   type ReactNode
 } from "react";
+import { promptUpgrade } from "@/components/billing/UpgradeModal";
 import { useProfile } from "@/components/profile/useProfile";
+import { showToast } from "@/components/Toast";
+import { canCreateProject, canCreateWorkspace, getAccount } from "@/lib/account-store";
 import {
   MODE_META,
   PROJECT_COLOR_OPTIONS,
   PROJECT_TEMPLATES,
+  SECTION_DEFAULTS,
   getDashboardRecords,
   orderProjects,
   relativeTime,
   type DashboardRecord,
-  type ProjectColorKey
+  type ProjectColorKey,
+  type SectionTemplate
 } from "@/lib/dashboard-store";
 import {
   createProject,
+  createWorkspaceShell,
   ensureDefaultProjects,
   getProjects,
   moveWorkspacesToProject
 } from "@/lib/journey-store";
+import type { WorkspacePreferredMode } from "@/lib/workspace-types";
 import { MODES } from "@/lib/constants";
 import type { RedefinedMode } from "@/lib/redefined";
 import type { WorkspaceProject } from "@/lib/workspace-types";
@@ -37,7 +44,14 @@ function emitChange() {
   window.dispatchEvent(new Event(DASHBOARD_CHANGED_EVENT));
 }
 
-type CreateWorkspaceOptions = { destinationId?: string };
+type CreateWorkspaceOptions = {
+  destinationId?: string;
+  prompt?: string;
+  afterCreate?: {
+    stayLabel: string;
+    stayHref?: string;
+  };
+};
 
 /** Module-level triggers — callable from any component on any dashboard route. */
 export function openCreateProject() {
@@ -59,6 +73,8 @@ export function DashboardModalsHost() {
   const [projectOpen, setProjectOpen] = useState(false);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [workspaceDestination, setWorkspaceDestination] = useState<string | undefined>(undefined);
+  const [workspacePrompt, setWorkspacePrompt] = useState<string | undefined>(undefined);
+  const [workspaceAfterCreate, setWorkspaceAfterCreate] = useState<CreateWorkspaceOptions["afterCreate"]>();
   const [addToProjectId, setAddToProjectId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -66,6 +82,8 @@ export function DashboardModalsHost() {
     const onWorkspace = (event: Event) => {
       const detail = (event as CustomEvent<CreateWorkspaceOptions>).detail ?? {};
       setWorkspaceDestination(detail.destinationId);
+      setWorkspacePrompt(detail.prompt);
+      setWorkspaceAfterCreate(detail.afterCreate);
       setWorkspaceOpen(true);
     };
     const onAdd = (event: Event) => {
@@ -88,6 +106,8 @@ export function DashboardModalsHost() {
       {workspaceOpen ? (
         <CreateWorkspaceModal
           initialDestinationId={workspaceDestination}
+          initialPrompt={workspacePrompt}
+          successAfterCreate={workspaceAfterCreate}
           onClose={() => setWorkspaceOpen(false)}
         />
       ) : null}
@@ -161,6 +181,74 @@ const MODE_FILTERS: Array<{ id: "all" | RedefinedMode; label: string }> = [
   { id: "fix", label: "Fix" },
   { id: "artifact", label: "Artifact" }
 ];
+
+/* ── workspace sections editor ──────────────────────────────────────────── */
+
+function SectionsEditor({
+  sections,
+  onChange,
+  onReset
+}: {
+  sections: SectionTemplate[];
+  onChange: (sections: SectionTemplate[]) => void;
+  onReset: () => void;
+}) {
+  const addSection = () => {
+    const title = window.prompt("Section name")?.trim();
+    if (!title) return;
+    onChange([...sections, { title, type: "custom" }]);
+  };
+
+  const renameSection = (index: number) => {
+    const current = sections[index];
+    const title = window.prompt("Rename section", current.title)?.trim();
+    if (!title || title === current.title) return;
+    onChange(sections.map((section, i) => (i === index ? { ...section, title } : section)));
+  };
+
+  const removeSection = (index: number) => {
+    onChange(sections.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="dash-field">
+      <div className="dash-sections-head">
+        <span>Workspace sections</span>
+        <button type="button" className="dash-sections-reset" onClick={onReset}>
+          Reset to defaults
+        </button>
+      </div>
+      <p className="dash-sections-sub">Organize this workspace before you run prompts.</p>
+      <div className="dash-sections-chips">
+        {sections.map((section, index) => (
+          <span key={`${section.title}-${index}`} className="dash-section-chip">
+            <button
+              type="button"
+              className="dash-section-chip-name"
+              onClick={() => renameSection(index)}
+              title="Click to rename"
+            >
+              {section.title}
+            </button>
+            {sections.length > 1 ? (
+              <button
+                type="button"
+                className="dash-section-chip-remove"
+                aria-label={`Remove ${section.title}`}
+                onClick={() => removeSection(index)}
+              >
+                ✕
+              </button>
+            ) : null}
+          </span>
+        ))}
+        <button type="button" className="dash-section-add" onClick={addSection}>
+          + Add section
+        </button>
+      </div>
+    </div>
+  );
+}
 
 /* ── shared workspace picker ────────────────────────────────────────────── */
 
@@ -277,8 +365,13 @@ function CreateProjectModal({ onClose }: { onClose: () => void }) {
   const [records, setRecords] = useState<DashboardRecord[]>([]);
   const [projectNames, setProjectNames] = useState<Record<string, string>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [firstPrompt, setFirstPrompt] = useState("");
-  const [firstPath, setFirstPath] = useState<string>("auto");
+  const [firstWorkspaceName, setFirstWorkspaceName] = useState("");
+  const [firstPath, setFirstPath] = useState<WorkspacePreferredMode>("auto");
+  const [firstSections, setFirstSections] = useState<SectionTemplate[]>(SECTION_DEFAULTS.auto);
+  const [firstSectionsEdited, setFirstSectionsEdited] = useState(false);
+  const [created, setCreated] = useState<{ workspaceId: string; name: string; project: string } | null>(
+    null
+  );
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -344,8 +437,20 @@ function CreateProjectModal({ onClose }: { onClose: () => void }) {
       setError("Enter a project name.");
       return;
     }
-    if (startMode === "first" && !firstPrompt.trim()) {
-      setError("Enter a prompt for the first workspace.");
+    if (startMode === "first" && !firstWorkspaceName.trim()) {
+      setError("Enter a workspace name.");
+      return;
+    }
+    if (startMode === "first" && firstSections.some((section) => !section.title.trim())) {
+      setError("Section names cannot be empty.");
+      return;
+    }
+
+    const account = getAccount();
+    const projectGate = canCreateProject(account, getProjects(profile.id).length);
+    if (!projectGate.allowed) {
+      onClose();
+      promptUpgrade("Project limit reached", projectGate, account.currentPlanId);
       return;
     }
 
@@ -361,26 +466,52 @@ function CreateProjectModal({ onClose }: { onClose: () => void }) {
       moveWorkspacesToProject([...selectedIds], project.id, profile.id);
     }
 
-    emitChange();
-    onClose();
-
     if (startMode === "first") {
-      // The only path that calls AI: create project, then generate the first workspace into it.
-      const params = new URLSearchParams();
-      params.set("prompt", firstPrompt.trim());
-      if (firstPath !== "auto") params.set("mode", firstPath);
-      params.set("projectId", project.id);
-      router.push(`/new?${params.toString()}`);
+      // No AI here — create the project + an empty workspace shell, then open its
+      // terminal where the user runs the first prompt.
+      const shell = createWorkspaceShell({
+        workspaceName: firstWorkspaceName,
+        preferredMode: firstPath,
+        projectId: project.id,
+        createdFrom: "create_project",
+        sections: firstSections,
+        profileId: profile.id
+      });
+      emitChange();
+      setCreated({ workspaceId: shell.workspaceId, name: shell.workspaceName, project: project.name });
       return;
     }
 
+    emitChange();
+    onClose();
     router.push(`/projects/${encodeURIComponent(project.id)}`);
+  };
+
+  const selectFirstPath = (next: WorkspacePreferredMode) => {
+    setFirstPath(next);
+    if (!firstSectionsEdited) setFirstSections(SECTION_DEFAULTS[next]);
   };
 
   const movingCount = [...selectedIds].filter((id) => {
     const record = records.find((item) => item.workspaceId === id);
     return record?.projectId && projectNames[record.projectId];
   }).length;
+
+  if (created) {
+    return (
+      <WorkspaceCreatedPopup
+        workspaceId={created.workspaceId}
+        workspaceName={created.name}
+        projectName={created.project}
+        stayLabel="Stay here"
+        onOpen={() => {
+          onClose();
+          router.push(`/workspaces/${encodeURIComponent(created.workspaceId)}`);
+        }}
+        onStay={onClose}
+      />
+    );
+  }
 
   return (
     <ModalShell
@@ -515,13 +646,13 @@ function CreateProjectModal({ onClose }: { onClose: () => void }) {
         {startMode === "first" ? (
           <>
             <label className="dash-field">
-              <span>First workspace prompt</span>
-              <textarea
-                value={firstPrompt}
-                placeholder="Example: I cannot access Azure Storage account"
-                rows={2}
+              <span>Workspace name</span>
+              <input
+                type="text"
+                value={firstWorkspaceName}
+                placeholder="Example: Storage Access Issue"
                 onChange={(event) => {
-                  setFirstPrompt(event.target.value);
+                  setFirstWorkspaceName(event.target.value);
                   if (error) setError("");
                 }}
               />
@@ -541,13 +672,28 @@ function CreateProjectModal({ onClose }: { onClose: () => void }) {
                         ? ({ "--chip-color": MODE_COLOR[option.id] } as React.CSSProperties)
                         : undefined
                     }
-                    onClick={() => setFirstPath(option.id)}
+                    onClick={() => selectFirstPath(option.id)}
                   >
                     {option.label}
                   </button>
                 ))}
               </div>
+              <p className="dash-field-help">
+                You&rsquo;ll run the first prompt inside the workspace terminal.
+              </p>
             </div>
+            <SectionsEditor
+              sections={firstSections}
+              onChange={(next) => {
+                setFirstSections(next);
+                setFirstSectionsEdited(true);
+                if (error) setError("");
+              }}
+              onReset={() => {
+                setFirstSections(SECTION_DEFAULTS[firstPath]);
+                setFirstSectionsEdited(false);
+              }}
+            />
           </>
         ) : null}
 
@@ -559,7 +705,7 @@ function CreateProjectModal({ onClose }: { onClose: () => void }) {
           </button>
           <button type="submit" className="dash-btn-purple">
             {startMode === "first"
-              ? "Create project & workspace"
+              ? "Create project and workspace"
               : startMode === "existing" && selectedIds.size > 0
                 ? `Create project with ${selectedIds.size} workspace${selectedIds.size === 1 ? "" : "s"}`
                 : "Create project"}
@@ -611,6 +757,10 @@ function AddWorkspacesModal({ projectId, onClose }: { projectId: string; onClose
     }
     moveWorkspacesToProject([...selectedIds], projectId, profile?.id);
     emitChange();
+    showToast({
+      title: "Workspaces added",
+      message: `${selectedIds.size} workspace${selectedIds.size === 1 ? "" : "s"} added to ${projectName}.`
+    });
     onClose();
   };
 
@@ -648,22 +798,80 @@ function AddWorkspacesModal({ projectId, onClose }: { projectId: string; onClose
   );
 }
 
+/* ── workspace created popup ────────────────────────────────────────────── */
+
+function WorkspaceCreatedPopup({
+  workspaceName,
+  projectName,
+  stayLabel,
+  onOpen,
+  onStay
+}: {
+  workspaceId: string;
+  workspaceName: string;
+  projectName: string;
+  stayLabel: string;
+  onOpen: () => void;
+  onStay: () => void;
+}) {
+  return (
+    <div className="dash-modal-overlay" role="dialog" aria-modal="true" aria-label="Workspace created">
+      <button type="button" className="dash-modal-scrim" aria-label="Close" onClick={onStay} />
+      <div className="dash-modal dash-modal-success">
+        <span className="dash-success-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="m6 12.5 4 4 8-9"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+        <h2>Workspace created</h2>
+        <p>
+          <strong>{workspaceName}</strong> is ready in {projectName}.
+        </p>
+        <div className="dash-modal-actions dash-success-actions">
+          <button type="button" className="dash-btn-light" onClick={onStay}>
+            {stayLabel}
+          </button>
+          <button type="button" className="dash-btn-purple" onClick={onOpen}>
+            Open workspace
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── create workspace ───────────────────────────────────────────────────── */
 
 function CreateWorkspaceModal({
   initialDestinationId,
+  initialPrompt,
+  successAfterCreate,
   onClose
 }: {
   initialDestinationId?: string;
+  initialPrompt?: string;
+  successAfterCreate?: CreateWorkspaceOptions["afterCreate"];
   onClose: () => void;
 }) {
   const router = useRouter();
   const { profile } = useProfile();
   const [projects, setProjects] = useState<WorkspaceProject[]>([]);
   const [destinationId, setDestinationId] = useState<string | undefined>(initialDestinationId);
-  const [prompt, setPrompt] = useState("");
-  const [path, setPath] = useState<string>("auto");
+  const [workspaceName, setWorkspaceName] = useState("");
+  const [path, setPath] = useState<WorkspacePreferredMode>("auto");
+  const [sections, setSections] = useState<SectionTemplate[]>(SECTION_DEFAULTS.auto);
+  const [sectionsEdited, setSectionsEdited] = useState(false);
   const [error, setError] = useState("");
+  const [created, setCreated] = useState<{ workspaceId: string; name: string; project: string } | null>(
+    null
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -675,34 +883,82 @@ function CreateWorkspaceModal({
     return () => window.clearTimeout(timer);
   }, [profile]);
 
+  const selectPath = (next: WorkspacePreferredMode) => {
+    setPath(next);
+    if (!sectionsEdited) setSections(SECTION_DEFAULTS[next]);
+  };
+
   const destinationName =
     projects.find((project) => project.id === destinationId)?.name ?? "My Workspaces";
-  const previewColor = path === "auto" ? "#111827" : MODE_COLOR[path] ?? "#111827";
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!prompt.trim()) {
-      setError("Enter a prompt to create a workspace.");
+    if (!workspaceName.trim()) {
+      setError("Enter a workspace name.");
+      return;
+    }
+    if (profile && !destinationId) {
+      setError("Choose a project for this workspace.");
+      return;
+    }
+    if (sections.some((section) => !section.title.trim())) {
+      setError("Section names cannot be empty.");
       return;
     }
 
-    const params = new URLSearchParams();
-    params.set("prompt", prompt.trim());
-    if (path !== "auto") params.set("mode", path);
-    if (destinationId) params.set("projectId", destinationId);
-    onClose();
-    router.push(`/new?${params.toString()}`);
+    const account = getAccount();
+    const gate = canCreateWorkspace(account, getDashboardRecords(profile?.id).length);
+    if (!gate.allowed) {
+      onClose();
+      promptUpgrade("Workspace limit reached", gate, account.currentPlanId);
+      return;
+    }
+
+    // No AI here — create an empty workspace shell, then show a success popup
+    // with an explicit "Open workspace" action.
+    const shell = createWorkspaceShell({
+      workspaceName,
+      preferredMode: path,
+      projectId: destinationId,
+      createdFrom: initialDestinationId ? "project" : "dashboard",
+      sections,
+      terminalPrefill: initialPrompt,
+      profileId: profile?.id
+    });
+    emitChange();
+    setCreated({ workspaceId: shell.workspaceId, name: shell.workspaceName, project: destinationName });
   };
+
+  if (created) {
+    return (
+      <WorkspaceCreatedPopup
+        workspaceId={created.workspaceId}
+        workspaceName={created.name}
+        projectName={created.project}
+        stayLabel={successAfterCreate?.stayLabel ?? "Stay on dashboard"}
+        onOpen={() => {
+          onClose();
+          router.push(`/workspaces/${encodeURIComponent(created.workspaceId)}`);
+        }}
+        onStay={() => {
+          onClose();
+          if (successAfterCreate?.stayHref) {
+            router.push(successAfterCreate.stayHref);
+          }
+        }}
+      />
+    );
+  }
 
   return (
     <ModalShell
       title="Create workspace"
-      subtitle="Start from a prompt. Doc/ReDefined will route it into the right path."
+      subtitle="Name a working area, then run your first prompt inside it."
       onClose={onClose}
     >
       <form className="dash-modal-body" onSubmit={handleSubmit}>
         <label className="dash-field">
-          <span>Destination</span>
+          <span>Project</span>
           <select
             className="dash-select"
             value={destinationId ?? ""}
@@ -718,14 +974,14 @@ function CreateWorkspaceModal({
         </label>
 
         <label className="dash-field">
-          <span>Prompt</span>
-          <textarea
-            value={prompt}
-            placeholder="What do you want to redefine?"
-            rows={3}
+          <span>Workspace name</span>
+          <input
+            type="text"
+            value={workspaceName}
+            placeholder="Example: Storage Access Troubleshooting"
             autoFocus
             onChange={(event) => {
-              setPrompt(event.target.value);
+              setWorkspaceName(event.target.value);
               if (error) setError("");
             }}
           />
@@ -746,20 +1002,29 @@ function CreateWorkspaceModal({
                     ? ({ "--chip-color": MODE_COLOR[option.id] } as React.CSSProperties)
                     : undefined
                 }
-                onClick={() => setPath(option.id)}
+                onClick={() => selectPath(option.id)}
               >
                 {option.label}
               </button>
             ))}
           </div>
+          <p className="dash-field-help">
+            Auto lets Doc/ReDefined choose the right path when you run your first prompt.
+          </p>
         </div>
 
-        <div className="dash-preview-row">
-          <span className="dash-preview-dot" style={{ background: previewColor }} aria-hidden="true" />
-          {path === "auto"
-            ? "Color is decided after the path is detected."
-            : `${PATH_OPTIONS.find((option) => option.id === path)?.label} workspace`}
-        </div>
+        <SectionsEditor
+          sections={sections}
+          onChange={(next) => {
+            setSections(next);
+            setSectionsEdited(true);
+            if (error) setError("");
+          }}
+          onReset={() => {
+            setSections(SECTION_DEFAULTS[path]);
+            setSectionsEdited(false);
+          }}
+        />
 
         {error ? <p className="dash-modal-error">{error}</p> : null}
 

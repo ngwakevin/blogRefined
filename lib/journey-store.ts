@@ -1,11 +1,14 @@
 import type { RedefinedResult } from "@/lib/redefined";
 import type {
   JourneyEvent,
+  PendingWorkspaceShell,
   WorkspaceArtifact,
   WorkspaceBranch,
   WorkspaceMeta,
   WorkspaceNarration,
-  WorkspaceProject
+  WorkspacePreferredMode,
+  WorkspaceProject,
+  WorkspaceSection
 } from "@/lib/workspace-types";
 
 const TEMP_JOURNEY_KEY = "docredefined.tempJourney";
@@ -15,6 +18,7 @@ const PROFILE_JOURNEY_LIST_KEY = "docredefined.profileJourneys";
 const PROFILE_PROJECT_LIST_KEY = "docredefined.profileProjects";
 const ACTIVE_PROFILE_JOURNEY_KEY = "docredefined.profileJourney";
 const TEMP_JOURNEY_LIMIT = 7;
+const PENDING_WORKSPACE_KEY = "docredefined.pendingWorkspaces";
 const PROFILE_PROMPT_DISMISSED_KEY = "docredefined.profilePromptDismissed";
 const MAX_PERSISTED_AUDIO_BASE64_LENGTH = 1_500_000;
 
@@ -391,6 +395,55 @@ export function saveTemporaryJourneyRecord(
   return record;
 }
 
+export function updateTemporaryJourney(journeyId: string, result: RedefinedResult): void {
+  const now = new Date().toISOString();
+  const records = readTemporaryJourneyRecords().map((record) => {
+    if (record.id !== journeyId) return record;
+
+    return {
+      ...record,
+      title: result.workspaceMeta?.workspaceName ?? result.title,
+      originalPrompt: result.originalPrompt ?? record.originalPrompt,
+      result,
+      workspaceMeta: result.workspaceMeta ?? record.workspaceMeta,
+      branches: result.workspaceBranches ?? record.branches,
+      journey: result.workspaceJourney ?? record.journey,
+      artifacts: result.workspaceArtifacts ?? record.artifacts,
+      audioGuides: result.workspaceAudioGuides ?? record.audioGuides ?? [],
+      updatedAt: now
+    };
+  });
+
+  writeTemporaryJourneyRecords(records);
+}
+
+/**
+ * Persists an updated workspace result to whichever store owns it. Used by
+ * follow-up prompt runs so new prompt runs/results survive a page reload.
+ */
+export function persistWorkspaceResult(args: {
+  result: RedefinedResult;
+  recordId?: string;
+  profileId?: string;
+}): void {
+  const persistence = args.result.workspaceMeta?.persistence;
+
+  if (persistence === "local_profile" && args.profileId) {
+    if (args.recordId) updateProfileJourney(args.recordId, args.result);
+    else updateActiveProfileJourney(args.result);
+    return;
+  }
+
+  if (persistence === "temporary") {
+    if (args.recordId) updateTemporaryJourney(args.recordId, args.result);
+    else updateActiveTemporaryJourney(args.result);
+    return;
+  }
+
+  // "unsaved" / "cloud_profile": nothing to persist locally; the in-memory
+  // result still updates through the component's onResultChange handler.
+}
+
 export function updateActiveTemporaryJourney(result: RedefinedResult): void {
   const activeId = getActiveTemporaryJourneyId();
   if (!activeId) return;
@@ -520,7 +573,18 @@ export function saveWorkspaceNarration(args: {
   narration: WorkspaceNarration;
 }): RedefinedResult {
   const now = new Date().toISOString();
-  const sanitizedNarration = sanitizeNarrationForStorage(args.narration);
+  const runId = args.narration.sourceRunId
+    ?? args.result.promptRunId
+    ?? (args.result.workspacePromptRuns ?? []).at(-1)?.id;
+  const resultId = args.narration.sourceResultId
+    ?? args.result.id
+    ?? args.result.workspaceFollowUpResults?.at(-1)?.content.id
+    ?? runId;
+  const sanitizedNarration = sanitizeNarrationForStorage({
+    ...args.narration,
+    sourceRunId: runId,
+    sourceResultId: resultId
+  });
   const applyNarration = <T extends TemporaryJourneyRecord | ProfileJourneyRecord>(record: T): T => {
     const existingAudioGuides = record.audioGuides ?? record.result.workspaceAudioGuides ?? [];
     const isRegeneration = existingAudioGuides.some(
@@ -540,7 +604,10 @@ export function saveWorkspaceNarration(args: {
       description: isRegeneration
         ? "A listenable workspace guide was regenerated."
         : "A listenable workspace guide was generated.",
-      timestamp: now
+      timestamp: now,
+      audioGuideId: sanitizedNarration.id,
+      promptRunId: sanitizedNarration.sourceRunId,
+      resultId: sanitizedNarration.sourceResultId
     };
     const workspaceMeta = record.workspaceMeta ?? record.result.workspaceMeta;
     const updatedMeta = workspaceMeta
@@ -618,7 +685,10 @@ export function saveWorkspaceNarration(args: {
     description: isRegeneration
       ? "A listenable workspace guide was regenerated."
       : "A listenable workspace guide was generated.",
-    timestamp: now
+    timestamp: now,
+    audioGuideId: sanitizedNarration.id,
+    promptRunId: sanitizedNarration.sourceRunId,
+    resultId: sanitizedNarration.sourceResultId
   };
   const updatedMeta = args.result.workspaceMeta
     ? {
@@ -633,9 +703,9 @@ export function saveWorkspaceNarration(args: {
     workspaceJourney: [...(args.result.workspaceJourney ?? []), event],
     workspaceAudioGuides: [
       ...existingAudioGuides.filter(
-        (guide) => guide.sourceResultHash !== args.narration.sourceResultHash
+        (guide) => guide.sourceResultHash !== sanitizedNarration.sourceResultHash
       ),
-      args.narration
+      sanitizedNarration
     ]
   };
 }
@@ -656,7 +726,10 @@ function buildRuntimeResultWithNarration(
     description: isRegeneration
       ? "A listenable workspace guide was regenerated."
       : "A listenable workspace guide was generated.",
-    timestamp
+    timestamp,
+    audioGuideId: narration.id,
+    promptRunId: narration.sourceRunId,
+    resultId: narration.sourceResultId
   };
 
   return {
@@ -672,7 +745,7 @@ function buildRuntimeResultWithNarration(
       ...existingAudioGuides.filter(
         (guide) => guide.sourceResultHash !== narration.sourceResultHash
       ),
-      narration
+      sanitizeNarrationForStorage(narration)
     ]
   };
 }
@@ -724,6 +797,189 @@ export function activateTemporaryJourney(journeyId: string): void {
 
 export function getProjects(profileId?: string): WorkspaceProject[] {
   return profileId ? readProfileProjectRecords(profileId) : readTemporaryProjectRecords();
+}
+
+/* ── pending workspace shells (created before the first prompt runs) ─────── */
+
+function readPendingWorkspaces(): PendingWorkspaceShell[] {
+  if (!canUseStorage("local")) return [];
+  try {
+    const raw = window.localStorage.getItem(PENDING_WORKSPACE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed)
+      ? parsed.filter(
+          (item): item is PendingWorkspaceShell =>
+            Boolean(item) &&
+            typeof item.workspaceId === "string" &&
+            typeof item.workspaceName === "string" &&
+            Array.isArray(item.sections)
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function writePendingWorkspaces(shells: PendingWorkspaceShell[]): void {
+  if (!canUseStorage("local")) return;
+  try {
+    window.localStorage.setItem(PENDING_WORKSPACE_KEY, JSON.stringify(shells));
+  } catch {
+    // Pending shell storage is best effort only.
+  }
+}
+
+export function createWorkspaceShell(args: {
+  workspaceName: string;
+  preferredMode?: WorkspacePreferredMode;
+  projectId?: string;
+  createdFrom: PendingWorkspaceShell["createdFrom"];
+  sections: Array<{ title: string; type: WorkspaceSection["type"] }>;
+  terminalPrefill?: string;
+  autoRunFirstPrompt?: boolean;
+  profileId?: string;
+}): PendingWorkspaceShell {
+  const now = new Date().toISOString();
+  const workspaceId = `workspace-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const sections: WorkspaceSection[] = args.sections.map((template, index) => ({
+    id: `section-${Date.now().toString(36)}-${index}-${Math.random().toString(36).slice(2, 6)}`,
+    workspaceId,
+    title: template.title,
+    type: template.type,
+    itemIds: [],
+    createdAt: now,
+    updatedAt: now
+  }));
+  const workspaceCreatedEvent: JourneyEvent = {
+    id: `event-${Date.now().toString(36)}-workspace-created`,
+    eventType: "workspace_created",
+    title: "Workspace created",
+    description:
+      args.createdFrom === "dashboard_quick_prompt"
+        ? "Workspace was created from the dashboard quick prompt."
+        : "Workspace shell was created.",
+    timestamp: now
+  };
+
+  const shell: PendingWorkspaceShell = {
+    workspaceId,
+    workspaceName: args.workspaceName.trim(),
+    projectId: args.projectId,
+    preferredMode: args.preferredMode ?? "auto",
+    status: "awaiting_first_prompt",
+    sections,
+    items: [],
+    artifacts: [],
+    audioGuides: [],
+    journey: [workspaceCreatedEvent],
+    originalPrompt: args.terminalPrefill?.trim() || undefined,
+    terminalPrefill: args.terminalPrefill?.trim() || undefined,
+    autoRunFirstPrompt: args.autoRunFirstPrompt,
+    createdFrom: args.createdFrom,
+    persistence: args.profileId ? "local_profile" : "temporary",
+    profileId: args.profileId,
+    createdAt: now,
+    updatedAt: now
+  };
+
+  writePendingWorkspaces([...readPendingWorkspaces(), shell]);
+
+  // Reserve the workspace in its project immediately so counts reflect it.
+  if (args.projectId) {
+    assignWorkspaceToProjectSilently(shell.workspaceId, args.projectId, args.profileId);
+  }
+
+  return shell;
+}
+
+export function updatePendingWorkspaceSections(
+  workspaceId: string,
+  sections: WorkspaceSection[]
+): void {
+  writePendingWorkspaces(
+    readPendingWorkspaces().map((shell) =>
+      shell.workspaceId === workspaceId ? { ...shell, sections } : shell
+    )
+  );
+}
+
+export function updatePendingWorkspace(
+  workspaceId: string,
+  patch: Partial<
+    Pick<
+      PendingWorkspaceShell,
+      | "workspaceName"
+      | "preferredMode"
+      | "status"
+      | "sections"
+      | "items"
+      | "artifacts"
+      | "audioGuides"
+      | "journey"
+      | "originalPrompt"
+      | "terminalPrefill"
+      | "autoRunFirstPrompt"
+    >
+  >
+): PendingWorkspaceShell | null {
+  let updated: PendingWorkspaceShell | null = null;
+  const now = new Date().toISOString();
+  writePendingWorkspaces(
+    readPendingWorkspaces().map((shell) => {
+      if (shell.workspaceId !== workspaceId) return shell;
+      updated = { ...shell, ...patch, updatedAt: now };
+      return updated;
+    })
+  );
+  return updated;
+}
+
+export function movePendingWorkspace(
+  workspaceId: string,
+  projectId: string,
+  profileId?: string
+): void {
+  const update = (projects: WorkspaceProject[]) =>
+    projects.map((project) => {
+      const filtered = project.workspaceIds.filter((id) => id !== workspaceId);
+      if (project.id === projectId) {
+        return { ...project, workspaceIds: [...new Set([...filtered, workspaceId])] };
+      }
+      return filtered.length !== project.workspaceIds.length
+        ? { ...project, workspaceIds: filtered }
+        : project;
+    });
+
+  if (profileId) writeProfileProjectRecords(update(readProfileProjectRecords()));
+  else writeTemporaryProjectRecords(update(readTemporaryProjectRecords()));
+
+  writePendingWorkspaces(
+    readPendingWorkspaces().map((shell) =>
+      shell.workspaceId === workspaceId ? { ...shell, projectId } : shell
+    )
+  );
+}
+
+export function getPendingWorkspace(workspaceId: string): PendingWorkspaceShell | null {
+  const decoded = decodeURIComponent(workspaceId);
+  return (
+    readPendingWorkspaces().find(
+      (shell) => shell.workspaceId === decoded || shell.workspaceId === workspaceId
+    ) ?? null
+  );
+}
+
+/** All empty (awaiting-first-prompt) workspace shells for the current owner. */
+export function getPendingWorkspaces(profileId?: string): PendingWorkspaceShell[] {
+  return readPendingWorkspaces().filter((shell) =>
+    profileId ? shell.profileId === profileId : !shell.profileId
+  );
+}
+
+export function removePendingWorkspace(workspaceId: string): void {
+  writePendingWorkspaces(
+    readPendingWorkspaces().filter((shell) => shell.workspaceId !== workspaceId)
+  );
 }
 
 const LEGACY_SYSTEM_PROJECT_NAMES = ["Doc/ReDefined Docs", "Learn Doc/ReDefined"];
@@ -1257,6 +1513,90 @@ export function deleteWorkspaceRecord(args: {
       }))
     );
   }
+}
+
+export function deleteLibraryArtifact(args: {
+  recordId: string;
+  artifactId: string;
+  origin: "artifact" | "follow_up";
+  persistence: "temporary" | "local_profile";
+  profileId?: string;
+}): void {
+  const now = new Date().toISOString();
+  const apply = <T extends TemporaryJourneyRecord | ProfileJourneyRecord>(record: T): T => {
+    if (args.origin === "artifact") {
+      const workspaceArtifacts = (record.result.workspaceArtifacts ?? record.artifacts ?? []).filter(
+        (artifact) => artifact.id !== args.artifactId
+      );
+      return {
+        ...record,
+        artifacts: (record.artifacts ?? []).filter((artifact) => artifact.id !== args.artifactId),
+        result: { ...record.result, workspaceArtifacts },
+        updatedAt: now
+      };
+    }
+
+    const workspaceFollowUpResults = (record.result.workspaceFollowUpResults ?? []).filter(
+      (followUp) => followUp.id !== args.artifactId
+    );
+    return {
+      ...record,
+      result: { ...record.result, workspaceFollowUpResults },
+      updatedAt: now
+    };
+  };
+
+  if (args.persistence === "local_profile" && args.profileId) {
+    writeProfileJourneyRecords(
+      readProfileJourneyRecords().map((record) =>
+        record.id === args.recordId && record.profileId === args.profileId ? apply(record) : record
+      )
+    );
+    return;
+  }
+
+  writeTemporaryJourneyRecords(
+    readTemporaryJourneyRecords().map((record) =>
+      record.id === args.recordId ? apply(record) : record
+    )
+  );
+}
+
+export function deleteAudioGuide(args: {
+  recordId: string;
+  audioGuideId: string;
+  persistence: "temporary" | "local_profile";
+  profileId?: string;
+}): void {
+  const now = new Date().toISOString();
+  const apply = <T extends TemporaryJourneyRecord | ProfileJourneyRecord>(record: T): T => {
+    const guides = (record.result.workspaceAudioGuides ?? record.audioGuides ?? []).filter(
+      (narration) => narration.id !== args.audioGuideId
+    );
+    return {
+      ...record,
+      audioGuides: (record.audioGuides ?? []).filter(
+        (narration) => narration.id !== args.audioGuideId
+      ),
+      result: { ...record.result, workspaceAudioGuides: guides },
+      updatedAt: now
+    };
+  };
+
+  if (args.persistence === "local_profile" && args.profileId) {
+    writeProfileJourneyRecords(
+      readProfileJourneyRecords().map((record) =>
+        record.id === args.recordId && record.profileId === args.profileId ? apply(record) : record
+      )
+    );
+    return;
+  }
+
+  writeTemporaryJourneyRecords(
+    readTemporaryJourneyRecords().map((record) =>
+      record.id === args.recordId ? apply(record) : record
+    )
+  );
 }
 
 export function duplicateWorkspaceRecord(args: {

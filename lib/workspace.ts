@@ -4,9 +4,53 @@ import type {
   UserWorkspaceState,
   WorkspaceArtifact,
   WorkspaceBranch,
+  WorkspaceItem,
   WorkspaceMeta,
-  WorkspacePersistence
+  WorkspacePreferredMode,
+  WorkspacePersistence,
+  WorkspaceSection,
+  WorkspaceSectionType
 } from "@/lib/workspace-types";
+
+const RESULT_SECTION_BY_MODE: Record<RedefinedResult["mode"], WorkspaceSectionType[]> = {
+  understand: ["overview", "mental_model", "examples", "notes", "artifact"],
+  build: ["overview", "plan", "decisions", "outputs", "artifact"],
+  fix: ["overview", "evidence", "checks", "commands", "runbook"],
+  artifact: ["overview", "drafts", "exports", "notes", "artifact"]
+};
+
+/** Assigns a generated result to the most relevant section, falling back to Overview. */
+export function assignResultToSection(
+  sections: WorkspaceSection[],
+  result: RedefinedResult,
+  workspaceId: string,
+  now = new Date().toISOString()
+): { sections: WorkspaceSection[]; items: WorkspaceItem[] } {
+  if (sections.length === 0) return { sections, items: [] };
+
+  const preferred = RESULT_SECTION_BY_MODE[result.mode] ?? ["overview"];
+  const target =
+    preferred
+      .map((type) => sections.find((section) => section.type === type))
+      .find(Boolean) ?? sections[0];
+
+  const item: WorkspaceItem = {
+    id: `item-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    workspaceId,
+    sectionId: target.id,
+    type: "result",
+    sourceId: result.id,
+    createdAt: now
+  };
+
+  const nextSections = sections.map((section) =>
+    section.id === target.id
+      ? { ...section, itemIds: [...section.itemIds, item.id], updatedAt: now }
+      : section
+  );
+
+  return { sections: nextSections, items: [item] };
+}
 import { getLocalProfile } from "@/lib/profile-store";
 
 export const TEMP_WORKSPACE_LIMIT = 5;
@@ -89,6 +133,93 @@ function titleCase(value: string) {
       return lower.charAt(0).toUpperCase() + lower.slice(1);
     })
     .join(" ");
+}
+
+export function generateWorkspaceNameFromPrompt(
+  prompt: string,
+  mode: WorkspacePreferredMode = "auto"
+): string {
+  const raw = prompt.toLowerCase();
+  const compactTopic = (value: string) =>
+    titleCase(
+      value
+        .replace(/[?.!,;:]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+    );
+
+  const businessPlanMatch = raw.match(/business plan(?:\s+for)?\s+(?:a|an|the)?\s*([a-z0-9\s-]+)/);
+  if (businessPlanMatch?.[1]) {
+    const topic = businessPlanMatch[1]
+      .replace(/\b(platform|app|service|product|company|business)\b/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(" ")
+      .slice(0, 3)
+      .join(" ");
+    if (topic) return `${compactTopic(topic)} Business Plan`;
+  }
+
+  const accessMatch =
+    raw.match(/(?:cannot|can't|unable to)\s+access\s+(?:to\s+)?(?:an?\s+)?([a-z0-9\s-]+?)(?:\s+from|\s+with|\s+because|,|$)/) ??
+    raw.match(/access\s+denied\s+(?:to\s+|for\s+)?(?:an?\s+)?([a-z0-9\s-]+?)(?:\s+from|\s+with|\s+because|,|$)/) ??
+    raw.match(/access\s+(?:to\s+)?(?:an?\s+)?([a-z0-9\s-]+?)(?:\s+from|\s+with|\s+because|,|$)/);
+  if (accessMatch?.[1]) {
+    const topic = accessMatch[1]
+      .replace(/\b(my|the|an?|vm|account|resource)\b/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(" ")
+      .slice(0, 3)
+      .join(" ");
+    if (topic) return `${compactTopic(topic)} Access Investigation`;
+  }
+
+  const explainMatch = raw.match(/(?:explain|what is|what does)\s+([a-z0-9\s-]+?)(?:\s+with|\s+using|\s+for|$)/);
+  if (explainMatch?.[1]) {
+    const topic = explainMatch[1]
+      .replace(/\b(flow|concept|overview|guide)\b/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(" ")
+      .slice(0, 4)
+      .join(" ");
+    if (topic) return `${compactTopic(topic)} Guide`;
+  }
+
+  const cleaned = prompt
+    .toLowerCase()
+    .replace(/[?.!,;:]+/g, " ")
+    .replace(/\b(help me|how do i|can you|please|create a|create an|create|explain|what is|what does|draft a|draft an|draft|build|fix|i cannot|i can't|cannot|can't|from my|with)\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const words = cleaned
+    .split(" ")
+    .filter((word) => word.length > 1 && !["the", "and", "for", "from", "into", "about", "this", "that", "you", "your", "how"].includes(word))
+    .slice(0, 5);
+
+  if (words.length === 0) return "Untitled Workspace";
+
+  const base = titleCase(words.join(" "));
+  const lower = `${prompt} ${mode}`.toLowerCase();
+
+  if (mode === "fix" || /(cannot|can't|access denied|error|issue|fail|blocked)/.test(lower)) {
+    return /\b(issue|investigation)\b/i.test(base) ? base : `${base} Investigation`;
+  }
+
+  if (mode === "build" || /(business plan|plan|strategy|build|create)/.test(lower)) {
+    return /\b(plan|builder|strategy)\b/i.test(base) ? base : `${base} Plan`;
+  }
+
+  if (mode === "understand" || /(what is|what does|explain|guide|concept)/.test(lower)) {
+    return /\b(guide|concept)\b/i.test(base) ? base : `${base} Guide`;
+  }
+
+  if (mode === "artifact" || /(script|runbook|checklist|summary|draft)/.test(lower)) {
+    return /\b(runbook|checklist|script|draft|summary)\b/i.test(base) ? base : `${base} Draft`;
+  }
+
+  return base.split(" ").slice(0, 6).join(" ");
 }
 
 function extractUsefulTopic(result: RedefinedResult, prompt: string) {
@@ -307,6 +438,10 @@ export function createWorkspaceMeta(args: {
   persistence?: WorkspacePersistence;
   projectId?: string;
   createdFromWorkspaceId?: string;
+  preferredMode?: WorkspaceMeta["preferredMode"];
+  createdFrom?: WorkspaceMeta["createdFrom"];
+  workspaceIdOverride?: string;
+  workspaceNameOverride?: string;
 }): WorkspaceMeta {
   const now = new Date().toISOString();
   const identity = generateWorkspaceIdentity(args.result, args.prompt);
@@ -317,8 +452,8 @@ export function createWorkspaceMeta(args: {
       : undefined;
 
   return {
-    workspaceId: createWorkspaceId("workspace"),
-    workspaceName: identity.workspaceName,
+    workspaceId: args.workspaceIdOverride ?? createWorkspaceId("workspace"),
+    workspaceName: args.workspaceNameOverride?.trim() || identity.workspaceName,
     workspaceSubtitle: identity.workspaceSubtitle,
     mode: args.result.mode,
     domain: args.result.domain || args.result.classification?.topic || "General",
@@ -327,6 +462,8 @@ export function createWorkspaceMeta(args: {
     currentBranchId: args.currentBranchId,
     projectId: args.projectId,
     createdFromWorkspaceId: args.createdFromWorkspaceId,
+    preferredMode: args.preferredMode,
+    createdFrom: args.createdFrom,
     ownerType: args.userState.ownerType,
     persistence,
     tempIndex: nextTempIndex,
@@ -342,12 +479,20 @@ export function attachWorkspaceToResult(args: {
   branches: WorkspaceBranch[];
   journey: JourneyEvent[];
   artifacts: WorkspaceArtifact[];
+  promptRuns?: RedefinedResult["workspacePromptRuns"];
+  followUpResults?: RedefinedResult["workspaceFollowUpResults"];
+  sections?: WorkspaceSection[];
+  items?: WorkspaceItem[];
 }): RedefinedResult {
   return {
     ...args.result,
     workspaceMeta: args.workspaceMeta,
     workspaceBranches: args.branches,
     workspaceJourney: args.journey,
-    workspaceArtifacts: args.artifacts
+    workspaceArtifacts: args.artifacts,
+    workspacePromptRuns: args.promptRuns ?? args.result.workspacePromptRuns,
+    workspaceFollowUpResults: args.followUpResults ?? args.result.workspaceFollowUpResults,
+    workspaceSections: args.sections,
+    workspaceItems: args.items
   };
 }

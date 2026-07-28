@@ -570,14 +570,14 @@ export default function PromptCard({ visible, showLanding = true }: PromptCardPr
 
     const pending = promptText.trim();
     window.location.href = pending
-      ? `/signup?next=${encodeURIComponent(`/new?prompt=${encodeURIComponent(pending)}`)}`
+      ? `/signup?next=${encodeURIComponent(`/dashboard?prompt=${encodeURIComponent(pending)}`)}`
       : "/signup";
   }, [profilePromptNext, promptText]);
 
   const handleSignIn = useCallback(() => {
     const pending = promptText.trim();
     window.location.href = pending
-      ? `/login?next=${encodeURIComponent(`/new?prompt=${encodeURIComponent(pending)}`)}`
+      ? `/login?next=${encodeURIComponent(`/dashboard?prompt=${encodeURIComponent(pending)}`)}`
       : "/login";
   }, [promptText]);
 

@@ -131,7 +131,7 @@ export function ArtifactToolbar({
 
   return (
     <>
-      <section className="artifact-toolbar" aria-label="Workspace artifacts">
+      <section className="artifact-toolbar" id="fix-artifacts" aria-label="Workspace artifacts">
         <div>
           <div className="block-label">Artifacts</div>
           <p>{result.title}</p>

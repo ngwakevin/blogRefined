@@ -55,7 +55,7 @@ export function QuickTestsRenderer({ quickTests }: QuickTestsRendererProps) {
   const displayedTests = showAll ? visibleTests : visibleTests.slice(0, 4);
 
   return (
-    <section className="workspace-card quick-runbook">
+    <section className="workspace-card quick-runbook" id="fix-runbook-checks">
       <div className="section-heading">
         <div>
           <p className="block-label">Quick diagnostic runbook</p>

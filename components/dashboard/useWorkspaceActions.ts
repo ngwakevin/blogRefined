@@ -17,9 +17,12 @@ import {
   duplicateWorkspaceRecord,
   ensureDefaultProjects,
   getProjects,
+  movePendingWorkspace,
   moveWorkspacesToProject,
+  removePendingWorkspace,
   removeWorkspaceFromProject,
-  renameWorkspaceRecord
+  renameWorkspaceRecord,
+  updatePendingWorkspace
 } from "@/lib/journey-store";
 import type { WorkspaceProject } from "@/lib/workspace-types";
 
@@ -64,13 +67,17 @@ export function useWorkspaceActions() {
       const nextName = window.prompt("Rename workspace", record.name)?.trim();
       if (!nextName || nextName === record.name) return;
 
-      renameWorkspaceRecord({
-        recordId: record.recordId,
-        workspaceId: record.workspaceId,
-        workspaceName: nextName,
-        persistence: record.persistence,
-        profileId: profile?.id
-      });
+      if (record.pending) {
+        updatePendingWorkspace(record.workspaceId, { workspaceName: nextName });
+      } else {
+        renameWorkspaceRecord({
+          recordId: record.recordId,
+          workspaceId: record.workspaceId,
+          workspaceName: nextName,
+          persistence: record.persistence,
+          profileId: profile?.id
+        });
+      }
       refresh();
     },
     [profile?.id, refresh]
@@ -78,6 +85,7 @@ export function useWorkspaceActions() {
 
   const handleDuplicate = useCallback(
     (record: DashboardRecord) => {
+      if (record.pending) return; // nothing to duplicate before a result exists
       duplicateWorkspaceRecord({
         recordId: record.recordId,
         persistence: record.persistence,
@@ -95,11 +103,15 @@ export function useWorkspaceActions() {
       );
       if (!confirmed) return;
 
-      deleteWorkspaceRecord({
-        recordId: record.recordId,
-        persistence: record.persistence,
-        profileId: profile?.id
-      });
+      if (record.pending) {
+        removePendingWorkspace(record.workspaceId);
+      } else {
+        deleteWorkspaceRecord({
+          recordId: record.recordId,
+          persistence: record.persistence,
+          profileId: profile?.id
+        });
+      }
       refresh();
     },
     [profile?.id, refresh]
@@ -107,6 +119,19 @@ export function useWorkspaceActions() {
 
   const handleMove = useCallback(
     (record: DashboardRecord, projectId: string | null) => {
+      if (record.pending) {
+        const target =
+          projectId ??
+          (record.projectId
+            ? ensureDefaultProjects(profile?.id).myWorkspaces?.id ?? null
+            : null);
+        if (target && target !== record.projectId) {
+          movePendingWorkspace(record.workspaceId, target, profile?.id);
+        }
+        refresh();
+        return;
+      }
+
       if (projectId) {
         // Single-target move (dedupes + removes from old project).
         moveWorkspacesToProject([record.workspaceId], projectId, profile?.id);

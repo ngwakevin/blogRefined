@@ -478,6 +478,7 @@ export default function LandingSections({ onRunPrompt }: LandingSectionsProps) {
             <a href="#journey">How it works</a>
             <a href="#numbers">Numbers</a>
             <a href="#examples">Examples</a>
+            <a href="/pricing">Pricing</a>
           </div>
           <div>
             <a href="/login">Sign in</a>

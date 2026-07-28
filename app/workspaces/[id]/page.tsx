@@ -3,17 +3,22 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { ResultRouter } from "@/components/results/ResultRouter";
+import { WorkspaceRunner } from "@/components/workspace/WorkspaceRunner";
 import {
   activateProfileJourney,
   activateTemporaryJourney,
   getGuestLimitState,
+  getPendingWorkspace,
   getProfileJourneyRecords,
   getTemporaryJourneyRecords,
   type ProfileJourneyRecord,
   type TemporaryJourneyRecord
 } from "@/lib/journey-store";
 import { getLocalProfile } from "@/lib/profile-store";
+import type { RedefinedResult } from "@/lib/redefined";
+import type { PendingWorkspaceShell } from "@/lib/workspace-types";
 
 type ResolvedRecord =
   | { kind: "profile"; record: ProfileJourneyRecord }
@@ -47,7 +52,12 @@ function resolveRecord(id: string): ResolvedRecord {
 
 export default function WorkspaceDetailPage() {
   const params = useParams<{ id: string }>();
-  const [resolved] = useState<ResolvedRecord>(() => resolveRecord(params.id));
+  const [pending] = useState<PendingWorkspaceShell | null>(() => getPendingWorkspace(params.id));
+  const [resolved] = useState<ResolvedRecord>(() =>
+    getPendingWorkspace(params.id) ? null : resolveRecord(params.id)
+  );
+  // Result is stateful so follow-up prompt runs update the page in place.
+  const [result, setResult] = useState<RedefinedResult | null>(() => resolved?.record.result ?? null);
   const guestLimitState = useMemo(() => getGuestLimitState(), []);
 
   useEffect(() => {
@@ -56,42 +66,45 @@ export default function WorkspaceDetailPage() {
     else activateTemporaryJourney(resolved.record.id);
   }, [resolved]);
 
-  if (!resolved) {
-    return (
-      <main className="journey-detail-page">
-        <section className="empty-journey-history">
-          <h1>Workspace not found.</h1>
-          <p>This workspace is not available on this device or profile.</p>
-          <Link href="/workspaces">Back to workspaces</Link>
-        </section>
-      </main>
-    );
-  }
-
+  // The workspace opens inside the dashboard shell so the sidebar stays visible.
   return (
-    <main className="journey-detail-page">
-      <section className="journey-detail-topline">
-        <Link href="/">Back to dashboard</Link>
-        <Link href="/new">New workspace</Link>
-      </section>
+    <DashboardShell active="workspaces">
+      <div className="workspace-detail-topline">
+        <Link href="/workspaces">&larr; All workspaces</Link>
+      </div>
 
-      <section className="result-preview result-slot fix-result-preview visible">
-        {resolved.kind === "profile" ? (
-          <ResultRouter
-            result={resolved.record.result}
-            source={resolved.record.source ?? "local"}
-            profileRecord={resolved.record}
-            guestLimitState={guestLimitState}
-          />
-        ) : (
-          <ResultRouter
-            result={resolved.record.result}
-            source="local"
-            temporaryRecord={resolved.record}
-            guestLimitState={guestLimitState}
-          />
-        )}
-      </section>
-    </main>
+      {pending ? (
+        // A freshly created shell runs its first prompt here, then renders the result.
+        <WorkspaceRunner shell={pending} />
+      ) : !resolved || !result ? (
+        <div className="dash-empty">
+          <h2>Workspace not found</h2>
+          <p>This workspace is not available on this device or profile.</p>
+          <Link className="dash-btn-purple" href="/workspaces">
+            Back to workspaces
+          </Link>
+        </div>
+      ) : (
+        <section className="result-preview result-slot fix-result-preview visible">
+          {resolved.kind === "profile" ? (
+            <ResultRouter
+              result={result}
+              source={resolved.record.source ?? "local"}
+              profileRecord={resolved.record}
+              guestLimitState={guestLimitState}
+              onResultChange={setResult}
+            />
+          ) : (
+            <ResultRouter
+              result={result}
+              source="local"
+              temporaryRecord={resolved.record}
+              guestLimitState={guestLimitState}
+              onResultChange={setResult}
+            />
+          )}
+        </section>
+      )}
+    </DashboardShell>
   );
 }

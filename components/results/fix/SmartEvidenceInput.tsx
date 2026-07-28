@@ -36,9 +36,12 @@ export function SmartEvidenceInput({
 }: SmartEvidenceInputProps) {
   const [message, setMessage] = useState("");
   const [detectedSignals, setDetectedSignals] = useState<EvidenceSignal[]>([]);
+  const [showAllSignals, setShowAllSignals] = useState(false);
 
   const visibleSignals =
     evidenceSignals && evidenceSignals.length > 0 ? evidenceSignals : detectedSignals;
+  const displayedSignals = showAllSignals ? visibleSignals : visibleSignals.slice(0, 3);
+  const hiddenSignalCount = Math.max(visibleSignals.length - displayedSignals.length, 0);
   const {
     voiceInputState,
     voiceStatusMessage,
@@ -117,7 +120,7 @@ export function SmartEvidenceInput({
   }
 
   return (
-    <form className="workspace-card smart-evidence-panel" onSubmit={handleSubmit}>
+    <form className="workspace-card smart-evidence-panel" id="fix-evidence" onSubmit={handleSubmit}>
       <div className="section-heading">
         <div>
           <p className="block-label">Continue troubleshooting</p>
@@ -218,7 +221,7 @@ export function SmartEvidenceInput({
           <div
             className={`detected-signals-row${visibleSignals.length === 1 ? " single-signal" : ""}`}
           >
-            {visibleSignals.map((signal) => (
+            {displayedSignals.map((signal) => (
               <div
                 className={`detected-signal-chip signal-${signalTone(signal)}`}
                 key={signal.id}
@@ -229,6 +232,23 @@ export function SmartEvidenceInput({
                   : ""}
               </div>
             ))}
+            {hiddenSignalCount > 0 ? (
+              <button
+                className="more-signals-button"
+                type="button"
+                onClick={() => setShowAllSignals(true)}
+              >
+                More signals +{hiddenSignalCount}
+              </button>
+            ) : showAllSignals && visibleSignals.length > 3 ? (
+              <button
+                className="more-signals-button"
+                type="button"
+                onClick={() => setShowAllSignals(false)}
+              >
+                Fewer signals
+              </button>
+            ) : null}
           </div>
         ) : (
           <div className="empty-state evidence-empty-state">

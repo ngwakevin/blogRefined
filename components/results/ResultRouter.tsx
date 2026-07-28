@@ -1,18 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { RedefinedResult } from "@/lib/redefined";
-import { ArtifactWorkspace } from "@/components/results/artifact/ArtifactWorkspace";
-import { BuildWorkspace } from "@/components/results/build/BuildWorkspace";
-import { FixWorkspace } from "@/components/results/fix/FixWorkspace";
-import { UnderstandWorkspace } from "@/components/results/understand/UnderstandWorkspace";
-import { WorkspaceAudioGuide } from "@/components/workspace/WorkspaceAudioGuide";
+import { WorkspaceExportModal } from "@/components/workspace/WorkspaceExportModal";
 import { WorkspaceHeader } from "@/components/workspace/WorkspaceHeader";
+import { WorkspaceTraceTabs } from "@/components/workspace/WorkspaceTraceTabs";
+import type { WorkspaceTabId } from "@/components/workspace/WorkspaceTabNav";
 import type { ResultSource } from "@/components/results/ResultSourceBadge";
-import type {
-  GuestLimitState,
-  ProfileJourneyRecord,
-  TemporaryJourneyRecord
-} from "@/lib/journey-store";
+import type { GuestLimitState, ProfileJourneyRecord, TemporaryJourneyRecord } from "@/lib/journey-store";
 import { saveWorkspaceNarration } from "@/lib/journey-store";
 import type { WorkspaceNarration } from "@/lib/workspace-types";
 
@@ -38,84 +33,67 @@ export function ResultRouter({
   onResultChange
 }: ResultRouterProps) {
   const recordId = temporaryRecord?.id ?? profileRecord?.id;
-  const audioGuides = result.workspaceAudioGuides
-    ?? temporaryRecord?.audioGuides
-    ?? profileRecord?.audioGuides
-    ?? [];
-  const initialNarration = audioGuides[audioGuides.length - 1];
+  const profileId = profileRecord?.profileId;
+  const [exportOpen, setExportOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<WorkspaceTabId>("workspace");
+
+  useEffect(() => {
+    const onSetTab = (event: Event) => {
+      const detail = (event as CustomEvent<{ tabId?: WorkspaceTabId }>).detail;
+      if (detail?.tabId) setActiveTab(detail.tabId);
+    };
+    window.addEventListener("workspace:set-tab", onSetTab);
+    return () => window.removeEventListener("workspace:set-tab", onSetTab);
+  }, []);
 
   function handleNarrationGenerated(narration: WorkspaceNarration) {
     const updatedResult = saveWorkspaceNarration({
       recordId,
       profileId: profileRecord?.profileId,
       result,
-      narration
+      narration: {
+        ...narration,
+        sourceRunId: narration.sourceRunId ?? result.promptRunId ?? result.workspacePromptRuns?.at(-1)?.id,
+        sourceResultId: narration.sourceResultId ?? result.promptRunId ?? result.id
+      }
     });
 
     onResultChange?.(updatedResult);
   }
 
-  const workspaceChrome = (
+  return (
     <>
       <WorkspaceHeader
         key={result.workspaceMeta?.workspaceId ?? result.id}
         result={result}
         recordId={recordId}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onExportWorkspace={() => setExportOpen(true)}
         onResultChange={onResultChange}
       />
-      <WorkspaceAudioGuide
-        key={`${result.workspaceMeta?.workspaceId ?? result.id}-${initialNarration?.sourceResultHash ?? "new"}`}
+      <WorkspaceTraceTabs
         result={result}
-        workspaceMeta={result.workspaceMeta}
+        source={source}
+        temporaryRecord={temporaryRecord}
+        profileRecord={profileRecord}
+        guestLimitState={guestLimitState}
+        recordId={recordId}
         originalPrompt={result.originalPrompt ?? result.workspaceMeta?.originalPrompt ?? result.title}
-        initialNarration={initialNarration}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
         onNarrationGenerated={handleNarrationGenerated}
+        onRequireProfile={onRequireProfile}
+        onGenerateArtifact={onGenerateArtifact}
+        onResultChange={onResultChange}
       />
+      {exportOpen ? (
+        <WorkspaceExportModal
+          result={result}
+          profileId={profileId}
+          onClose={() => setExportOpen(false)}
+        />
+      ) : null}
     </>
   );
-
-  if (result.mode === "understand") {
-    return (
-      <>
-        {workspaceChrome}
-        <UnderstandWorkspace result={result} source={source} />
-      </>
-    );
-  }
-
-  if (result.mode === "build") {
-    return (
-      <>
-        {workspaceChrome}
-        <BuildWorkspace result={result} onGenerateArtifact={onGenerateArtifact} />
-      </>
-    );
-  }
-
-  if (result.mode === "artifact") {
-    return (
-      <>
-        {workspaceChrome}
-        <ArtifactWorkspace result={result} />
-      </>
-    );
-  }
-
-  if (result.mode === "fix") {
-    return (
-      <>
-        {workspaceChrome}
-        <FixWorkspace
-          initialResult={result}
-          initialSource={source}
-          temporaryRecord={temporaryRecord}
-          profileRecord={profileRecord}
-          guestLimitState={guestLimitState}
-          onRequireProfile={onRequireProfile}
-        />
-      </>
-    );
-  }
-
-  return null;
 }

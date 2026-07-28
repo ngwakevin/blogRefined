@@ -8,11 +8,14 @@ import type {
 } from "@/lib/redefined";
 import type { ResultSource } from "@/components/results/ResultSourceBadge";
 import { ResultSourceBadge } from "@/components/results/ResultSourceBadge";
+import { WorkspaceAudioGuide } from "@/components/workspace/WorkspaceAudioGuide";
 import { useVoiceRecorder } from "@/components/voice/useVoiceRecorder";
+import type { WorkspaceNarration } from "@/lib/workspace-types";
 
 type UnderstandWorkspaceProps = {
   result: RedefinedResult;
   source?: ResultSource;
+  onNarrationGenerated?: (narration: WorkspaceNarration) => void;
 };
 
 const BLOCK_TONES = ["green", "blue", "purple", "yellow", "neutral"] as const;
@@ -60,7 +63,11 @@ type TeachBackFeedback = {
   expertVersion?: string;
 };
 
-export function UnderstandWorkspace({ result, source = "ai" }: UnderstandWorkspaceProps) {
+export function UnderstandWorkspace({
+  result,
+  source = "ai",
+  onNarrationGenerated
+}: UnderstandWorkspaceProps) {
   const clarity = result.clarity;
   const mentalModel = result.mentalModel;
   const blocks = result.coreBuildingBlocks ?? [];
@@ -260,7 +267,18 @@ export function UnderstandWorkspace({ result, source = "ai" }: UnderstandWorkspa
         <>
           <div className="workspace-status-row">
             <ResultSourceBadge source={source} context="initial" />
-            <span className="understand-domain-pill">{domain}</span>
+            <div className="understand-status-pills" aria-label="Understand workspace utilities">
+              <WorkspaceAudioGuide
+                result={result}
+                workspaceMeta={result.workspaceMeta}
+                originalPrompt={result.originalPrompt ?? result.workspaceMeta?.originalPrompt ?? result.title}
+                initialNarration={(result.workspaceAudioGuides ?? []).at(-1)}
+                onNarrationGenerated={onNarrationGenerated}
+                variant="compact"
+                compactIdleLabel="Generate guide"
+              />
+              <span className="understand-domain-pill">{domain}</span>
+            </div>
           </div>
 
           {/* 1. Knowledge Level Check */}

@@ -175,10 +175,9 @@ export function WorkspaceCard({
         <span className="dash-ws-stats">
           <span className="dash-ws-stat">
             <svg viewBox="0 0 20 20" aria-hidden="true">
-              <rect x="8" y="2.5" width="4" height="9" rx="2" />
-              <path d="M5 9.5a5 5 0 0 0 10 0M10 14.5V17" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              <path d="M4 5h12M4 10h12M4 15h7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
             </svg>
-            {record.audioCount} Audio
+            {record.promptRunCount} Prompt Run{record.promptRunCount === 1 ? "" : "s"}
           </span>
           <span className="dash-ws-stat">
             <svg viewBox="0 0 20 20" aria-hidden="true">
@@ -186,6 +185,13 @@ export function WorkspaceCard({
               <path d="M7 9h6M7 12h4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
             {record.artifactCount} Artifact{record.artifactCount === 1 ? "" : "s"}
+          </span>
+          <span className="dash-ws-stat">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <rect x="8" y="2.5" width="4" height="9" rx="2" />
+              <path d="M5 9.5a5 5 0 0 0 10 0M10 14.5V17" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            {record.audioCount} Audio Guide{record.audioCount === 1 ? "" : "s"}
           </span>
           {record.branchCount > 0 ? (
             <span className="dash-ws-stat">

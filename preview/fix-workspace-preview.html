@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Doc/ReDefined — Fix Workspace · Next-Level Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --yellow:#f5b800; --blue:#38b6ff; --green:#00bf63; --purple:#b2a5ff;
+  --dark:#0c1220; --text:#1f2533; --muted:#737a89; --line:rgba(17,24,39,.08);
+  --font:"Inter",system-ui,sans-serif; --head:"Space Grotesk",sans-serif; --mono:"JetBrains Mono",monospace;
+  --ok:#0a8f54; --warn:#9a7400; --bad:#d23b2b;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--text);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(60vw 60vw at 85% -5%, rgba(245,184,0,.18), transparent 60%),
+    radial-gradient(50vw 50vw at -10% 12%, rgba(178,165,255,.20), transparent 55%),
+    radial-gradient(60vw 55vw at 110% 80%, rgba(56,182,255,.16), transparent 55%),
+    #f4f5fa;
+  background-attachment:fixed;}
+.wrap{max-width:1060px;margin:0 auto;padding:30px 24px 140px}
+.kick{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.kick .pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(0,191,99,.6);animation:ping 1.8s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(0,191,99,.5)}70%{box-shadow:0 0 0 8px rgba(0,191,99,0)}100%{box-shadow:0 0 0 0 rgba(0,191,99,0)}}
+.note{background:rgba(255,255,255,.7);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.6);border-radius:18px;padding:16px 20px;margin-bottom:26px;font-size:13.5px;color:var(--muted);box-shadow:0 18px 50px rgba(17,24,39,.07)}
+.note b{color:var(--text)}
+
+.reveal{opacity:0;transform:translateY(16px);animation:up .7s cubic-bezier(.16,1,.3,1) forwards}
+@keyframes up{to{opacity:1;transform:none}}
+.d1{animation-delay:.05s}.d2{animation-delay:.13s}.d3{animation-delay:.22s}.d4{animation-delay:.32s}.d5{animation-delay:.42s}
+
+/* header */
+.wshead{display:flex;justify-content:space-between;gap:16px;margin-bottom:16px;padding-left:16px;border-left:4px solid var(--yellow)}
+.wshead .ey{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.wshead h1{font-family:var(--head);font-size:36px;font-weight:700;letter-spacing:-.04em;margin:6px 0 8px;
+  background:linear-gradient(120deg,#1f2533,#5b4fd6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:5px 11px;border-radius:999px}
+.b1{background:rgba(0,191,99,.16);color:var(--ok)} .b2{background:rgba(245,184,0,.24);color:var(--warn)} .b3{background:rgba(17,24,39,.07);color:var(--muted)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;background:rgba(255,255,255,.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.6);border-radius:24px;padding:8px;margin-bottom:26px;box-shadow:0 16px 40px rgba(17,24,39,.06)}
+.tab{padding:9px 15px;border-radius:999px;font-size:13px;font-weight:700;background:transparent;border:0;color:var(--muted);cursor:pointer;transition:.2s}
+.tab:hover{color:var(--text)}
+.tab.on{background:linear-gradient(135deg,var(--yellow),#ffcb2e);color:#3a2c00;box-shadow:0 8px 18px rgba(245,184,0,.4)}
+.tab .c{font-family:var(--mono);font-size:11px;background:rgba(17,24,39,.1);border-radius:999px;padding:1px 6px;margin-left:6px}
+
+/* ───── SPINE ───── */
+.spine{position:sticky;top:16px;z-index:30;border-radius:26px;padding:26px 28px;margin-bottom:20px;overflow:hidden;
+  background:linear-gradient(135deg,#0c1220 0%,#161f36 60%,#1a2342 100%);
+  box-shadow:0 30px 70px rgba(12,18,32,.4),inset 0 1px 0 rgba(255,255,255,.06);color:#fff}
+.spine::before{content:"";position:absolute;width:420px;height:420px;right:-120px;top:-180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,191,99,.5),transparent 62%);filter:blur(34px);animation:float 9s ease-in-out infinite}
+.spine::after{content:"";position:absolute;width:340px;height:340px;left:-100px;bottom:-160px;border-radius:50%;
+  background:radial-gradient(circle,rgba(56,182,255,.42),transparent 62%);filter:blur(34px);animation:float 11s ease-in-out infinite reverse}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(22px)}}
+.spine-grid{position:relative;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}
+.spine .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+.spine h2{font-family:var(--head);font-size:25px;font-weight:700;letter-spacing:-.02em;margin:6px 0 0;line-height:1.12}
+.nxt{margin-top:18px;display:flex;align-items:flex-start;gap:10px;font-size:14.5px;max-width:560px}
+.nxt .arr{color:var(--blue);font-size:18px;line-height:1.2;animation:nudge 1.6s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+.nxt b{color:#fff;font-weight:600} .nxt span{color:rgba(255,255,255,.6)}
+.acts{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.cta{border:0;border-radius:13px;padding:12px 20px;font-weight:700;font-size:13.5px;cursor:pointer;transition:.2s}
+.cta-go{background:linear-gradient(135deg,var(--blue),#5ec8ff);color:#04243a;box-shadow:0 12px 26px rgba(56,182,255,.45)}
+.cta-go:hover{transform:translateY(-2px);box-shadow:0 18px 34px rgba(56,182,255,.55)}
+.cta-ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.16)}
+.cta-ghost:hover{background:rgba(255,255,255,.18)}
+
+/* gauge */
+.gauge{position:relative;width:124px;height:124px;display:grid;place-items:center}
+.gauge svg{transform:rotate(-90deg)}
+.gauge .num{position:absolute;text-align:center}
+.gauge .num b{font-family:var(--head);font-size:30px;font-weight:700;display:block;line-height:1}
+.gauge .num small{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.55)}
+
+/* ───── EVIDENCE LOOP ───── */
+.loop{position:relative;border-radius:24px;padding:24px;margin-bottom:20px;
+  background:rgba(255,255,255,.78);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.7);
+  box-shadow:0 26px 60px rgba(17,24,39,.1)}
+.loop-head{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.loop-head .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:18px;
+  background:linear-gradient(135deg,var(--green),#34d97f);box-shadow:0 10px 22px rgba(0,191,99,.4)}
+.loop-head h3{font-family:var(--head);font-size:18px;margin:0}
+.loop p.sub{margin:0 0 16px;color:var(--muted);font-size:13.5px}
+.loop textarea{width:100%;min-height:84px;border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;font-family:var(--mono);font-size:12.5px;resize:vertical;outline:none;transition:.2s;background:#fbfcfe}
+.loop textarea:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(56,182,255,.18)}
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin:16px 0 4px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 15px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:8px}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:rgba(17,24,39,.22);transition:.2s}
+.chip:hover{transform:translateY(-2px);border-color:var(--blue);box-shadow:0 8px 18px rgba(17,24,39,.08)}
+.chip.on{background:linear-gradient(135deg,rgba(0,191,99,.14),rgba(0,191,99,.08));border-color:rgba(0,191,99,.5);color:var(--ok);box-shadow:0 8px 20px rgba(0,191,99,.18)}
+.chip.on .dot{background:var(--green);box-shadow:0 0 0 4px rgba(0,191,99,.18)}
+.chip.bad.on{background:linear-gradient(135deg,rgba(210,59,43,.12),rgba(210,59,43,.06));border-color:rgba(210,59,43,.45);color:var(--bad)} .chip.bad.on .dot{background:#ef4444;box-shadow:0 0 0 4px rgba(239,68,68,.18)}
+.sigRead{margin-top:12px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+
+/* ───── CONTEXT ───── */
+.ctx{display:grid;gap:12px;margin-bottom:20px}
+.acc{border-radius:20px;overflow:hidden;background:rgba(255,255,255,.72);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.6);box-shadow:0 16px 44px rgba(17,24,39,.06)}
+.acc>summary{list-style:none;cursor:pointer;padding:17px 20px;display:flex;align-items:center;gap:11px;font-weight:700;font-size:14.5px}
+.acc>summary::-webkit-details-marker{display:none}
+.acc>summary .car{margin-left:auto;color:var(--muted);transition:.25s;font-size:13px}
+.acc[open]>summary .car{transform:rotate(90deg)}
+.acc .body{padding:0 20px 20px}
+.stat{font-family:var(--mono);font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 10px;border-radius:999px}
+.s-fail{background:rgba(245,184,0,.24);color:var(--warn)} .s-pass{background:rgba(0,191,99,.18);color:var(--ok)} .s-n{background:rgba(17,24,39,.07);color:var(--muted)}
+
+/* hop map */
+.hops{display:flex;align-items:stretch;gap:0}
+.hop{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:14px;padding:14px;background:#fbfcfe;text-align:center;position:relative}
+.hop+.hop{margin-left:24px}
+.hop+.hop::before{content:"→";position:absolute;left:-21px;top:50%;transform:translateY(-50%);color:rgba(17,24,39,.25);font-size:16px}
+.hop .n{font-family:var(--mono);font-size:10px;color:var(--muted)}
+.hop b{display:block;margin:5px 0 8px;font-size:13.5px}
+.hop.fail{background:linear-gradient(135deg,rgba(245,184,0,.16),rgba(245,184,0,.07));border-color:rgba(245,184,0,.55);box-shadow:0 0 0 4px rgba(245,184,0,.12)}
+.hop.fail::after{content:"";position:absolute;inset:-2px;border-radius:14px;border:2px solid rgba(245,184,0,.5);animation:pulseRing 1.8s infinite}
+@keyframes pulseRing{0%{opacity:.8}50%{opacity:.2}100%{opacity:.8}}
+
+/* branches */
+.branch{position:relative;border:1.5px solid var(--line);border-radius:16px;padding:16px;margin-bottom:11px;background:#fbfcfe;transition:.3s}
+.branch.lead{border-color:transparent;background:#fff;box-shadow:0 18px 40px rgba(0,191,99,.16)}
+.branch.lead::before{content:"";position:absolute;inset:0;border-radius:16px;padding:1.5px;
+  background:linear-gradient(135deg,var(--green),#5ee0a0,var(--blue));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.branch.dismissed{opacity:.4;filter:grayscale(.5)}
+.bh{display:flex;align-items:center;gap:10px}
+.bh b{font-size:14.5px}.bh .tag{font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(0,191,99,.16);color:var(--ok)}
+.bh .pct{font-family:var(--head);font-weight:700;font-size:17px;margin-left:auto}
+.branch ul{margin:9px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
+.bacts{margin-top:11px;display:flex;gap:8px}
+.mini{border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;transition:.18s}
+.mini:hover{border-color:var(--blue)} .mini.danger{color:var(--bad)} .mini.danger:hover{border-color:var(--bad);background:rgba(210,59,43,.06)}
+
+/* checks */
+.check{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:14px;padding:13px 15px;margin-bottom:9px;background:#fbfcfe;transition:.2s}
+.check.passed{background:linear-gradient(135deg,rgba(0,191,99,.1),rgba(0,191,99,.04));border-color:rgba(0,191,99,.4)}
+.check.failed{background:linear-gradient(135deg,rgba(210,59,43,.08),rgba(210,59,43,.03));border-color:rgba(210,59,43,.4)}
+.check .cmd{font-family:var(--mono);font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tg{display:flex;gap:6px}.tg button{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer}
+.check.passed .tg .p{background:var(--green);border-color:var(--green);color:#fff}
+.check.failed .tg .f{background:#ef4444;border-color:#ef4444;color:#fff}
+
+.vars{font-family:var(--mono);font-size:12px;background:linear-gradient(135deg,#0c1220,#1a2342);color:#cbd5e1;border-radius:14px;padding:16px;line-height:1.8}
+.vars .k{color:#5ee0a0}
+.tl{display:grid;gap:12px}.tl .ev{display:flex;gap:11px;font-size:13px}.tl .ev .d{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;background:var(--purple);box-shadow:0 0 0 4px rgba(178,165,255,.2)}
+
+/* resolution */
+.resolve{position:relative;overflow:hidden;border-radius:22px;padding:22px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  background:linear-gradient(135deg,#fff,#f3fff8);border:1.5px solid rgba(0,191,99,.25);box-shadow:0 20px 50px rgba(0,191,99,.12)}
+.resolve b{font-size:16px;font-family:var(--head)} .resolve .sp{flex:1}
+.btn-res{background:linear-gradient(135deg,var(--green),#34d97f);color:#fff;border:0;border-radius:13px;padding:12px 22px;font-weight:700;font-size:13.5px;cursor:pointer;box-shadow:0 14px 30px rgba(0,191,99,.4);transition:.2s}
+.btn-res:hover{transform:translateY(-2px)}
+.assets{display:none;width:100%;margin-top:14px;gap:9px;flex-wrap:wrap;align-items:center}
+.assets.show{display:flex;animation:up .5s both}
+.assets .t{font-size:12.5px;color:var(--muted)}
+.asset{border:1.5px solid rgba(124,108,240,.25);background:#f6f4ff;color:#5b4fd6;border-radius:11px;padding:9px 15px;font-size:12.5px;font-weight:700;cursor:pointer;transition:.18s}
+.asset:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(124,108,240,.22)}
+.resolve.done{background:linear-gradient(135deg,#ecfff5,#dcffe9)}
+@media(max-width:720px){.spine-grid{grid-template-columns:1fr}.gauge{justify-self:start}.hop+.hop{margin-left:10px}.hop+.hop::before{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kick reveal d1"><span class="pulse"></span> Doc/ReDefined OS · Live Fix Investigation</div>
+  <div class="note reveal d1"><b>Concept preview.</b> Instead of a long stack of full-color cards, the Fix workspace becomes a guided investigation: a sticky <b>hypothesis → next action</b> spine, an <b>evidence loop</b> that re-ranks branches live, and supporting context that collapses. Color now means <b>state</b> (confidence, severity, pass/fail). Tap a chip, dismiss a branch, fail a check, then mark resolved.</div>
+
+  <div class="wshead reveal d2">
+    <div>
+      <div class="ey">Workspace · Project: My Workspaces</div>
+      <h1>fixv1</h1>
+      <div class="badges"><span class="badge b1">Completed</span><span class="badge b2">Path · Fix</span><span class="badge b3">Saved</span></div>
+    </div>
+  </div>
+  <div class="tabs reveal d2">
+    <button class="tab on">Workspace</button><button class="tab">Result Guide</button>
+    <button class="tab">Prompt Runs <span class="c">1</span></button><button class="tab">Artifacts</button>
+    <button class="tab">Audio Guides</button><button class="tab">Timeline <span class="c">4</span></button>
+  </div>
+
+  <!-- SPINE -->
+  <div class="spine reveal d3">
+    <div class="spine-grid">
+      <div>
+        <div class="lbl">Leading hypothesis</div>
+        <h2>Private endpoint DNS resolution failure</h2>
+        <div class="nxt"><span class="arr">→</span><div><span>Next best action ·</span> <b id="nextAct">Validate that the storage FQDN resolves to the private IP from the affected client.</b></div></div>
+        <div class="acts">
+          <button class="cta cta-go" onclick="document.getElementById('ev').scrollIntoView()">Run / paste evidence</button>
+          <button class="cta cta-ghost">View hop map</button>
+        </div>
+      </div>
+      <div class="gauge">
+        <svg width="124" height="124"><circle cx="62" cy="62" r="54" stroke="rgba(255,255,255,.12)" stroke-width="11" fill="none"/>
+          <circle id="ring" cx="62" cy="62" r="54" stroke="url(#g)" stroke-width="11" fill="none" stroke-linecap="round" stroke-dasharray="339" stroke-dashoffset="75"/>
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00bf63"/><stop offset="1" stop-color="#5ee0a0"/></linearGradient></defs></svg>
+        <div class="num"><b id="confNum">78</b><small id="confLbl">High conf.</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVIDENCE LOOP -->
+  <div class="loop reveal d4" id="ev">
+    <div class="loop-head"><span class="ic">⚡</span><h3>Evidence loop</h3></div>
+    <p class="sub">Paste CLI / log output, or tap a signal — branches re-rank and the next action updates instantly.</p>
+    <textarea placeholder="$ nslookup mystorage.privatelink.blob.core.windows.net&#10;Address: 20.150.x.x  (public)"></textarea>
+    <div class="chips" id="chips">
+      <button class="chip" data-sig="dns-public" data-branch="dns">DNS resolves to public IP<span class="dot"></span></button>
+      <button class="chip bad" data-sig="rbac" data-branch="net">RBAC denied<span class="dot"></span></button>
+      <button class="chip" data-sig="no-pe" data-branch="dns">No private endpoint IP<span class="dot"></span></button>
+      <button class="chip bad" data-sig="nsg" data-branch="net">NSG blocking<span class="dot"></span></button>
+      <button class="chip" data-sig="resolved" data-branch="">Issue resolved<span class="dot"></span></button>
+    </div>
+    <div class="sigRead" id="sigRead">No evidence yet — leading hypothesis is inferred from the prompt.</div>
+  </div>
+
+  <!-- CONTEXT -->
+  <div class="ctx reveal d5">
+    <details class="acc" open>
+      <summary>Infrastructure hop map <span class="stat s-fail">DNS hop flagged</span><span class="car">›</span></summary>
+      <div class="body"><div class="hops">
+        <div class="hop"><span class="n">01</span><b>Client</b><span class="stat s-n">ok</span></div>
+        <div class="hop fail"><span class="n">02</span><b>DNS Resolution</b><span class="stat">suspect</span></div>
+        <div class="hop"><span class="n">03</span><b>Private Endpoint</b><span class="stat s-n">unknown</span></div>
+        <div class="hop"><span class="n">04</span><b>Storage Account</b><span class="stat s-n">unknown</span></div>
+      </div></div>
+    </details>
+
+    <details class="acc" open>
+      <summary>Failure branches <span class="stat s-n" id="branchCount">2 active</span><span class="car">›</span></summary>
+      <div class="body" id="branches">
+        <div class="branch lead" data-branch="dns">
+          <div class="bh"><b>DNS configuration issue</b><span class="tag">Leading</span><span class="pct" data-base="62">62%</span></div>
+          <ul><li>DNS resolves to public IP</li><li>No private endpoint IP in DNS results</li></ul>
+          <div class="bacts"><button class="mini">Verify in workspace</button><button class="mini danger" onclick="dismiss(this)">Dismiss</button></div>
+        </div>
+        <div class="branch" data-branch="net">
+          <div class="bh"><b>Network access issue</b><span class="pct" data-base="38">38%</span></div>
+          <ul><li>Client cannot ping private endpoint</li><li>NSG / VNet peering rules blocking</li></ul>
+          <div class="bacts"><button class="mini">Verify in workspace</button><button class="mini danger" onclick="dismiss(this)">Dismiss</button></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary>Diagnostic runbook <span class="stat s-n" id="checkCount">0 / 3 run</span><span class="car">›</span></summary>
+      <div class="body" id="checks">
+        <div class="check"><span class="cmd">nslookup &lt;account&gt;.privatelink.blob.core.windows.net</span><span class="tg"><button class="p" onclick="mark(this,'passed')">Pass</button><button class="f" onclick="mark(this,'failed')">Fail</button></span></div>
+        <div class="check"><span class="cmd">Test-NetConnection &lt;private-ip&gt; -Port 443</span><span class="tg"><button class="p" onclick="mark(this,'passed')">Pass</button><button class="f" onclick="mark(this,'failed')">Fail</button></span></div>
+        <div class="check"><span class="cmd">az network private-endpoint show ...</span><span class="tg"><button class="p" onclick="mark(this,'passed')">Pass</button><button class="f" onclick="mark(this,'failed')">Fail</button></span></div>
+      </div>
+    </details>
+
+    <details class="acc">
+      <summary>Discovered variables<span class="car" style="margin-left:auto">›</span></summary>
+      <div class="body"><div class="vars"><span class="k">target_service</span> = Storage private endpoint<br><span class="k">resolver_path</span> = public &nbsp;(expected: private)<br><span class="k">dns_zone_link</span> = not detected</div></div>
+    </details>
+
+    <details class="acc">
+      <summary>Timeline<span class="car" style="margin-left:auto">›</span></summary>
+      <div class="body"><div class="tl">
+        <div class="ev"><span class="d"></span><div><b>Initial diagnosis generated</b><br><span style="color:var(--muted);font-size:12.5px">Structured Fix workspace created from the prompt.</span></div></div>
+        <div class="ev"><span class="d" style="background:var(--blue)"></span><div><b>Evidence loop ready</b><br><span style="color:var(--muted);font-size:12.5px">Awaiting first signal.</span></div></div>
+      </div></div>
+    </details>
+  </div>
+
+  <!-- RESOLUTION -->
+  <div class="resolve reveal d5" id="resolve">
+    <b id="resolveMsg">Confirmed the cause?</b><span class="sp"></span>
+    <button class="btn-res" onclick="resolve()">Mark resolved</button>
+    <div class="assets" id="assets"><span class="t">Turn this investigation into a reusable asset →</span>
+      <button class="asset">Generate runbook</button><button class="asset">Incident brief</button><button class="asset">Ticket update</button></div>
+  </div>
+</div>
+
+<script>
+const ring=document.getElementById('ring'),confNum=document.getElementById('confNum'),confLbl=document.getElementById('confLbl'),
+      nextAct=document.getElementById('nextAct'),sigRead=document.getElementById('sigRead');
+const C=339; const detected=new Set();
+const A={'dns-public':'Check the private DNS zone is linked to the VNet and the A-record points to the private IP.',
+'no-pe':'Confirm the private endpoint is approved and its NIC has a private IP in the target subnet.',
+'rbac':'Switch branch — verify the caller has Storage Blob Data role at the correct scope.',
+'nsg':'Switch branch — inspect NSG rules and VNet peering between client and endpoint.',
+'resolved':'Resolved. Generate a runbook so the team fixes this in minutes next time.'};
+function recompute(){
+  let c=0.55; if(detected.has('dns-public'))c+=0.16; if(detected.has('no-pe'))c+=0.14;
+  if(detected.has('rbac')||detected.has('nsg'))c-=0.18; if(detected.has('resolved'))c=0.97;
+  c=Math.max(0.2,Math.min(0.98,c)); const pct=Math.round(c*100);
+  ring.style.transition='stroke-dashoffset .7s cubic-bezier(.16,1,.3,1),stroke .4s';
+  ring.style.strokeDashoffset=C-(C*pct/100);
+  const col=c>=0.7?['#00bf63','#5ee0a0']:c>=0.45?['#f5b800','#fbbf24']:['#9ca3af','#d1d5db'];
+  ring.setAttribute('stroke','url(#g)');document.querySelector('#g stop:first-child').setAttribute('stop-color',col[0]);document.querySelector('#g stop:last-child').setAttribute('stop-color',col[1]);
+  confNum.textContent=pct; confLbl.textContent=(c>=0.7?'High':c>=0.45?'Medium':'Low')+' conf.';
+  const last=[...detected].pop(); if(last&&A[last])nextAct.textContent=A[last];
+  let dns=62+(detected.has('dns-public')?22:0)+(detected.has('no-pe')?16:0);
+  let net=38+(detected.has('rbac')?22:0)+(detected.has('nsg')?20:0);
+  setB('dns',dns);setB('net',net); const lead=dns>=net?'dns':'net';
+  document.querySelectorAll('.branch').forEach(b=>{const isLead=b.dataset.branch===lead&&!b.classList.contains('dismissed');
+    b.classList.toggle('lead',isLead); let t=b.querySelector('.tag'); if(isLead&&!t){t=document.createElement('span');t.className='tag';t.textContent='Leading';b.querySelector('.bh').insertBefore(t,b.querySelector('.pct'));} else if(!isLead&&t){t.remove();}});
+  sigRead.textContent=detected.size?('Detected · '+[...detected].join(', ')+' — re-ranked '+detected.size+' signal(s).'):'No evidence yet — leading hypothesis is inferred from the prompt.';
+}
+function setB(id,s){const el=document.querySelector('.branch[data-branch="'+id+'"]');if(!el||el.classList.contains('dismissed'))return;el.querySelector('.pct').textContent=Math.min(96,Math.round(s))+'%';}
+document.querySelectorAll('#chips .chip').forEach(ch=>ch.addEventListener('click',()=>{const s=ch.dataset.sig;ch.classList.toggle('on');
+  ch.classList.contains('on')?detected.add(s):detected.delete(s);
+  const b=ch.dataset.branch&&document.querySelector('.branch[data-branch="'+ch.dataset.branch+'"]');if(b){b.style.transform='scale(1.015)';setTimeout(()=>b.style.transform='',240);}recompute();}));
+function dismiss(btn){btn.closest('.branch').classList.toggle('dismissed');document.getElementById('branchCount').textContent=document.querySelectorAll('.branch:not(.dismissed)').length+' active';recompute();}
+function mark(btn,st){const c=btn.closest('.check');c.classList.remove('passed','failed');c.classList.add(st);
+  document.getElementById('checkCount').textContent=document.querySelectorAll('.check.passed,.check.failed').length+' / 3 run';
+  if(st==='failed'){detected.add('dns-public');recompute();}}
+function resolve(){detected.add('resolved');recompute();document.getElementById('resolveMsg').textContent='Resolved ✓ — private DNS zone link was missing.';
+  document.getElementById('resolve').classList.add('done');document.getElementById('assets').classList.add('show');}
+recompute();
+</script>
+</body>
+</html>

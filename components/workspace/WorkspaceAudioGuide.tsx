@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { promptUpgrade } from "@/components/billing/UpgradeModal";
+import { canCreateAudioGuide, getAccount, incrementUsage } from "@/lib/account-store";
 import type { RedefinedResult } from "@/lib/redefined";
 import type { WorkspaceMeta, WorkspaceNarration } from "@/lib/workspace-types";
 
@@ -10,6 +12,8 @@ type WorkspaceAudioGuideProps = {
   originalPrompt: string;
   initialNarration?: WorkspaceNarration;
   onNarrationGenerated?: (narration: WorkspaceNarration) => void;
+  variant?: "full" | "compact";
+  compactIdleLabel?: string;
 };
 
 type NarrationResponse = {
@@ -26,7 +30,9 @@ export function WorkspaceAudioGuide({
   workspaceMeta,
   originalPrompt,
   initialNarration,
-  onNarrationGenerated
+  onNarrationGenerated,
+  variant = "full",
+  compactIdleLabel
 }: WorkspaceAudioGuideProps) {
   const [narration, setNarration] = useState<WorkspaceNarration | null>(initialNarration ?? null);
   const [sourceKeyAtGeneration, setSourceKeyAtGeneration] = useState<string | null>(
@@ -46,8 +52,22 @@ export function WorkspaceAudioGuide({
   );
   const resultChanged = Boolean(narration && sourceKeyAtGeneration && sourceKeyAtGeneration !== sourceKey);
   const hasAudio = Boolean(narration?.audioUrl || narration?.audioBase64);
+  const statusChip = getAudioGuideStatusChip({
+    narration,
+    guideState,
+    hasAudio,
+    resultChanged,
+    warning
+  });
 
   async function requestNarration() {
+    const account = getAccount();
+    const gate = canCreateAudioGuide(account);
+    if (!gate.allowed) {
+      promptUpgrade("Audio guide limit reached", gate, account.currentPlanId);
+      return;
+    }
+
     setGuideState("generating");
     audioRef.current?.pause();
     setError(null);
@@ -76,6 +96,7 @@ export function WorkspaceAudioGuide({
       setWarning(payload.warning ?? null);
       setShowTranscript(false);
       setGuideState("ready");
+      incrementUsage("audioGuidesThisMonth");
       onNarrationGenerated?.(payload.narration);
     } catch (requestError) {
       console.error("Workspace audio guide request failed:", requestError);
@@ -133,8 +154,8 @@ export function WorkspaceAudioGuide({
         ? "Pause"
         : "Play audio"
       : narration
-        ? "Regenerate audio"
-        : "Audio guide";
+        ? "Regenerate guide"
+        : "Generate audio guide";
   const statusText = getAudioGuideStatus({
     narration,
     guideState,
@@ -143,68 +164,102 @@ export function WorkspaceAudioGuide({
     warning
   });
 
+  if (variant === "compact") {
+    return (
+      <section className="diagnosis-audio-pill" aria-label="Audio guide">
+        <span>Audio guide</span>
+        <button
+          type="button"
+          disabled={guideState === "generating"}
+          onClick={hasAudio && narration && !resultChanged ? togglePlayback : requestNarration}
+        >
+          {compactIdleLabel && !narration && guideState === "idle" ? compactIdleLabel : primaryLabel}
+        </button>
+        {audioSource ? (
+          <audio
+            ref={audioRef}
+            src={audioSource}
+            onEnded={() => setGuideState("ready")}
+            onPause={() => {
+              if (guideState === "playing") setGuideState("paused");
+            }}
+            onPlay={() => setGuideState("playing")}
+          />
+        ) : null}
+        {error ? <small>{error}</small> : null}
+        {warning === "audio_generation_failed" && narration ? (
+          <small>Transcript ready. Audio failed.</small>
+        ) : null}
+      </section>
+    );
+  }
+
   return (
     <section className="workspace-audio-guide" aria-label="Audio guide">
-      <div className="workspace-audio-guide-main">
-        <div>
-          <p className="workspace-audio-eyebrow">Audio guide</p>
-          <p className="workspace-audio-status">{statusText}</p>
+      <div className="workspace-audio-guide-head">
+        <div className="workspace-audio-guide-copy">
+          <p className="workspace-audio-eyebrow">AUDIO GUIDE</p>
+          <h3>Listen to this workspace</h3>
+          <p className="workspace-audio-description">
+            Turn this workspace into a narrated walkthrough you can play anytime.
+          </p>
         </div>
+        <span className={`workspace-audio-status-chip state-${guideState}`}>
+          {statusChip}
+        </span>
+      </div>
 
-        <div className="workspace-audio-actions">
+      <p className="workspace-audio-status">{statusText}</p>
+
+      <div className="workspace-audio-actions">
+        <button
+          type="button"
+          className="workspace-audio-primary"
+          disabled={guideState === "generating"}
+          onClick={hasAudio && narration && !resultChanged ? togglePlayback : requestNarration}
+        >
+          {primaryLabel}
+        </button>
+        {hasAudio && !resultChanged ? (
+          <button type="button" className="workspace-audio-secondary" onClick={restartPlayback}>
+            Restart
+          </button>
+        ) : null}
+        {narration && hasAudio && !resultChanged ? (
           <button
             type="button"
-            className="workspace-audio-primary"
-            disabled={guideState === "generating"}
-            onClick={hasAudio && narration && !resultChanged ? togglePlayback : requestNarration}
+            className="workspace-audio-secondary"
+            onClick={handleDownloadAudio}
+            disabled={downloadState === "downloading"}
           >
-            {primaryLabel}
+            {downloadState === "downloading"
+              ? "Downloading..."
+              : downloadState === "downloaded"
+                ? "Downloaded"
+                : downloadState === "error"
+                  ? "Download failed"
+                  : "Download"}
           </button>
-          {hasAudio && !resultChanged ? (
-            <button
-              type="button"
-              className="workspace-audio-secondary"
-              onClick={restartPlayback}
-            >
-              Restart
-            </button>
-          ) : null}
-          {narration && hasAudio && !resultChanged ? (
-            <button
-              type="button"
-              className="workspace-audio-secondary"
-              onClick={handleDownloadAudio}
-              disabled={downloadState === "downloading"}
-            >
-              {downloadState === "downloading"
-                ? "Downloading..."
-                : downloadState === "downloaded"
-                  ? "Downloaded"
-                  : downloadState === "error"
-                    ? "Download failed"
-                    : "Download audio"}
-            </button>
-          ) : null}
-          {narration && !resultChanged ? (
-            <button
-              type="button"
-              className="workspace-audio-secondary"
-              onClick={() => setShowTranscript((current) => !current)}
-            >
-              {showTranscript ? "Hide transcript" : "View transcript"}
-            </button>
-          ) : null}
-          {narration && !resultChanged && hasAudio ? (
-            <button
-              type="button"
-              className="workspace-audio-secondary"
-              onClick={requestNarration}
-              disabled={guideState === "generating"}
-            >
-              Regenerate guide
-            </button>
-          ) : null}
-        </div>
+        ) : null}
+        {narration && !resultChanged ? (
+          <button
+            type="button"
+            className="workspace-audio-secondary"
+            onClick={() => setShowTranscript((current) => !current)}
+          >
+            {showTranscript ? "Hide transcript" : "Transcript"}
+          </button>
+        ) : null}
+        {narration && !resultChanged && hasAudio ? (
+          <button
+            type="button"
+            className="workspace-audio-secondary"
+            onClick={requestNarration}
+            disabled={guideState === "generating"}
+          >
+            Regenerate
+          </button>
+        ) : null}
       </div>
 
       {audioSource ? (
@@ -333,6 +388,27 @@ function getAudioGuideStatus(args: {
   if (args.guideState === "playing") return `${minutes} min guided explanation playing.`;
   if (args.guideState === "paused") return `${minutes} min guided explanation paused.`;
   return `${minutes} min guided explanation.`;
+}
+
+function getAudioGuideStatusChip(args: {
+  narration: WorkspaceNarration | null;
+  guideState: AudioGuideState;
+  hasAudio: boolean;
+  resultChanged: boolean;
+  warning: "audio_generation_failed" | null;
+}): string {
+  if (args.guideState === "generating") return "Generating";
+  if (args.resultChanged) return "Out of date";
+  if (!args.narration) return "Not generated";
+  if (args.warning === "audio_generation_failed" || !args.hasAudio) return "Transcript only";
+
+  const minutes = args.narration.durationEstimateSeconds
+    ? Math.max(1, Math.ceil(args.narration.durationEstimateSeconds / 60))
+    : 2;
+
+  return args.guideState === "playing" || args.guideState === "paused"
+    ? `Ready · ${minutes} min`
+    : `Ready · ${minutes} min`;
 }
 
 function buildClientNarrationSourceKey(

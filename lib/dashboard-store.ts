@@ -1,11 +1,16 @@
 import {
+  getPendingWorkspaces,
   getProfileJourneyRecords,
   getTemporaryJourneyRecords,
   type ProfileJourneyRecord,
   type TemporaryJourneyRecord
 } from "@/lib/journey-store";
 import type { RedefinedMode } from "@/lib/redefined";
-import type { JourneyEvent, WorkspaceProject } from "@/lib/workspace-types";
+import type {
+  JourneyEvent,
+  PendingWorkspaceShell,
+  WorkspaceProject
+} from "@/lib/workspace-types";
 
 const STARRED_KEY = "docredefined.starredWorkspaces";
 
@@ -20,9 +25,11 @@ export type DashboardRecord = {
   audioCount: number;
   audioReady: boolean;
   artifactCount: number;
+  promptRunCount: number;
   branchCount: number;
   projectId?: string;
   persistence: "temporary" | "local_profile";
+  pending?: boolean;
   href: string;
 };
 
@@ -62,7 +69,8 @@ function toDashboardRecord(
     createdAt: record.createdAt,
     audioCount: audioGuides.length,
     audioReady: audioGuides.some((guide) => guide.audioBase64 || guide.audioUrl),
-    artifactCount: (record.artifacts ?? record.result.workspaceArtifacts ?? []).length,
+    artifactCount: (record.result.workspaceArtifacts ?? record.artifacts ?? []).length,
+    promptRunCount: (record.result.workspacePromptRuns ?? []).length,
     branchCount: (record.branches ?? record.result.workspaceBranches ?? []).length,
     projectId: meta?.projectId,
     persistence,
@@ -70,12 +78,41 @@ function toDashboardRecord(
   };
 }
 
+function pendingToDashboardRecord(shell: PendingWorkspaceShell): DashboardRecord {
+  const mode: RedefinedMode = shell.preferredMode === "auto" ? "understand" : shell.preferredMode;
+  return {
+    recordId: shell.workspaceId,
+    workspaceId: shell.workspaceId,
+    name: shell.workspaceName,
+    subtitle: "Empty workspace · awaiting first prompt",
+    mode,
+    updatedAt: shell.createdAt,
+    createdAt: shell.createdAt,
+    audioCount: 0,
+    audioReady: false,
+    artifactCount: 0,
+    promptRunCount: 0,
+    branchCount: 0,
+    projectId: shell.projectId,
+    persistence: shell.persistence,
+    pending: true,
+    href: `/workspaces/${encodeURIComponent(shell.workspaceId)}`
+  };
+}
+
 export function getDashboardRecords(profileId?: string): DashboardRecord[] {
-  const records = profileId
+  const saved = profileId
     ? getProfileJourneyRecords(profileId).map((record) => toDashboardRecord(record, "local_profile"))
     : getTemporaryJourneyRecords().map((record) => toDashboardRecord(record, "temporary"));
 
-  return records.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  // Empty workspaces live in the pending-shell store until their first prompt runs.
+  // Surface them on the dashboard too, deduped against any saved record.
+  const savedIds = new Set(saved.map((record) => record.workspaceId));
+  const pending = getPendingWorkspaces(profileId)
+    .filter((shell) => !savedIds.has(shell.workspaceId))
+    .map(pendingToDashboardRecord);
+
+  return [...saved, ...pending].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 
 export type DashboardActivityItem = {
@@ -225,6 +262,46 @@ export function pinnedProjects(projects: WorkspaceProject[]): WorkspaceProject[]
   );
 }
 
+import type { WorkspacePreferredMode, WorkspaceSectionType } from "@/lib/workspace-types";
+
+export type SectionTemplate = { title: string; type: WorkspaceSectionType };
+
+export const SECTION_DEFAULTS: Record<WorkspacePreferredMode, SectionTemplate[]> = {
+  auto: [
+    { title: "Overview", type: "overview" },
+    { title: "Prompt Runs", type: "prompt_runs" },
+    { title: "Notes", type: "notes" },
+    { title: "Artifacts", type: "artifact" }
+  ],
+  understand: [
+    { title: "Overview", type: "overview" },
+    { title: "Mental Model", type: "mental_model" },
+    { title: "Examples", type: "examples" },
+    { title: "Notes", type: "notes" },
+    { title: "Artifacts", type: "artifact" }
+  ],
+  build: [
+    { title: "Overview", type: "overview" },
+    { title: "Plan", type: "plan" },
+    { title: "Decisions", type: "decisions" },
+    { title: "Outputs", type: "outputs" },
+    { title: "Artifacts", type: "artifact" }
+  ],
+  fix: [
+    { title: "Overview", type: "overview" },
+    { title: "Evidence", type: "evidence" },
+    { title: "Checks", type: "checks" },
+    { title: "Commands", type: "commands" },
+    { title: "Runbook", type: "runbook" }
+  ],
+  artifact: [
+    { title: "Overview", type: "overview" },
+    { title: "Drafts", type: "drafts" },
+    { title: "Exports", type: "exports" },
+    { title: "Notes", type: "notes" }
+  ]
+};
+
 export const LEARNING_FOLDER = {
   id: "doc-redefined-learning",
   name: "Doc/ReDefined Learning",
@@ -246,6 +323,25 @@ export function orderProjects(projects: WorkspaceProject[]): WorkspaceProject[] 
 export function projectWorkspaceCount(project: WorkspaceProject, records: DashboardRecord[]): number {
   const byMeta = records.filter((record) => record.projectId === project.id).length;
   return Math.max(byMeta, project.workspaceIds.length);
+}
+
+/** Per-mode workspace counts for a project, ordered Understand/Build/Fix/Artifact. */
+export function projectModeBreakdown(
+  project: WorkspaceProject,
+  records: DashboardRecord[]
+): Array<{ mode: RedefinedMode; count: number }> {
+  const counts = new Map<RedefinedMode, number>();
+  records
+    .filter(
+      (record) =>
+        record.projectId === project.id || project.workspaceIds.includes(record.workspaceId)
+    )
+    .forEach((record) => counts.set(record.mode, (counts.get(record.mode) ?? 0) + 1));
+
+  const order: RedefinedMode[] = ["understand", "build", "fix", "artifact"];
+  return order
+    .filter((mode) => (counts.get(mode) ?? 0) > 0)
+    .map((mode) => ({ mode, count: counts.get(mode) ?? 0 }));
 }
 
 export function projectModeMix(project: WorkspaceProject, records: DashboardRecord[]): RedefinedMode[] {

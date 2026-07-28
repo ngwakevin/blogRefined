@@ -2,7 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, type FormEvent, type ReactNode } from "react";
+import { DASHBOARD_CHANGED_EVENT } from "@/components/dashboard/DashboardModals";
+import { useProfile } from "@/components/profile/useProfile";
 import { useVoiceRecorder } from "@/components/voice/useVoiceRecorder";
+import { SECTION_DEFAULTS } from "@/lib/dashboard-store";
+import { createWorkspaceShell, ensureDefaultProjects } from "@/lib/journey-store";
+import { generateWorkspaceNameFromPrompt } from "@/lib/workspace";
 
 const SUGGESTED_PROMPTS: Array<{ text: string; color: string; icon: ReactNode }> = [
   {
@@ -37,6 +42,7 @@ const SUGGESTED_PROMPTS: Array<{ text: string; color: string; icon: ReactNode }>
 
 export function DashboardPrompt() {
   const router = useRouter();
+  const { profile } = useProfile();
   const [promptValue, setPromptValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -59,7 +65,22 @@ export function DashboardPrompt() {
       inputRef.current?.focus();
       return;
     }
-    router.push(`/new?prompt=${encodeURIComponent(clean)}`);
+
+    const profileId = profile?.id;
+    const defaultProject = profileId ? ensureDefaultProjects(profileId).myWorkspaces : null;
+    const shell = createWorkspaceShell({
+      workspaceName: generateWorkspaceNameFromPrompt(clean, "auto"),
+      preferredMode: "auto",
+      projectId: defaultProject?.id,
+      createdFrom: "dashboard_quick_prompt",
+      sections: SECTION_DEFAULTS.auto,
+      terminalPrefill: clean,
+      autoRunFirstPrompt: true,
+      profileId
+    });
+    window.dispatchEvent(new CustomEvent(DASHBOARD_CHANGED_EVENT));
+    setPromptValue("");
+    router.push(`/workspaces/${encodeURIComponent(shell.workspaceId)}`);
   };
 
   const fillPrompt = (prompt: string) => {

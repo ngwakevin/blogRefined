@@ -3,8 +3,11 @@ import type {
   JourneyEvent,
   WorkspaceArtifact,
   WorkspaceBranch,
+  WorkspaceItem,
   WorkspaceMeta,
-  WorkspaceNarration
+  WorkspaceNarration,
+  WorkspacePromptRun,
+  WorkspaceSection
 } from "@/lib/workspace-types";
 
 export type RedefinedMode = (typeof MODES)[number]["id"];
@@ -429,6 +432,7 @@ export type ArtifactExportAction = {
 
 export type RedefinedResult = {
   id: string;
+  promptRunId?: string;
   mode: RedefinedMode;
   title: string;
   summary: string;
@@ -519,6 +523,23 @@ export type RedefinedResult = {
   workspaceJourney?: JourneyEvent[];
   workspaceArtifacts?: WorkspaceArtifact[];
   workspaceAudioGuides?: WorkspaceNarration[];
+  workspaceSections?: WorkspaceSection[];
+  workspaceItems?: WorkspaceItem[];
+  workspacePromptRuns?: WorkspacePromptRun[];
+  workspaceFollowUpResults?: WorkspaceFollowUpResult[];
+};
+
+/** Output produced by a follow-up prompt run inside an existing workspace. */
+export type WorkspaceFollowUpResult = {
+  id: string;
+  workspaceId: string;
+  promptRunId: string;
+  mode: RedefinedMode;
+  title: string;
+  summary: string;
+  content: RedefinedResult;
+  sectionId?: string;
+  createdAt: string;
 };
 
 function wait(ms: number) {

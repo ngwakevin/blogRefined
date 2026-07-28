@@ -1,22 +1,40 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
+import { openCreateWorkspace } from "@/components/dashboard/DashboardModals";
 import { useProfile } from "@/components/profile/useProfile";
+import { WorkspaceTabNav, type WorkspaceTabAction, type WorkspaceTabId } from "@/components/workspace/WorkspaceTabNav";
 import { type RedefinedResult } from "@/lib/redefined";
 import { getProjects, renameWorkspaceRecord } from "@/lib/journey-store";
-import type {
-  JourneyEvent,
-  WorkspaceMeta
-} from "@/lib/workspace-types";
+import type { JourneyEvent } from "@/lib/workspace-types";
 
 type WorkspaceHeaderProps = {
   result: RedefinedResult;
   recordId?: string;
+  activeTab: WorkspaceTabId;
+  onTabChange: (tab: WorkspaceTabId) => void;
+  onExportWorkspace?: () => void;
   onResultChange?: (result: RedefinedResult) => void;
 };
 
-export function WorkspaceHeader({ result, recordId, onResultChange }: WorkspaceHeaderProps) {
+type DisplayStatus = "empty" | "running" | "completed" | "error";
+
+const DISPLAY_STATUS: Record<string, DisplayStatus> = {
+  empty: "empty",
+  awaiting_first_prompt: "empty",
+  running: "running",
+  completed: "completed",
+  error: "error"
+};
+
+export function WorkspaceHeader({
+  result,
+  recordId,
+  activeTab,
+  onTabChange,
+  onExportWorkspace,
+  onResultChange
+}: WorkspaceHeaderProps) {
   const { profile } = useProfile();
   const meta = result.workspaceMeta;
   const journey = useMemo<JourneyEvent[]>(() => result.workspaceJourney ?? [], [result]);
@@ -70,95 +88,100 @@ export function WorkspaceHeader({ result, recordId, onResultChange }: WorkspaceH
 
   if (!meta) return null;
 
-  const relatedParams = new URLSearchParams();
-  relatedParams.set("fromWorkspaceId", meta.workspaceId);
-  relatedParams.set("fromWorkspaceName", workspaceName);
-  if (meta.projectId) relatedParams.set("projectId", meta.projectId);
-  const relatedWorkspaceHref = `/new?${relatedParams.toString()}`;
+  const status = DISPLAY_STATUS[meta.status ?? "completed"] ?? "completed";
+  const mode = meta.mode;
+  const isSaved = meta.persistence === "local_profile" || meta.persistence === "cloud_profile";
+
+  const tabActions: WorkspaceTabAction[] = [
+    {
+      key: "rename",
+      label: "Rename",
+      icon: (
+        <svg viewBox="0 0 20 20"><path d="M4 13.5 12.5 5l2.5 2.5L6.5 16H4z" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
+      ),
+      onClick: () => {
+        setDraftName(workspaceName);
+        setIsRenaming(true);
+      }
+    },
+    {
+      key: "new-workspace",
+      label: "New workspace",
+      icon: (
+        <svg viewBox="0 0 20 20"><path d="M10 4v12M4 10h12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+      ),
+      onClick: () => openCreateWorkspace()
+    },
+    {
+      key: "create-related",
+      label: "Create related workspace",
+      icon: (
+        <svg viewBox="0 0 20 20"><circle cx="5" cy="5" r="2" fill="none" stroke="currentColor" strokeWidth="1.6" /><circle cx="5" cy="15" r="2" fill="none" stroke="currentColor" strokeWidth="1.6" /><circle cx="15" cy="9" r="2" fill="none" stroke="currentColor" strokeWidth="1.6" /><path d="M5 7v6M5 11c0-3 5-1 8-3" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+      ),
+      onClick: () => openCreateWorkspace({ destinationId: meta.projectId })
+    },
+    {
+      key: "export",
+      label: "Export workspace",
+      icon: (
+        <svg viewBox="0 0 20 20"><path d="M10 3v9m0 0 3-3m-3 3-3-3M4 16h12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      ),
+      onClick: () => onExportWorkspace?.()
+    },
+    ...(meta.mode === "artifact"
+      ? [{ key: "print", label: "Print / Export PDF", onClick: () => window.print() }]
+      : []),
+    ...(!isSaved ? [{ key: "save-profile", label: "Save to profile", href: "/signup?next=save" }] : [])
+  ];
 
   return (
-    <section className="workspace-header workspace-header-minimal" aria-label="Workspace">
-      <div className="workspace-header-main">
-        <div>
-          <p className="workspace-header-label workspace-eyebrow">Workspace</p>
-          {project ? <p className="workspace-project-context">Project: {project.name}</p> : null}
-          {meta.createdFromWorkspaceId ? (
-            <p className="workspace-project-context workspace-created-from">
-              Created from another workspace
-            </p>
-          ) : null}
-          {isRenaming ? (
-            <input
-              className="workspace-rename-input"
-              value={draftName}
-              autoFocus
-              onChange={(event) => setDraftName(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") saveRename();
-                if (event.key === "Escape") {
-                  setDraftName(workspaceName);
-                  setIsRenaming(false);
-                }
-              }}
-            />
-          ) : (
-            <h2 className="workspace-title">{workspaceName}</h2>
-          )}
-          <p className="workspace-subtitle">{meta.workspaceSubtitle}</p>
-          {meta.persistence === "unsaved" ? (
-            <p className="workspace-save-state">Unsaved workspace</p>
-          ) : meta.persistence === "local_profile" || meta.persistence === "cloud_profile" ? (
-            <p className="workspace-save-state">Saved</p>
-          ) : null}
+    <header className={`workspace-header mode-${mode}`}>
+      <div className="workspace-header-top">
+        <div className="workspace-meta-block">
+          <p className="workspace-eyebrow">Workspace</p>
+          <div className="workspace-meta-row">
+            <span>Project: {project?.name ?? "Unassigned"}</span>
+          </div>
         </div>
 
-        {isRenaming ? (
-          <div className="workspace-rename-actions">
-            <button type="button" onClick={saveRename}>
-              Save
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setDraftName(workspaceName);
-                setIsRenaming(false);
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            className="workspace-rename-button"
-            onClick={() => {
-              setDraftName(workspaceName);
-              setIsRenaming(true);
-            }}
-          >
-            Rename
-          </button>
-        )}
+        <div className="workspace-header-tabs">
+          <WorkspaceTabNav
+            result={result}
+            activeTab={activeTab}
+            onChange={onTabChange}
+            actions={tabActions}
+          />
+        </div>
       </div>
 
-      <div className="workspace-header-actions">
-        <Link className="workspace-action-new" href="/">
-          New workspace
-        </Link>
-        <Link className="workspace-action-secondary" href={relatedWorkspaceHref}>
-          Create related workspace
-        </Link>
-        {meta.mode === "artifact" ? (
-          <button className="workspace-action-secondary" type="button" onClick={() => window.print()}>
-            Export
-          </button>
-        ) : null}
-        {meta.persistence === "temporary" || meta.persistence === "unsaved" ? (
-          <a className="workspace-action-secondary" href="/signup?next=save">
-            Save to profile
-          </a>
-        ) : null}
+      <div className="workspace-title-block">
+        {isRenaming ? (
+          <input
+            className="workspace-rename-input-inline"
+            value={draftName}
+            autoFocus
+            onChange={(event) => setDraftName(event.target.value)}
+            onBlur={saveRename}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") saveRename();
+              if (event.key === "Escape") {
+                setDraftName(workspaceName);
+                setIsRenaming(false);
+              }
+            }}
+          />
+        ) : (
+          <h1>{workspaceName}</h1>
+        )}
+
+        {meta.workspaceSubtitle ? <p>{meta.workspaceSubtitle}</p> : null}
+
+        <div className="workspace-badges">
+          <span className={`status-badge status-${status}`}>{status.toUpperCase()}</span>
+          <span className={`path-badge path-${mode}`}>PATH: {mode.toUpperCase()}</span>
+          {isSaved ? <span className="saved-badge">SAVED</span> : null}
+        </div>
       </div>
-    </section>
+    </header>
   );
 }

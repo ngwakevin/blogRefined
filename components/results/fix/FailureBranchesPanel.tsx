@@ -72,17 +72,20 @@ export function FailureBranchesPanel({
       </div>
 
       <div className="failure-branches-grid">
-        {branches.map((branch) => {
+        {branches.map((branch, index) => {
           const matches = evidenceSignals.filter((signal) => signalMatchesBranch(signal, branch));
           const matchedSignal = strongestSignal(matches);
 
           return (
             <article
-              className={`failure-branch-card branch-${getBranchTone(branch)} priority-${branch.priority} ${matchedSignal ? "has-evidence" : ""}`}
+              className={`failure-branch-card branch-${getBranchTone(branch)} priority-${branch.priority} branch-slot-${index + 1} ${matchedSignal ? "has-evidence" : ""}`}
               key={branch.id}
             >
               <div className="failure-branch-meta">
-                <h4>{branch.title}</h4>
+                <div>
+                  <span className="branch-card-kicker">Branch</span>
+                  <h4>{branch.title}</h4>
+                </div>
                 <span className="priority-pill">{branch.priority}</span>
               </div>
               {matchedSignal ? (
@@ -96,7 +99,7 @@ export function FailureBranchesPanel({
             <p>{branch.summary}</p>
 
             <div className="failure-branch-columns">
-              <div>
+              <div className="failure-branch-column">
                 <strong>Signals</strong>
                 <ul>
                   {branch.signals.map((signal) => (
@@ -104,7 +107,7 @@ export function FailureBranchesPanel({
                   ))}
                 </ul>
               </div>
-              <div>
+              <div className="failure-branch-column">
                 <strong>Checks</strong>
                 <ul>
                   {branch.checks.map((check) => (

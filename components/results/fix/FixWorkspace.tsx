@@ -11,6 +11,7 @@ import type {
   TimelineEntry
 } from "@/lib/redefined";
 import type { FixWorkspaceResult } from "@/types/redefined";
+import type { WorkspaceNarration } from "@/lib/workspace-types";
 import { parseEvidenceSignals } from "@/lib/evidence";
 import { applyIssueMapUpdates, mergeScratchpad } from "@/lib/followup";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@/lib/journey-store";
 import { JourneyStatusBadge } from "@/components/journey/JourneyStatusBadge";
 import { ResultSourceBadge, type ResultSource } from "@/components/results/ResultSourceBadge";
+import { WorkspaceAudioGuide } from "@/components/workspace/WorkspaceAudioGuide";
 import { ArtifactToolbar } from "./ArtifactToolbar";
 import { DecisionMatrix } from "./DecisionMatrix";
 import { DiagnosticTerminal } from "./DiagnosticTerminal";
@@ -42,6 +44,7 @@ type FixWorkspaceProps = {
   profileRecord?: ProfileJourneyRecord | null;
   guestLimitState?: GuestLimitState;
   onRequireProfile?: (message?: string, next?: string) => void;
+  onNarrationGenerated?: (narration: WorkspaceNarration) => void;
 };
 
 type EvidenceBranchType = EvidenceBranch["branchType"];
@@ -371,7 +374,8 @@ export function FixWorkspace({
   temporaryRecord,
   profileRecord,
   guestLimitState,
-  onRequireProfile
+  onRequireProfile,
+  onNarrationGenerated
 }: FixWorkspaceProps) {
   const [result, setResult] = useState(initialResult);
   const [sourceState, setSourceState] = useState<{
@@ -789,6 +793,19 @@ export function FixWorkspace({
     );
   }
 
+  function handleNarrationGenerated(narration: WorkspaceNarration) {
+    setResult((previous) => ({
+      ...previous,
+      workspaceAudioGuides: [
+        ...(previous.workspaceAudioGuides ?? []).filter(
+          (guide) => guide.sourceResultHash !== narration.sourceResultHash
+        ),
+        narration
+      ]
+    }));
+    onNarrationGenerated?.(narration);
+  }
+
   if (!result.diagnosis || !result.issueMap || !result.diagnosticTerminal) return null;
 
   const renderedResult: RedefinedResult = {
@@ -812,6 +829,16 @@ export function FixWorkspace({
         originalPrompt={result.originalPrompt ?? result.title}
         diagnosis={result.diagnosis}
         classification={result.classification}
+        audioGuideCard={
+          <WorkspaceAudioGuide
+            result={renderedResult}
+            workspaceMeta={result.workspaceMeta}
+            originalPrompt={result.originalPrompt ?? result.workspaceMeta?.originalPrompt ?? result.title}
+            initialNarration={(result.workspaceAudioGuides ?? []).at(-1)}
+            onNarrationGenerated={handleNarrationGenerated}
+            variant="compact"
+          />
+        }
       />
 
       <FailureBranchesPanel

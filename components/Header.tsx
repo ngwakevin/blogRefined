@@ -22,9 +22,14 @@ export default function Header({ visible }: HeaderProps) {
           <a href="#build">Build</a>
           <a href="#fix">Fix</a>
           <a href="#artifact">Artifact</a>
+          <Link href="/pricing">Pricing</Link>
         </nav>
 
         <div className="header-actions">
+          {/* Pricing stays reachable on mobile, where the section nav collapses. */}
+          <Link className="header-pricing-mobile" href="/pricing">
+            Pricing
+          </Link>
           {isProfileMode ? (
             <>
               <Link href="/">Dashboard</Link>

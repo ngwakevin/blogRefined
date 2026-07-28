@@ -9,7 +9,9 @@ import "@fontsource/space-grotesk/latin-500.css";
 import "@fontsource/space-grotesk/latin-600.css";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { UpgradeModalHost } from "@/components/billing/UpgradeModal";
 import { ProfileProvider } from "@/components/profile/ProfileProvider";
+import { ToastHost } from "@/components/Toast";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,6 +28,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
     <html lang="en">
       <body>
         <ProfileProvider>{children}</ProfileProvider>
+        <ToastHost />
+        <UpgradeModalHost />
       </body>
     </html>
   );
