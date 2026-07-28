@@ -11,6 +11,7 @@ export type QualityValidationResult = {
   ok: boolean;
   issues: string[];
   warnings: string[];
+  score?: number;
 };
 
 const genericTextPatterns = [
@@ -54,7 +55,14 @@ function finalize(result: QualityValidationResult): QualityValidationResult {
   return {
     ...result,
     ok: result.issues.length === 0
+    ,score: calculateQualityScore(result)
   };
+}
+
+function calculateQualityScore(result: QualityValidationResult): number {
+  const issuePenalty = 22;
+  const warningPenalty = 6;
+  return Math.max(0, Math.min(100, 100 - result.issues.length * issuePenalty - result.warnings.length * warningPenalty));
 }
 
 function isBlank(value: string | undefined): boolean {
