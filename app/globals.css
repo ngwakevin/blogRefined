@@ -5,7 +5,7 @@
   --font-code: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, monospace;
 
-  --background: #f2f3f7;
+  --background: #e4e8ee;
   --brand: #b2a5ff;
   --text: #2f3441;
   --muted: #747b8a;
@@ -23,6 +23,53 @@
   --page-max: 1180px;
   --page-pad: 42px;
   --page-grid: min(var(--page-max), calc(100vw - (var(--page-pad) * 2)));
+
+  /* Soft-cockpit material: neumorphic shadow pair + legible text tones. --muted stays
+     the existing app-wide value on purpose (not redefined here) so screens not yet
+     migrated to the soft material don't silently repaint. */
+  --shadow-hi: #ffffff;
+  --shadow-lo: #bcc3cf;
+  --ink: #3a4252;
+  --body: #5d6675;
+  --faint: #a3aab6;
+  --soft-purple: #8b7cf0;
+  --soft-coral: #f08a80;
+  --soft-grad: linear-gradient(90deg, #5ec8e8, #7b8cf0);
+
+  /* Status accents used as small color moments on soft-tag/chip text (not fills).
+     --amber is the app's existing de facto warning color (already used ~55x
+     elsewhere, just not tokenized before now); --danger is kept deliberately
+     separate from --soft-coral — coral marks "misconception", danger marks
+     "failure/low severity". --green/--blue below reuse the existing brand tokens
+     rather than the near-duplicate hexes the soft pass originally introduced. */
+  --amber: #f5b800;
+  --amber-ink: #8a6800;
+  --danger: #ff5050;
+
+  --r-card: 28px;
+  --r-ctrl: 16px;
+  --raised: 9px 9px 18px var(--shadow-lo), -9px -9px 18px var(--shadow-hi);
+  --raised-sm: 5px 5px 10px var(--shadow-lo), -5px -5px 10px var(--shadow-hi);
+  --inset: inset 6px 6px 12px var(--shadow-lo), inset -6px -6px 12px var(--shadow-hi);
+  --inset-sm: inset 3px 3px 6px var(--shadow-lo), inset -3px -3px 6px var(--shadow-hi);
+  --pressed: inset 4px 4px 9px var(--shadow-lo), inset -4px -4px 9px var(--shadow-hi);
+
+  /* Dedicated focus-ring strength — deliberately stronger (0.4 alpha) than
+     --active-shadow (0.26), which stays untouched since it's already used
+     elsewhere for non-focus glows/drop-shadows at its original intensity. */
+  --active-shadow-strong: rgba(139, 124, 255, 0.4);
+}
+
+/* High-contrast override (brief §7) — toggle by setting data-contrast="high" on <html>.
+   Tokens only for now; the settings/header toggle to flip this attribute is separate
+   follow-up work, not part of the Understand-workspace checkpoint. */
+[data-contrast="high"] {
+  --ink: #1b2130;
+  --body: #333b49;
+  --faint: #5b6473;
+  --shadow-lo: #a7aeba;
+  --raised: 7px 7px 14px var(--shadow-lo), -7px -7px 14px var(--shadow-hi);
+  --inset: inset 5px 5px 10px var(--shadow-lo), inset -5px -5px 10px var(--shadow-hi);
 }
 
 * {
@@ -560,6 +607,10 @@ button {
   margin-top: 10px;
 }
 
+/* FLATTENED: was a solid-fill button that inverted to a full opaque color per
+   state (blue/red/green/amber fills). Material is now the same raised/pressed
+   flip as every other soft button; the state colors survive as text + icon
+   accents only — still fully legible signals, just not full-panel color fills. */
 .section-voice-button {
   appearance: none;
   display: inline-flex;
@@ -567,17 +618,17 @@ button {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 2px solid rgba(56, 182, 255, 0.45);
+  border: none;
   border-radius: 999px;
-  background: rgba(56, 182, 255, 0.14);
-  color: #38b6ff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--blue);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 11px;
   line-height: 1;
   padding: 9px 12px;
-  transition: transform 160ms ease, background 160ms ease, color 160ms ease,
-    box-shadow 160ms ease, border-color 160ms ease;
+  transition: box-shadow 160ms ease, color 160ms ease;
 }
 
 .section-voice-button svg {
@@ -591,47 +642,38 @@ button {
 }
 
 .section-voice-button:hover {
-  border-color: #38b6ff;
-  background: #38b6ff;
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(56, 182, 255, 0.22);
+  box-shadow: var(--raised-sm);
 }
 
 .section-voice-button:disabled {
   cursor: default;
   opacity: 0.72;
-  transform: none;
 }
 
 .section-voice-button.is-recording {
-  border-color: #ff4d5e;
-  background: #ff4d5e;
-  color: #ffffff;
+  box-shadow: var(--pressed);
+  color: #ff4d5e;
   animation: voicePulse 1.2s infinite;
 }
 
 .section-voice-button.is-transcribing {
-  border-color: #38b6ff;
-  background: #38b6ff;
-  color: #ffffff;
+  box-shadow: var(--pressed);
+  color: var(--blue);
 }
 
 .section-voice-button.is-ready {
-  border-color: #00bf63;
-  background: #00bf63;
-  color: #ffffff;
+  box-shadow: var(--pressed);
+  color: var(--green);
 }
 
 .section-voice-button.is-error {
-  border-color: rgba(245, 184, 0, 0.72);
-  background: #f5b800;
-  color: #111827;
+  box-shadow: var(--pressed);
+  color: #f5b800;
 }
 
 .section-voice-status {
   min-height: 16px;
-  color: #38b6ff;
+  color: var(--blue);
   font-family: var(--font-code);
   font-size: 11px;
   letter-spacing: -0.01em;
@@ -642,11 +684,11 @@ button {
 }
 
 .section-voice-status.is-ready {
-  color: #00bf63;
+  color: var(--green);
 }
 
 .section-voice-status.is-error {
-  color: #111827;
+  color: #f5b800;
 }
 
 .processing-status.visible {
@@ -2792,13 +2834,113 @@ body.stage-artifact .artifact-tick {
   display: block;
 }
 
+/* FLATTENED: was translucent glass (rgba white + border + drop-shadow + backdrop
+   blur on ancestors). Neumorphism needs an opaque, page-colored surface so the
+   raised shadow pair reads — border and translucency are gone, not just re-colored. */
 .live-diagnosis-panel,
 .workspace-card,
 .artifact-toolbar {
-  background: rgba(255, 255, 255, 0.56);
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  box-shadow: 0 30px 90px rgba(47, 52, 65, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  background: var(--background);
+  border: none;
+  border-radius: var(--r-card);
+  box-shadow: var(--raised);
+}
+
+/* ─── Soft cockpit shared primitives ──────────────────────────────────────
+   .soft-tag   = static, read-only pill (inset/"carved-in", not clickable)
+   .soft-chip  = interactive multi-select chip (raised-sm rest, pressed+accent selected)
+   .soft-segment-track / .soft-segment-tab = fixed tab bar (track inset, active tab pops raised-sm)
+   .soft-btn   = pressable button (raised-sm rest, pressed on :active)
+   Existing component classes are grouped into these bases; each keeps only its
+   own color/size deltas below. This lets the later app-wide pill/button sweep
+   reuse these same bases instead of re-deriving them per screen. */
+.soft-tag,
+.drop-pill,
+.understand-domain-pill,
+.understand-clarity-pill,
+.understand-depth-pill,
+.building-block-type-pill,
+.misconception-tag,
+.spark-type-label,
+.understand-teach-score,
+.understand-teach-section-label,
+.shareable-insight-tag {
+  border: none;
+  border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+}
+
+.soft-chip,
+.understand-level-option,
+.understand-analogy-tab {
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--body);
+  transition: box-shadow 0.15s ease, color 0.15s ease;
+}
+
+.soft-chip.is-selected,
+.understand-level-option--selected,
+.understand-analogy-tab--active {
+  box-shadow: var(--pressed);
+  color: var(--soft-purple);
+}
+
+.soft-segment-track,
+.understand-tab-bar {
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset);
+  padding: 6px;
+  display: flex;
+  gap: 4px;
+}
+
+.soft-segment-tab,
+.understand-tab {
+  border: none;
+  border-radius: calc(var(--r-ctrl) - 4px);
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
+
+.soft-segment-tab.is-active,
+.understand-tab--active {
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
+}
+
+.soft-btn,
+.understand-reveal-btn,
+.understand-teach-submit,
+.understand-teach-retry,
+.understand-refine-btn,
+.shareable-action-btn,
+.understand-action-btn,
+.thinking-spark-card {
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--body);
+  transition: box-shadow 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.soft-btn:active,
+.understand-reveal-btn:active,
+.understand-teach-submit:not(:disabled):active,
+.understand-teach-retry:active,
+.understand-refine-btn:not(:disabled):active,
+.shareable-action-btn:active,
+.understand-action-btn:active,
+.thinking-spark-card:active {
+  box-shadow: var(--pressed);
 }
 
 .live-diagnosis-panel {
@@ -2860,11 +3002,10 @@ body.stage-artifact .artifact-tick {
   min-width: 138px;
   overflow: hidden;
   padding: 8px 10px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 14px 34px rgba(47, 52, 65, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
 }
 
 .diagnosis-audio-pill::after {
@@ -6134,7 +6275,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .understand-block-label {
-  color: rgba(47, 52, 65, 0.68) !important;
+  color: var(--faint) !important;
 }
 
 .understand-status-pills {
@@ -6145,15 +6286,13 @@ body.stage-artifact .artifact-tick {
   justify-content: flex-end;
 }
 
+/* soft-tag base (border/background/shadow) comes from the shared rule above —
+   this keeps only the accent color + spacing deltas */
 .understand-status-pills .diagnosis-audio-pill {
   min-width: 0;
   min-height: 0;
   overflow: visible;
   padding: 6px 12px;
-  border: 1px solid rgba(139, 124, 255, 0.3);
-  border-radius: 999px;
-  background: rgba(139, 124, 255, 0.08);
-  box-shadow: none;
 }
 
 .understand-status-pills .diagnosis-audio-pill::after {
@@ -6166,7 +6305,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .understand-status-pills .diagnosis-audio-pill button {
-  color: #6d5de0;
+  color: var(--soft-purple);
   font-family: var(--font-code);
   font-size: 10px;
   font-weight: 700;
@@ -6179,10 +6318,7 @@ body.stage-artifact .artifact-tick {
   display: inline-flex;
   align-items: center;
   padding: 6px 12px;
-  border: 1px solid rgba(139, 124, 255, 0.3);
-  border-radius: 999px;
-  background: rgba(139, 124, 255, 0.08);
-  color: #6d5de0;
+  color: var(--soft-purple);
   font-family: var(--font-code);
   font-size: 10px;
   font-weight: 700;
@@ -6190,19 +6326,17 @@ body.stage-artifact .artifact-tick {
   text-transform: uppercase;
 }
 
-/* Concept Snapshot — full yellow, same visual weight as Fix diagnosis */
+/* Concept Snapshot — FLATTENED: was a full opaque yellow hero card (brand color
+   filling the whole panel). Per the soft material's color rationing, large panels
+   don't carry fill color — this becomes a plain raised bg surface; the yellow
+   moves nowhere special here since clarity/depth already carry the accent color
+   elsewhere on the page (this card is neutral, like every other soft card). */
 .concept-snapshot {
   padding: 28px;
-  border-radius: 34px;
-  background: radial-gradient(
-      circle at 92% 0%,
-      rgba(255, 255, 255, 0.34),
-      transparent 32%
-    ),
-    var(--yellow);
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  box-shadow: 0 30px 80px rgba(245, 184, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  border: none;
+  border-radius: var(--r-card);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .concept-snapshot-topline {
@@ -6214,7 +6348,7 @@ body.stage-artifact .artifact-tick {
 
 .concept-snapshot-topline h2 {
   margin: 0;
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: clamp(30px, 4vw, 52px);
   font-weight: 400;
@@ -6222,26 +6356,23 @@ body.stage-artifact .artifact-tick {
   line-height: 0.98;
 }
 
+/* soft-tag base handles border/background/shadow — this is the size + text delta */
 .understand-clarity-pill {
   min-width: 160px;
   padding: 13px 15px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 14px 34px rgba(47, 52, 65, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: var(--r-ctrl);
 }
 
 .understand-clarity-pill span {
   display: block;
   margin-bottom: 6px;
-  color: rgba(47, 52, 65, 0.6);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 10px;
 }
 
 .understand-clarity-pill strong {
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 12px;
 }
@@ -6249,40 +6380,40 @@ body.stage-artifact .artifact-tick {
 .concept-snapshot-summary {
   max-width: 840px;
   margin: 16px 0 0;
-  color: rgba(47, 52, 65, 0.72);
+  color: var(--body);
   font-size: 16px;
   letter-spacing: -0.03em;
   line-height: 1.5;
 }
 
-/* original-issue-meta sits on the yellow card — white pill like Fix diagnosis */
+/* original-issue-meta sits inside the (now neutral) snapshot card as a carved-in well */
 .concept-snapshot .original-issue-meta {
-  background: #ffffff;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  box-shadow: 0 4px 12px rgba(47, 52, 65, 0.07);
+  background: var(--background);
+  border: none;
+  box-shadow: var(--inset);
 }
 
 .concept-snapshot .original-issue-meta span {
-  color: rgba(47, 52, 65, 0.6);
+  color: var(--faint);
 }
 
 .concept-snapshot .original-issue-meta strong {
-  color: var(--text);
+  color: var(--ink);
 }
 
-/* Mental Model Map — full blue parent with neutral nodes */
+/* Mental Model Map — FLATTENED: was a full opaque blue parent card with
+   translucent-white step chips inside. Blue moves to a small accent (the step
+   index number) instead of filling the whole panel.
+   Reconciled: this already carries the workspace-card class in JSX, so the
+   card material below is inherited from .workspace-card — only the 2px
+   padding delta is bespoke here. */
 .understand-mental-model {
-  background: #38b6ff;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 28px;
   padding: 24px;
-  box-shadow: 0 22px 60px rgba(56, 182, 255, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .understand-mental-model .mini-label,
 .understand-mental-model .section-heading h3 {
-  color: var(--text);
+  color: var(--ink);
 }
 
 .mental-model-steps {
@@ -6303,24 +6434,25 @@ body.stage-artifact .artifact-tick {
   display: grid;
   gap: 5px;
   padding: 14px 16px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.78);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   min-width: 100px;
   max-width: 180px;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .mental-model-step-index {
   display: block;
-  color: rgba(47, 52, 65, 0.56);
+  color: var(--blue);
   font-family: var(--font-code);
   font-size: 10px;
   font-weight: 700;
 }
 
 .mental-model-step-label {
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: 13px;
   font-weight: 700;
@@ -6330,7 +6462,7 @@ body.stage-artifact .artifact-tick {
 
 .mental-model-step-desc {
   margin: 0;
-  color: rgba(47, 52, 65, 0.65);
+  color: var(--body);
   font-size: 11px;
   line-height: 1.4;
 }
@@ -6338,19 +6470,16 @@ body.stage-artifact .artifact-tick {
 .mental-model-arrow {
   display: block;
   padding: 0 8px;
-  color: rgba(47, 52, 65, 0.45);
+  color: var(--faint);
   font-size: 18px;
   font-weight: 300;
   flex-shrink: 0;
 }
 
-/* Building Blocks — full-colour cards keyed to blockType */
+/* Building Blocks container — reconciled: inherits card material from
+   .workspace-card (already in its JSX className); only the padding delta stays. */
 .understand-building-blocks {
-  background: #ffffff;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 28px;
   padding: 24px;
-  box-shadow: 0 20px 50px rgba(47, 52, 65, 0.07);
 }
 
 .building-block-grid {
@@ -6360,75 +6489,21 @@ body.stage-artifact .artifact-tick {
   margin-top: 16px;
 }
 
+/* FLATTENED: block-tone-{green,blue,purple,yellow} used to fill each card with a
+   full opaque brand color (a "big colored hero card" per card, times 5 tones).
+   All tones now share one neutral raised-sm surface; the tone survives only as
+   the confidence-bar fill color below and the block-type pill text color. */
 .building-block-card {
   padding: 16px;
-  border-radius: 18px;
-  border: 1px solid transparent;
-}
-
-/* output/result = green */
-.building-block-card.block-tone-green {
-  background: #00bf63;
-  border-color: rgba(0, 191, 99, 0.28);
-  color: #ffffff;
-}
-
-/* mechanism/process/component = blue */
-.building-block-card.block-tone-blue {
-  background: #38b6ff;
-  border-color: rgba(47, 52, 65, 0.1);
-}
-
-/* concept/principle = purple */
-.building-block-card.block-tone-purple {
-  background: #b2a5ff;
-  border-color: rgba(47, 52, 65, 0.1);
-}
-
-/* constraint/risk = yellow/amber */
-.building-block-card.block-tone-yellow {
-  background: #f5b800;
-  border-color: rgba(47, 52, 65, 0.1);
-}
-
-/* input = neutral */
-.building-block-card.block-tone-neutral {
-  background: #ffffff;
-  border-color: rgba(47, 52, 65, 0.12);
-}
-
-.building-block-card.block-tone-green .building-block-title,
-.building-block-card.block-tone-green .building-block-desc,
-.building-block-card.block-tone-green .building-block-confidence-label {
-  color: #ffffff;
-}
-
-.building-block-card.block-tone-green .building-block-type-pill {
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-}
-
-.building-block-card.block-tone-blue .building-block-title,
-.building-block-card.block-tone-purple .building-block-title,
-.building-block-card.block-tone-yellow .building-block-title,
-.building-block-card.block-tone-neutral .building-block-title {
-  color: var(--text);
-}
-
-.building-block-card.block-tone-blue .building-block-desc,
-.building-block-card.block-tone-purple .building-block-desc,
-.building-block-card.block-tone-yellow .building-block-desc,
-.building-block-card.block-tone-neutral .building-block-desc,
-.building-block-card.block-tone-blue .building-block-confidence-label,
-.building-block-card.block-tone-purple .building-block-confidence-label,
-.building-block-card.block-tone-yellow .building-block-confidence-label,
-.building-block-card.block-tone-neutral .building-block-confidence-label {
-  color: rgba(47, 52, 65, 0.72);
+  border-radius: var(--r-ctrl);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
 }
 
 .building-block-title {
   display: block;
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: 14px;
   font-weight: 700;
@@ -6466,15 +6541,9 @@ body.stage-artifact .artifact-tick {
   position: static;
 }
 
-/* Misconceptions — stronger contrast paired cards */
-.understand-misconceptions {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 26px;
-  padding: 22px;
-  box-shadow: 0 20px 60px rgba(47, 52, 65, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-}
+/* .understand-misconceptions: no rule needed — it already carries the
+   workspace-card class in JSX and its padding (22px) matches the default,
+   so it fully inherits card material with zero delta. */
 
 .misconception-list {
   display: grid;
@@ -6488,26 +6557,22 @@ body.stage-artifact .artifact-tick {
   gap: 10px;
 }
 
+/* FLATTENED: wrong/reality used tinted red/green fills + matching borders (a
+   color-filled pair of panels). Both are now the same neutral inset well; red vs.
+   green survives only as the tag text color below — a single accent moment. */
 .misconception-wrong,
 .misconception-reality {
   padding: 14px;
-  border-radius: 16px;
+  border-radius: var(--r-ctrl);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--inset);
 }
 
-.misconception-wrong {
-  background: rgba(255, 80, 80, 0.1);
-  border: 1px solid rgba(255, 80, 80, 0.22);
-}
-
-.misconception-reality {
-  background: rgba(0, 191, 99, 0.1);
-  border: 1px solid rgba(0, 191, 99, 0.24);
-}
-
+/* soft-tag base supplies the pill material — this is the text-color delta only */
 .misconception-tag {
   display: inline-block;
   margin-bottom: 8px;
-  border-radius: 999px;
   padding: 3px 8px;
   font-family: var(--font-code);
   font-size: 9px;
@@ -6517,47 +6582,39 @@ body.stage-artifact .artifact-tick {
 }
 
 .wrong-tag {
-  background: rgba(255, 80, 80, 0.12);
-  color: #c0392b;
+  color: var(--soft-coral);
 }
 
 .reality-tag {
-  background: rgba(0, 191, 99, 0.14);
-  color: #007a3d;
+  color: var(--green);
 }
 
 .misconception-wrong p,
 .misconception-reality p {
   margin: 0;
-  color: var(--text);
+  color: var(--body);
   font-size: 13px;
   line-height: 1.45;
 }
 
-/* Real World Example */
-.understand-real-world {
-  background: rgba(255, 255, 255, 0.56);
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 26px;
-  padding: 22px;
-  box-shadow: 0 30px 90px rgba(47, 52, 65, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
-}
+/* Real World Example: no rule needed — workspace-card class + default 22px
+   padding already match, fully inherited with zero delta. */
 
 .real-world-scenario,
 .real-world-explanation {
   display: grid;
   gap: 8px;
   padding: 14px;
-  border-radius: 16px;
-  background: rgba(242, 243, 247, 0.7);
-  border: 1px solid rgba(47, 52, 65, 0.07);
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  border: none;
+  box-shadow: var(--inset);
   margin-top: 10px;
 }
 
 .real-world-scenario span,
 .real-world-explanation span {
-  color: rgba(47, 52, 65, 0.55);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 10px;
   font-weight: 600;
@@ -6568,20 +6625,13 @@ body.stage-artifact .artifact-tick {
 .real-world-scenario p,
 .real-world-explanation p {
   margin: 0;
-  color: var(--text);
+  color: var(--ink);
   font-size: 14px;
   line-height: 1.5;
 }
 
-/* Decision Questions */
-.understand-decision-questions {
-  background: rgba(255, 255, 255, 0.56);
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 26px;
-  padding: 22px;
-  box-shadow: 0 30px 90px rgba(47, 52, 65, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
-}
+/* Decision Questions: no rule needed — workspace-card class + default 22px
+   padding already match, fully inherited with zero delta. */
 
 .decision-question-list {
   list-style: none;
@@ -6596,10 +6646,11 @@ body.stage-artifact .artifact-tick {
   align-items: flex-start;
   gap: 10px;
   padding: 12px 14px;
-  border: 1px solid rgba(47, 52, 65, 0.07);
-  border-radius: 14px;
-  background: rgba(242, 243, 247, 0.6);
-  color: var(--text);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset);
+  color: var(--ink);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -6609,8 +6660,9 @@ body.stage-artifact .artifact-tick {
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  background: rgba(139, 124, 255, 0.12);
-  color: #6d5de0;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
@@ -6618,15 +6670,8 @@ body.stage-artifact .artifact-tick {
   place-items: center;
 }
 
-/* Next Actions */
-.understand-next-actions {
-  background: rgba(255, 255, 255, 0.56);
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 26px;
-  padding: 22px;
-  box-shadow: 0 30px 90px rgba(47, 52, 65, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
-}
+/* Next Actions: no rule needed — workspace-card class + default 22px padding
+   already match, fully inherited with zero delta. */
 
 .understand-action-list {
   display: grid;
@@ -6634,24 +6679,17 @@ body.stage-artifact .artifact-tick {
   margin-top: 6px;
 }
 
+/* soft-btn base supplies border/background/shadow + the :active press — this is
+   layout + color deltas only */
 .understand-action-btn {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 10px;
   align-items: center;
   padding: 12px 14px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 14px;
-  background: rgba(242, 243, 247, 0.72);
-  color: var(--text);
+  border-radius: var(--r-ctrl);
   cursor: pointer;
   text-align: left;
-  transition: background 0.12s ease, border-color 0.12s ease;
-}
-
-.understand-action-btn:hover {
-  background: rgba(242, 243, 247, 0.98);
-  border-color: rgba(47, 52, 65, 0.18);
 }
 
 .understand-action-mode {
@@ -6669,27 +6707,23 @@ body.stage-artifact .artifact-tick {
 }
 
 .understand-action-btn.action-mode-understand .understand-action-mode {
-  background: rgba(139, 124, 255, 0.14);
-  color: #6d5de0;
+  color: var(--soft-purple);
 }
 
 .understand-action-btn.action-mode-build .understand-action-mode {
-  background: rgba(0, 153, 255, 0.14);
-  color: #0071bb;
+  color: var(--blue);
 }
 
 .understand-action-btn.action-mode-fix .understand-action-mode {
-  background: rgba(245, 184, 0, 0.18);
-  color: #8a6800;
+  color: var(--amber-ink);
 }
 
 .understand-action-btn.action-mode-artifact .understand-action-mode {
-  background: rgba(0, 169, 87, 0.14);
-  color: #006630;
+  color: var(--green);
 }
 
 .understand-action-label {
-  color: var(--text);
+  color: var(--ink);
   font-size: 13px;
   font-weight: 500;
 }
@@ -6720,39 +6754,20 @@ body.stage-artifact .artifact-tick {
   }
 }
 
-/* ── Understand workspace: tabs ── */
+/* ── Understand workspace: tabs (segmented control — track inset, active tab
+   pops raised-sm; soft-segment-track/tab base supplies the material) ── */
 .understand-tab-bar {
   position: relative;
   z-index: 2;
-  display: flex;
-  gap: 4px;
   margin-bottom: 20px;
-  border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
-  background: rgba(255, 255, 255, 0.82);
-  border-radius: 18px 18px 0 0;
-  padding-bottom: 0;
 }
 
 .understand-tab {
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--muted);
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-  margin-bottom: -1px;
-}
-
-.understand-tab:hover {
-  color: var(--text);
-}
-
-.understand-tab--active {
-  color: #8b7cff;
-  border-bottom-color: #8b7cff;
+  transition: color 0.15s ease, box-shadow 0.15s ease;
 }
 
 /* ── Knowledge Level Check ── */
@@ -6763,7 +6778,7 @@ body.stage-artifact .artifact-tick {
 .understand-level-question {
   font-size: 15px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
   margin: 8px 0 14px;
 }
 
@@ -6773,17 +6788,14 @@ body.stage-artifact .artifact-tick {
   gap: 8px;
 }
 
+/* soft-chip base supplies border/background/shadow + selected press — layout only here */
 .understand-level-option {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
   padding: 10px 14px;
-  background: rgba(139, 124, 255, 0.06);
-  border: 1px solid rgba(139, 124, 255, 0.18);
-  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
   text-align: left;
   min-width: 120px;
 }
@@ -6791,7 +6803,7 @@ body.stage-artifact .artifact-tick {
 .understand-level-option strong {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .understand-level-option span {
@@ -6799,18 +6811,8 @@ body.stage-artifact .artifact-tick {
   color: var(--muted);
 }
 
-.understand-level-option:hover {
-  background: rgba(139, 124, 255, 0.12);
-  border-color: rgba(139, 124, 255, 0.35);
-}
-
-.understand-level-option--selected {
-  background: rgba(139, 124, 255, 0.16);
-  border-color: #8b7cff;
-}
-
 .understand-level-option--selected strong {
-  color: #8b7cff;
+  color: var(--soft-purple);
 }
 
 /* ── Building block enhancements ── */
@@ -6822,23 +6824,22 @@ body.stage-artifact .artifact-tick {
   margin-bottom: 6px;
 }
 
+/* soft-tag base supplies border/background/shadow — color-only deltas below */
 .building-block-type-pill {
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 2px 7px;
-  border-radius: 100px;
-  background: rgba(255,255,255,0.06);
   color: var(--muted);
   white-space: nowrap;
 }
 
-.bt-principle { background: rgba(0,200,120,0.12); color: #00c878; }
-.bt-component { background: rgba(0,153,255,0.12); color: #0099ff; }
-.bt-mechanism { background: rgba(255,184,0,0.12); color: #f5b800; }
-.bt-term { background: rgba(139,124,255,0.12); color: #8b7cff; }
-.bt-pattern { background: rgba(255,100,80,0.12); color: #ff6450; }
+.bt-principle { color: var(--green); }
+.bt-component { color: var(--blue); }
+.bt-mechanism { color: var(--amber); }
+.bt-term { color: var(--soft-purple); }
+.bt-pattern { color: var(--danger); }
 
 .building-block-confidence {
   display: flex;
@@ -6847,17 +6848,19 @@ body.stage-artifact .artifact-tick {
   margin-top: 8px;
 }
 
+/* track = inset well; fill carries the accent color (this is where color lives) */
 .building-block-confidence-bar {
   flex: 1;
-  height: 3px;
-  background: rgba(255,255,255,0.08);
+  height: 6px;
+  background: transparent;
+  box-shadow: var(--inset);
   border-radius: 100px;
   overflow: hidden;
 }
 
 .building-block-confidence-fill {
   height: 100%;
-  background: #8b7cff;
+  background: var(--soft-grad);
   border-radius: 100px;
   transition: width 0.4s ease;
 }
@@ -6868,7 +6871,7 @@ body.stage-artifact .artifact-tick {
   white-space: nowrap;
 }
 
-/* ── Analogy Switcher ── */
+/* ── Analogy Switcher (small tab chips, same soft-chip material as level options) ── */
 .understand-analogy-switcher {
   margin-bottom: 0;
 }
@@ -6882,56 +6885,41 @@ body.stage-artifact .artifact-tick {
 .understand-analogy-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 14px;
 }
 
 .understand-analogy-tab {
-  padding: 6px 12px;
+  padding: 8px 14px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--muted);
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.understand-analogy-tab:hover {
-  color: var(--text);
-  background: rgba(255,255,255,0.07);
-}
-
-.understand-analogy-tab--active {
-  background: rgba(139, 124, 255, 0.14);
-  border-color: rgba(139, 124, 255, 0.4);
-  color: #8b7cff;
 }
 
 .understand-analogy-panel {
-  background: rgba(139, 124, 255, 0.06);
-  border: 1px solid rgba(139, 124, 255, 0.14);
-  border-radius: 10px;
+  background: var(--background);
+  border: none;
+  border-radius: var(--r-ctrl);
+  box-shadow: var(--inset);
   padding: 16px 18px;
 }
 
 .understand-analogy-title {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--ink);
   margin: 0 0 8px;
 }
 
 .understand-analogy-explanation {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--body);
   line-height: 1.6;
   margin: 0 0 12px;
 }
 
 .understand-analogy-takeaway {
-  border-top: 1px solid rgba(139,124,255,0.14);
+  box-shadow: inset 0 1px 0 var(--shadow-hi);
   padding-top: 10px;
 }
 
@@ -6941,14 +6929,14 @@ body.stage-artifact .artifact-tick {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #8b7cff;
+  color: var(--soft-purple);
   margin-bottom: 4px;
 }
 
 .understand-analogy-takeaway p {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text);
+  color: var(--ink);
   margin: 0;
 }
 
@@ -6964,26 +6952,16 @@ body.stage-artifact .artifact-tick {
   margin-top: 4px;
 }
 
+/* soft-btn base supplies border/background/shadow + :active press — layout only here */
 .thinking-spark-card {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
   padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  background: rgba(255, 255, 255, 0.7);
+  border-radius: var(--r-ctrl);
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s, border-color 0.15s, transform 0.1s;
-  box-shadow: 0 2px 8px rgba(47, 52, 65, 0.06);
-}
-
-.thinking-spark-card:hover {
-  background: #ffffff;
-  border-color: rgba(47, 52, 65, 0.16);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(47, 52, 65, 0.1);
 }
 
 .spark-type-label {
@@ -6992,78 +6970,65 @@ body.stage-artifact .artifact-tick {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 2px 7px;
-  border-radius: 100px;
 }
 
 .spark-prompt {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
   line-height: 1.4;
   margin: 0;
 }
 
-.spark-type-challenge .spark-type-label { background: rgba(255,80,80,0.14); color: #ff5050; }
-.spark-type-scenario .spark-type-label { background: rgba(0,153,255,0.14); color: #0099ff; }
-.spark-type-what_if .spark-type-label { background: rgba(255,184,0,0.14); color: #f5b800; }
-.spark-type-compare .spark-type-label { background: rgba(139,124,255,0.14); color: #8b7cff; }
+.spark-type-challenge .spark-type-label { color: var(--soft-coral); }
+.spark-type-scenario .spark-type-label { color: var(--blue); }
+.spark-type-what_if .spark-type-label { color: var(--amber); }
+.spark-type-compare .spark-type-label { color: var(--soft-purple); }
 
-/* ── Blind Spot — full purple card ── */
+/* ── Blind Spot — FLATTENED: was a full opaque purple card (!important overrides
+   fighting the default translucent-white card). Now the same neutral raised
+   surface as every other card; purple survives as the section-title accent. */
 .understand-blind-spot {
   margin-bottom: 0;
-  background: radial-gradient(
-      circle at 90% 5%,
-      rgba(255, 255, 255, 0.16),
-      transparent 30%
-    ),
-    #6d5de0 !important;
-  border-color: rgba(109, 93, 224, 0.6) !important;
-  box-shadow: 0 20px 60px rgba(109, 93, 224, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
 }
 
 .understand-blind-spot .mini-label {
-  color: rgba(255, 255, 255, 0.72) !important;
+  color: var(--faint);
 }
 
 .understand-blind-spot .section-heading h3 {
-  color: #ffffff !important;
+  color: var(--soft-purple);
 }
 
+/* soft-btn base supplies border/background/shadow + :active press */
 .understand-reveal-btn {
   font-size: 12px;
   font-weight: 600;
-  color: #6d5de0;
-  background: #ffffff;
-  border: 1px solid rgba(255,255,255,0.9);
-  border-radius: 6px;
+  color: var(--soft-purple);
+  border-radius: var(--r-ctrl);
   padding: 6px 12px;
   cursor: pointer;
-  transition: background 0.15s;
-}
-
-.understand-reveal-btn:hover {
-  background: rgba(255, 255, 255, 0.88);
 }
 
 .understand-blind-spot-teaser {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--muted);
   font-style: italic;
   margin: 8px 0 0;
 }
 
 .understand-blind-spot-desc {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--body);
   line-height: 1.6;
   margin: 8px 0 12px;
 }
 
 .understand-blind-spot-why {
-  background: rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
+  background: var(--background);
+  border: none;
+  border-radius: var(--r-ctrl);
+  box-shadow: var(--inset);
   padding: 10px 14px;
 }
 
@@ -7073,13 +7038,13 @@ body.stage-artifact .artifact-tick {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--faint);
   margin-bottom: 4px;
 }
 
 .understand-blind-spot-why p {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--body);
   margin: 0;
   line-height: 1.5;
 }
@@ -7111,7 +7076,7 @@ body.stage-artifact .artifact-tick {
 .confidence-map-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .confidence-map-score {
@@ -7122,7 +7087,8 @@ body.stage-artifact .artifact-tick {
 
 .confidence-map-bar {
   height: 6px;
-  background: rgba(47, 52, 65, 0.1);
+  background: transparent;
+  box-shadow: var(--inset);
   border-radius: 100px;
   overflow: hidden;
 }
@@ -7133,9 +7099,9 @@ body.stage-artifact .artifact-tick {
   transition: width 0.5s ease;
 }
 
-.conf-level-high { background: #00c878; }
-.conf-level-mid { background: #f5b800; }
-.conf-level-low { background: #ff5050; }
+.conf-level-high { background: var(--green); }
+.conf-level-mid { background: var(--amber); }
+.conf-level-low { background: var(--danger); }
 
 .confidence-map-reason {
   font-size: 11px;
@@ -7144,85 +7110,82 @@ body.stage-artifact .artifact-tick {
   line-height: 1.4;
 }
 
-/* ── Teach It Back — dark card ── */
+/* ── Teach It Back — FLATTENED: was a dark inverted card (background: var(--text)
+   with white text throughout, !important-ed over the default card). Now the same
+   neutral raised surface as every other card; no more color inversion. */
 .understand-teach-back {
   margin-top: 20px;
-  background: var(--text) !important;
-  border-color: rgba(255, 255, 255, 0.06) !important;
-  box-shadow: 0 30px 90px rgba(47, 52, 65, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
 .understand-teach-back .mini-label {
-  color: rgba(255, 255, 255, 0.55) !important;
+  color: var(--faint);
 }
 
 .understand-teach-back .section-heading h3 {
-  color: #ffffff !important;
+  color: var(--ink);
 }
 
+/* static score readout: soft-tag inset material, color carries high/mid/low */
+/* intentional: a rounded-rect chip (not full pill) since it holds a "82/100"
+   score readout — same treatment as .understand-clarity-pill */
 .understand-teach-score {
   font-size: 18px;
   font-weight: 800;
   padding: 4px 12px;
-  border-radius: 8px;
+  border-radius: var(--r-ctrl);
 }
 
-.score-high { color: #00c878; background: rgba(0,200,120,0.15); }
-.score-mid { color: #f5b800; background: rgba(245,184,0,0.15); }
-.score-low { color: #ff5050; background: rgba(255,80,80,0.15); }
+.score-high { color: var(--green); }
+.score-mid { color: var(--amber); }
+.score-low { color: var(--danger); }
 
 .understand-teach-challenge {
   font-size: 14px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--body);
   margin: 10px 0 12px;
   line-height: 1.5;
 }
 
 .understand-teach-textarea {
   width: 100%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 8px;
+  background: var(--background);
+  border: none;
+  border-radius: var(--r-ctrl);
+  box-shadow: var(--inset);
   padding: 12px 14px;
   font-size: 13px;
-  color: #ffffff;
+  color: var(--ink);
   font-family: var(--font-sans, inherit);
   resize: vertical;
   line-height: 1.6;
   margin-bottom: 10px;
-  transition: border-color 0.15s;
+  transition: box-shadow 0.15s ease;
 }
 
 .understand-teach-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--faint);
 }
 
 .understand-teach-textarea:focus {
   outline: none;
-  border-color: rgba(139, 124, 255, 0.55);
+  box-shadow: var(--inset), 0 0 0 2px var(--active-shadow-strong);
 }
 
+/* soft-btn base supplies border/background/shadow + :active press */
 .understand-teach-submit {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text);
-  background: #ffffff;
-  border: none;
-  border-radius: 8px;
+  color: var(--soft-purple);
+  border-radius: var(--r-ctrl);
   padding: 9px 18px;
   cursor: pointer;
-  transition: background 0.15s;
 }
 
 .understand-teach-submit:disabled {
-  opacity: 0.35;
+  opacity: 0.45;
+  color: var(--faint);
   cursor: not-allowed;
-}
-
-.understand-teach-submit:not(:disabled):hover {
-  background: rgba(255, 255, 255, 0.88);
 }
 
 .understand-teach-feedback {
@@ -7233,7 +7196,7 @@ body.stage-artifact .artifact-tick {
 
 .understand-teach-feedback-text {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--body);
   line-height: 1.6;
   margin: 0;
 }
@@ -7251,11 +7214,10 @@ body.stage-artifact .artifact-tick {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 2px 8px;
-  border-radius: 4px;
 }
 
-.strengths-label { background: rgba(0,200,120,0.22); color: #00c878; }
-.gaps-label { background: rgba(255,80,80,0.22); color: #ff5050; }
+.strengths-label { color: var(--green); }
+.gaps-label { color: var(--danger); }
 
 .understand-teach-feedback-section ul {
   margin: 0;
@@ -7267,14 +7229,15 @@ body.stage-artifact .artifact-tick {
 
 .understand-teach-feedback-section li {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--body);
   line-height: 1.5;
 }
 
 .understand-teach-expert {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
+  background: var(--background);
+  border: none;
+  border-radius: var(--r-ctrl);
+  box-shadow: var(--inset);
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
@@ -7283,26 +7246,20 @@ body.stage-artifact .artifact-tick {
 
 .understand-teach-expert p {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.88);
+  color: var(--body);
   margin: 0;
   line-height: 1.6;
 }
 
+/* soft-btn base supplies border/background/shadow + :active press */
 .understand-teach-retry {
   font-size: 12px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 6px;
+  color: var(--body);
+  border-radius: var(--r-ctrl);
   padding: 7px 14px;
   cursor: pointer;
-  transition: background 0.15s;
   align-self: flex-start;
-}
-
-.understand-teach-retry:hover {
-  background: rgba(255, 255, 255, 0.14);
 }
 
 /* ── Shareable Insight Card ── */
@@ -7311,9 +7268,10 @@ body.stage-artifact .artifact-tick {
 }
 
 .shareable-insight-card {
-  background: linear-gradient(135deg, rgba(139,124,255,0.1), rgba(0,153,255,0.07));
-  border: 1px solid rgba(139,124,255,0.2);
-  border-radius: 12px;
+  background: var(--background);
+  border: none;
+  border-radius: var(--r-ctrl);
+  box-shadow: var(--inset);
   padding: 18px 20px;
   margin: 10px 0 14px;
 }
@@ -7321,7 +7279,7 @@ body.stage-artifact .artifact-tick {
 .shareable-insight-text {
   font-size: 15px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
   line-height: 1.55;
   margin: 0 0 8px;
 }
@@ -7342,9 +7300,7 @@ body.stage-artifact .artifact-tick {
 .shareable-insight-tag {
   font-size: 11px;
   font-weight: 500;
-  color: #8b7cff;
-  background: rgba(139,124,255,0.1);
-  border-radius: 4px;
+  color: var(--soft-purple);
   padding: 2px 8px;
 }
 
@@ -7354,27 +7310,19 @@ body.stage-artifact .artifact-tick {
   gap: 8px;
 }
 
+/* soft-btn base supplies border/background/shadow + :active press */
 .shareable-action-btn {
   font-size: 12px;
   font-weight: 600;
   padding: 7px 14px;
-  border-radius: 7px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.05);
-  color: var(--text);
+  border-radius: var(--r-ctrl);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
 }
 
-.shareable-action-btn:hover {
-  background: rgba(255,255,255,0.09);
-}
-
-.shareable-action-copy { border-color: rgba(139,124,255,0.3); color: #8b7cff; background: rgba(139,124,255,0.08); }
-.shareable-action-linkedin { border-color: rgba(0,120,200,0.3); color: #0078c8; background: rgba(0,120,200,0.08); }
-.shareable-action-notion { border-color: rgba(255,255,255,0.15); }
-.shareable-action-save { border-color: rgba(0,200,120,0.3); color: #00c878; background: rgba(0,200,120,0.08); }
-.shareable-action-post { border-color: rgba(255,184,0,0.3); color: #f5b800; background: rgba(255,184,0,0.08); }
+.shareable-action-copy { color: var(--soft-purple); }
+.shareable-action-linkedin { color: var(--blue); }
+.shareable-action-save { color: var(--green); }
+.shareable-action-post { color: var(--amber); }
 
 /* ── Result Guide tab ── */
 .understand-guide-tab {
@@ -7383,32 +7331,35 @@ body.stage-artifact .artifact-tick {
   gap: 16px;
 }
 
+/* soft-tag base supplies border/background/shadow — color-only deltas below */
 .understand-depth-pill {
   font-size: 11px;
   font-weight: 700;
   padding: 4px 10px;
-  border-radius: 100px;
   text-transform: capitalize;
 }
 
-.depth-deep { background: rgba(139,124,255,0.14); color: #8b7cff; }
-.depth-moderate { background: rgba(0,153,255,0.12); color: #0099ff; }
-.depth-shallow { background: rgba(255,184,0,0.12); color: #f5b800; }
+.depth-deep { color: var(--soft-purple); }
+.depth-moderate { color: var(--blue); }
+.depth-shallow { color: var(--amber); }
 
 .understand-guide-differentiation {
   font-size: 13px;
-  color: var(--text);
+  color: var(--ink);
   line-height: 1.6;
   margin: 10px 0 4px;
 }
 
+/* FLATTENED: was a tinted panel with a colored left border-accent bar. Border
+   accents don't survive the soft material — this is now a plain inset well. */
 .understand-guide-suggestion {
   font-size: 12px;
-  color: var(--muted);
-  background: rgba(255,255,255,0.04);
-  border-left: 3px solid rgba(139,124,255,0.4);
-  padding: 8px 12px;
-  border-radius: 0 6px 6px 0;
+  color: var(--body);
+  background: var(--background);
+  border: none;
+  box-shadow: var(--inset);
+  padding: 10px 12px;
+  border-radius: var(--r-ctrl);
   margin: 8px 0 0;
 }
 
@@ -7422,25 +7373,21 @@ body.stage-artifact .artifact-tick {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
+/* divider removed per the soft material's no-hairline rule; spacing does the job */
 .understand-guide-section-item {
   display: grid;
   grid-template-columns: 140px 1fr;
   gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-.understand-guide-section-item:last-child {
-  border-bottom: none;
+  padding: 0;
 }
 
 .understand-guide-section-item strong {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .understand-guide-section-item span {
@@ -7462,26 +7409,19 @@ body.stage-artifact .artifact-tick {
   margin-bottom: 16px;
 }
 
+/* soft-btn base supplies border/background/shadow + :active press */
 .understand-refine-option {
   display: flex;
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 8px;
-  background: rgba(255,255,255,0.02);
+  border-radius: var(--r-ctrl);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.understand-refine-option:hover {
-  background: rgba(255,255,255,0.05);
-  border-color: rgba(139,124,255,0.25);
 }
 
 .understand-refine-option input[type="checkbox"] {
   margin-top: 1px;
-  accent-color: #8b7cff;
+  accent-color: var(--soft-purple);
 }
 
 .understand-refine-option div {
@@ -7493,7 +7433,7 @@ body.stage-artifact .artifact-tick {
 .understand-refine-option strong {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .understand-refine-option span {
@@ -7502,25 +7442,20 @@ body.stage-artifact .artifact-tick {
   line-height: 1.4;
 }
 
+/* Primary action: bg raised-sm, purple text, press → pressed (soft-btn base) */
 .understand-refine-btn {
   font-size: 13px;
   font-weight: 600;
-  color: #fff;
-  background: #8b7cff;
-  border: none;
-  border-radius: 8px;
+  color: var(--soft-purple);
+  border-radius: var(--r-ctrl);
   padding: 10px 20px;
   cursor: pointer;
-  transition: background 0.15s;
 }
 
 .understand-refine-btn:disabled {
   opacity: 0.45;
+  color: var(--faint);
   cursor: not-allowed;
-}
-
-.understand-refine-btn:not(:disabled):hover {
-  background: #7a6bef;
 }
 
 @media (max-width: 860px) {
