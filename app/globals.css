@@ -2880,7 +2880,8 @@ body.stage-artifact .artifact-tick {
 .live-diagnosis-panel,
 .workspace-card,
 .artifact-toolbar,
-.workspace-panel {
+.workspace-panel,
+.build-panel {
   background: var(--background);
   border: none;
   border-radius: var(--r-card);
@@ -2909,6 +2910,11 @@ body.stage-artifact .artifact-tick {
 .dash-nav-badge,
 .priority-pill,
 .branch-evidence-badge,
+.build-section-count,
+.build-input-status,
+.build-checklist-status,
+.build-edit-pill,
+.build-action-badge,
 .map-state,
 .hop-node em {
   border: none;
@@ -3002,7 +3008,9 @@ body.stage-artifact .artifact-tick {
 .investigation-branch-evidence,
 .investigation-next-action,
 .next-action,
-.command-card {
+.command-card,
+.build-flow-node,
+.build-step-card {
   border: none;
   border-radius: var(--r-ctrl);
   background: var(--background);
@@ -7444,25 +7452,30 @@ body.stage-artifact .artifact-tick {
   margin: 0 auto;
 }
 
+/* FLATTENED: was a full opaque blue hero fill (same "big colored hero card"
+   pattern as everywhere else). Neutral raised now; blue survives as the mode
+   badge's text accent. */
 .build-objective {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 24px;
   align-items: end;
   padding: 30px 32px;
-  background: #38b6ff;
-  border: 1px solid rgba(47, 52, 65, 0.12);
-  border-radius: 28px;
-  box-shadow: 0 30px 80px rgba(56, 182, 255, 0.24),
-    0 18px 50px rgba(47, 52, 65, 0.1);
+  border: none;
+  border-radius: var(--r-card);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
+/* soft-tag-style eyebrow, static */
 .build-mode-badge {
   display: inline-flex;
   align-items: center;
   padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.34);
-  color: var(--text);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--blue);
   border-radius: 20px;
   font-size: 11px;
   font-weight: 600;
@@ -7474,7 +7487,7 @@ body.stage-artifact .artifact-tick {
 .build-title {
   font-size: clamp(32px, 4vw, 54px);
   font-weight: 500;
-  color: var(--text);
+  color: var(--ink);
   line-height: 1.02;
   letter-spacing: -0.055em;
   margin: 8px 0 0;
@@ -7482,7 +7495,7 @@ body.stage-artifact .artifact-tick {
 
 .build-summary {
   font-size: 14px;
-  color: rgba(47, 52, 65, 0.76);
+  color: var(--body);
   line-height: 1.6;
   margin: 0;
   max-width: 680px;
@@ -7496,6 +7509,7 @@ body.stage-artifact .artifact-tick {
   max-width: 420px;
 }
 
+/* soft-btn material — was a solid dark pill */
 .build-primary-action {
   display: inline-flex;
   align-items: center;
@@ -7503,52 +7517,34 @@ body.stage-artifact .artifact-tick {
   min-height: 38px;
   padding: 9px 13px;
   border-radius: 999px;
-  border: 1px solid rgba(47, 52, 65, 0.12);
-  background: rgba(47, 52, 65, 0.92);
-  color: var(--text);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--body);
   font-family: var(--font-code);
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
-  color: #ffffff;
-  box-shadow: 0 10px 24px rgba(47, 52, 65, 0.08);
+  transition: box-shadow 0.15s ease;
 }
 
+.build-primary-action:active {
+  box-shadow: var(--pressed);
+}
+
+/* the standout primary CTA ("Generate artifact") — same material, accent text */
 .build-primary-action--solid {
-  border-color: rgba(47, 52, 65, 0.1);
-  background: #ffffff;
-  color: var(--text);
-  box-shadow: 0 16px 34px rgba(47, 52, 65, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
-}
-
-.build-panel {
-  padding: 24px;
-  background: #ffffff;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 26px;
-  box-shadow: 0 24px 70px rgba(47, 52, 65, 0.06);
+  color: var(--blue);
 }
 
 .build-panel--inputs {
-  background: #ffffff;
-  border-color: rgba(47, 52, 65, 0.1);
+  /* border/background/shadow now come from the shared Card group */
 }
 
+/* FLATTENED: another full opaque blue hero fill, same as .build-objective */
 .build-panel--progress {
-  background: #38b6ff;
-  border-color: rgba(47, 52, 65, 0.12);
-  box-shadow: 0 28px 72px rgba(56, 182, 255, 0.22),
-    0 14px 42px rgba(47, 52, 65, 0.09);
-}
-
-.build-panel--progress .build-section-heading {
-  color: var(--text);
-}
-
-.build-panel--progress .build-section-desc {
-  color: rgba(47, 52, 65, 0.76);
+  /* border/background/shadow now come from the shared Card group */
 }
 
 .build-section-header {
@@ -7571,7 +7567,7 @@ body.stage-artifact .artifact-tick {
 .build-section-heading {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--ink);
   text-transform: uppercase;
   letter-spacing: 0.07em;
   margin: 0;
@@ -7583,14 +7579,10 @@ body.stage-artifact .artifact-tick {
   margin: 0;
 }
 
+/* soft-tag base supplies border/background/shadow — color/size delta only */
 .build-section-count {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
   padding: 8px 11px;
-  border-radius: 999px;
-  background: #38b6ff;
-  color: var(--text);
+  color: var(--blue);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
@@ -7604,30 +7596,28 @@ body.stage-artifact .artifact-tick {
   gap: 12px;
 }
 
+/* FLATTENED: was a flat white card with a colored top-border status stripe.
+   Same raised-sm material as everywhere else; status now reads as an inset
+   top-edge accent (shadow, not border) — default blue, provided=green,
+   assumed=purple. Same left-bar technique as Fix's branch cards, just on the
+   top edge since that's the accent placement Build already used. */
 .build-input-card {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 18px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-top: 4px solid #38b6ff;
-  border-radius: 20px;
-  box-shadow: 0 16px 38px rgba(47, 52, 65, 0.05);
-}
-
-.build-input-card.status-missing {
-  border-color: rgba(47, 52, 65, 0.1);
-  border-top-color: #38b6ff;
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm), inset 0 4px 0 var(--blue);
 }
 
 .build-input-card.status-provided {
-  border-top-color: #00bf63;
+  box-shadow: var(--raised-sm), inset 0 4px 0 var(--green);
 }
 
 .build-input-card.status-assumed {
-  border-color: rgba(47, 52, 65, 0.1);
-  border-top-color: #b2a5ff;
+  box-shadow: var(--raised-sm), inset 0 4px 0 var(--soft-purple);
 }
 
 .build-input-topline {
@@ -7640,18 +7630,15 @@ body.stage-artifact .artifact-tick {
 .build-input-label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
 }
 
+/* soft-tag base supplies border/background/shadow — color/size delta only */
 .build-input-status,
 .build-checklist-status,
 .build-edit-pill {
-  display: inline-flex;
-  align-items: center;
   padding: 4px 8px;
-  border-radius: 999px;
-  background: #38b6ff;
-  color: var(--text);
+  color: var(--blue);
   font-family: var(--font-code);
   font-size: 10px;
   font-weight: 800;
@@ -7660,13 +7647,11 @@ body.stage-artifact .artifact-tick {
 }
 
 .build-input-card.status-provided .build-input-status {
-  background: #00bf63;
-  color: #ffffff;
+  color: var(--green);
 }
 
 .build-input-card.status-assumed .build-input-status {
-  background: #b2a5ff;
-  color: var(--text);
+  color: var(--soft-purple);
 }
 
 .build-input-why {
@@ -7675,43 +7660,50 @@ body.stage-artifact .artifact-tick {
   line-height: 1.5;
 }
 
+/* read-only preview well */
 .build-input-placeholder {
   font-size: 11px;
-  color: var(--text);
+  color: var(--ink);
   line-height: 1.45;
   padding: 10px 12px;
-  background: rgba(242, 243, 247, 0.86);
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 14px;
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
 }
 
+/* soft-btn material — status color moves to text instead of fill */
 .build-input-action {
   width: fit-content;
   border: 0;
   border-radius: 999px;
-  background: #38b6ff;
-  color: var(--text);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--blue);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
   padding: 9px 12px;
+  transition: box-shadow 0.15s ease;
+}
+
+.build-input-action:active {
+  box-shadow: var(--pressed);
 }
 
 .build-input-card.status-provided .build-input-action {
-  background: #00bf63;
-  color: #ffffff;
+  color: var(--green);
 }
 
 .build-input-card.status-assumed .build-input-action {
-  background: #b2a5ff;
-  color: var(--text);
+  color: var(--soft-purple);
 }
 
 .build-input-placeholder span {
   display: block;
   margin-bottom: 3px;
-  color: rgba(47, 52, 65, 0.45);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 9px;
   font-weight: 800;
@@ -7734,6 +7726,7 @@ body.stage-artifact .artifact-tick {
   gap: 0;
 }
 
+/* border/background/shadow from the shared .soft-subcard group */
 .build-flow-node {
   display: flex;
   flex-direction: column;
@@ -7743,21 +7736,20 @@ body.stage-artifact .artifact-tick {
   max-width: 150px;
   text-align: center;
   padding: 14px 12px;
-  background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(47, 52, 65, 0.12);
-  border-radius: 18px;
-  box-shadow: 0 16px 34px rgba(47, 52, 65, 0.05);
 }
 
+/* FLATTENED: was a solid amber-filled circle — neutral raised-sm now, amber
+   moves to the number text, same convention as every other step index */
 .build-flow-num {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: #f5b800;
-  color: var(--text);
   border-radius: 50%;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--amber);
   font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
@@ -7766,7 +7758,7 @@ body.stage-artifact .artifact-tick {
 .build-flow-label {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .build-flow-desc {
@@ -7778,7 +7770,7 @@ body.stage-artifact .artifact-tick {
 .build-flow-connector {
   width: 30px;
   height: 3px;
-  background: rgba(47, 52, 65, 0.56);
+  background: var(--faint);
   margin-top: 42px;
   flex-shrink: 0;
 }
@@ -7791,20 +7783,18 @@ body.stage-artifact .artifact-tick {
   gap: 10px;
 }
 
+/* border/background/shadow from the shared .soft-subcard group */
 .build-step-card {
   display: flex;
   align-items: flex-start;
   gap: 16px;
   padding: 16px 20px;
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
 }
 
 .build-step-index {
   font-size: 20px;
   font-weight: 800;
-  color: #38b6ff;
+  color: var(--blue);
   line-height: 1;
   flex-shrink: 0;
   min-width: 28px;
@@ -7820,7 +7810,7 @@ body.stage-artifact .artifact-tick {
 .build-step-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .build-step-desc {
@@ -7829,14 +7819,17 @@ body.stage-artifact .artifact-tick {
   line-height: 1.55;
 }
 
+/* FLATTENED: was a solid blue mini-box — inset well now, blue moves to text */
 .build-step-hint {
   font-size: 12px;
-  color: var(--text);
+  color: var(--blue);
   font-style: normal;
   margin-top: 4px;
   padding: 8px 11px;
-  background: #38b6ff;
-  border-radius: 10px;
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   font-weight: 700;
 }
 
@@ -7848,32 +7841,28 @@ body.stage-artifact .artifact-tick {
   gap: 14px;
 }
 
+/* FLATTENED: same top-stripe tone pattern as .build-input-card */
 .build-blueprint-card {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 20px;
-  background: #fff;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-top: 5px solid #38b6ff;
-  border-radius: 22px;
-  box-shadow: 0 18px 42px rgba(47, 52, 65, 0.05);
+  border: none;
+  border-radius: var(--r-card);
+  background: var(--background);
+  box-shadow: var(--raised-sm), inset 0 5px 0 var(--blue);
 }
 
 .build-blueprint-card.blueprint-tone-purple {
-  border-top-color: #b2a5ff;
-}
-
-.build-blueprint-card.blueprint-tone-blue {
-  border-top-color: #38b6ff;
+  box-shadow: var(--raised-sm), inset 0 5px 0 var(--soft-purple);
 }
 
 .build-blueprint-card.blueprint-tone-green {
-  border-top-color: #00bf63;
+  box-shadow: var(--raised-sm), inset 0 5px 0 var(--green);
 }
 
 .build-blueprint-card.blueprint-tone-yellow {
-  border-top-color: #f5b800;
+  box-shadow: var(--raised-sm), inset 0 5px 0 var(--amber);
 }
 
 .build-blueprint-topline,
@@ -7887,7 +7876,7 @@ body.stage-artifact .artifact-tick {
 .build-blueprint-name {
   font-size: 13px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .build-blueprint-purpose {
@@ -7901,19 +7890,21 @@ body.stage-artifact .artifact-tick {
 .build-blueprint-minihead {
   display: block;
   margin-bottom: 4px;
-  color: rgba(47, 52, 65, 0.46);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
 }
 
+/* read-only preview wells */
 .build-blueprint-block,
 .build-output-expected {
   padding: 12px;
-  border-radius: 16px;
-  background: rgba(242, 243, 247, 0.78);
-  border: 1px solid rgba(47, 52, 65, 0.07);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
 }
 
 .build-blueprint-questions {
@@ -7926,7 +7917,7 @@ body.stage-artifact .artifact-tick {
 
 .build-blueprint-questions li {
   font-size: 12px;
-  color: var(--text);
+  color: var(--ink);
   line-height: 1.45;
 }
 
@@ -7938,72 +7929,75 @@ body.stage-artifact .artifact-tick {
   gap: 10px;
 }
 
+/* FLATTENED: was a flat white card with a colored left-border status stripe —
+   same technique as Fix's branch cards, on the left edge Build already used */
 .build-checklist-item {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   padding: 16px 18px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-left: 5px solid #38b6ff;
-  border-radius: 18px;
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--blue);
 }
 
 .build-checklist-item.status-passed,
 .build-checklist-item.status-completed {
-  border-left-color: #00bf63;
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--green);
 }
 
 .build-checklist-item.status-needs_work,
 .build-checklist-item.status-risk {
-  border-left-color: #f5b800;
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--amber);
 }
 
 .build-checklist-item.status-blocked {
-  border-left-color: #111827;
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--ink);
 }
 
+/* real status indicator dot — kept as a small solid-fill accent, raised-sm
+   instead of a border ring */
 .build-checklist-check {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid #38b6ff;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm), inset 0 0 0 2px var(--blue);
   flex-shrink: 0;
   margin-top: 2px;
 }
 
 .build-checklist-item.status-passed .build-checklist-check,
 .build-checklist-item.status-completed .build-checklist-check {
-  border-color: #00bf63;
-  background: #00bf63;
+  background: var(--green);
+  box-shadow: var(--raised-sm);
 }
 
 .build-checklist-item.status-needs_work .build-checklist-check,
 .build-checklist-item.status-risk .build-checklist-check {
-  border-color: #f5b800;
-  background: #f5b800;
+  background: var(--amber);
+  box-shadow: var(--raised-sm);
 }
 
 .build-checklist-item.status-blocked .build-checklist-check {
-  border-color: #111827;
-  background: #111827;
+  background: var(--ink);
+  box-shadow: var(--raised-sm);
 }
 
 .build-checklist-item.status-passed .build-checklist-status,
 .build-checklist-item.status-completed .build-checklist-status {
-  background: #00bf63;
-  color: #ffffff;
+  color: var(--green);
 }
 
 .build-checklist-item.status-needs_work .build-checklist-status,
 .build-checklist-item.status-risk .build-checklist-status {
-  background: #f5b800;
-  color: var(--text);
+  color: var(--amber);
 }
 
 .build-checklist-item.status-blocked .build-checklist-status {
-  background: #111827;
-  color: #ffffff;
+  color: var(--ink);
 }
 
 .build-checklist-content {
@@ -8016,7 +8010,7 @@ body.stage-artifact .artifact-tick {
 .build-checklist-label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .build-checklist-reason {
@@ -8033,6 +8027,8 @@ body.stage-artifact .artifact-tick {
   gap: 8px;
 }
 
+/* FLATTENED: same left-border-stripe-by-mode pattern as .build-checklist-item.
+   soft-btn-style press feedback replaces the translateY hover lift. */
 .build-action-card {
   display: flex;
   align-items: center;
@@ -8040,38 +8036,34 @@ body.stage-artifact .artifact-tick {
   gap: 16px;
   width: 100%;
   padding: 16px 20px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-left: 5px solid #38b6ff;
-  border-radius: 18px;
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--blue);
   cursor: pointer;
   text-align: left;
-  transition: transform 0.16s ease, box-shadow 0.16s ease;
+  transition: box-shadow 0.16s ease;
 }
 
 .build-action-card.mode-artifact {
-  border-left-color: #00bf63;
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--green);
 }
 
 .build-action-card.mode-understand {
-  border-left-color: #b2a5ff;
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--soft-purple);
 }
 
 .build-action-card.mode-fix {
-  border-left-color: #f5b800;
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--amber);
 }
 
-.build-action-card.mode-build {
-  border-left-color: #38b6ff;
-}
-
+/* real signal: the recommended next action */
 .build-action-card--primary {
-  box-shadow: 0 18px 46px rgba(0, 191, 99, 0.14);
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--green), 0 0 0 3px rgba(0, 191, 99, 0.16);
 }
 
-.build-action-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 42px rgba(47, 52, 65, 0.08);
+.build-action-card:active {
+  box-shadow: var(--pressed);
 }
 
 .build-action-body {
@@ -8084,7 +8076,7 @@ body.stage-artifact .artifact-tick {
 .build-action-label {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .build-action-prompt {
@@ -8092,34 +8084,27 @@ body.stage-artifact .artifact-tick {
   color: var(--muted);
 }
 
+/* soft-tag base supplies border/background/shadow — color/size delta only */
 .build-action-badge {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 4px 10px;
-  border-radius: 20px;
+  color: var(--blue);
   flex-shrink: 0;
 }
 
 .build-action-badge.mode-artifact {
-  background: #00bf63;
-  color: #ffffff;
+  color: var(--green);
 }
 
 .build-action-badge.mode-understand {
-  background: #b2a5ff;
-  color: var(--text);
+  color: var(--soft-purple);
 }
 
 .build-action-badge.mode-fix {
-  background: #f5b800;
-  color: var(--text);
-}
-
-.build-action-badge.mode-build {
-  background: #38b6ff;
-  color: var(--text);
+  color: var(--amber);
 }
 
 /* ─── Artifact Workspace ──────────────────────────────────────────────────── */
