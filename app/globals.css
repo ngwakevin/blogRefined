@@ -58,6 +58,38 @@
      --active-shadow (0.26), which stays untouched since it's already used
      elsewhere for non-focus glows/drop-shadows at its original intensity. */
   --active-shadow-strong: rgba(139, 124, 255, 0.4);
+
+  /* Dark-surface soft recipe — a second, parallel material for genuinely
+     idiomatic dark chrome (terminals, CLI/code blocks). NOT a "dark mode" of
+     the whole app: --raised/--inset etc. assume the light --background and
+     must not be used on these surfaces. Same shadow-pair logic, inverted:
+     the surface is deep desaturated slate rather than white, so its own
+     shadow is darker-than-itself (bottom-right) + a subtle lighter edge
+     (top-left), at the same --r-card/--r-ctrl radii as every other card.
+     Reusable by Build/Artifact wherever they need real terminal/code chrome. */
+  --dark-surface: #2c313c;
+  --dark-shadow-lo: #1c2027;
+  --dark-shadow-hi: #3d4450;
+  --dark-ink: #f4f6f8;
+  --dark-body: #aab2c0;
+  --dark-faint: #6b7280;
+  --dark-raised: 9px 9px 18px var(--dark-shadow-lo), -9px -9px 18px var(--dark-shadow-hi);
+  --dark-raised-sm: 5px 5px 10px var(--dark-shadow-lo), -5px -5px 10px var(--dark-shadow-hi);
+  --dark-pressed: inset 4px 4px 9px var(--dark-shadow-lo), inset -4px -4px 9px var(--dark-shadow-hi);
+  /* wells recessed INTO a dark surface (or embedded in a light card as a
+     "window" of dark content, e.g. a code block) — single-direction inset,
+     no counter-highlight needed the way the light --inset pair has one.
+     -sm is the lighter-weight variant for small/inline code chips where the
+     full offsets read as muddy. */
+  --dark-inset: inset 4px 4px 9px rgba(0, 0, 0, 0.3);
+  --dark-inset-sm: inset 2px 2px 5px rgba(0, 0, 0, 0.25);
+
+  /* Syntax/status accents tuned for readability on --dark-surface — brighter
+     than the light-surface --green/--blue/--amber (which would look muddy on
+     slate) but pulled back from neon. Same hue families, not new colors. */
+  --dark-green: #3ecf8e;
+  --dark-blue: #63c7ff;
+  --dark-amber: #ffcb66;
 }
 
 /* High-contrast override (brief §7) — toggle by setting data-contrast="high" on <html>.
@@ -2236,11 +2268,18 @@ button {
   border: 0;
   border-radius: 999px;
   padding: 12px 15px;
-  background: var(--text);
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--body);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 12px;
+  transition: box-shadow 0.15s ease;
+}
+
+.smart-evidence-input button:active,
+.artifact-toolbar button:active {
+  box-shadow: var(--pressed);
 }
 
 .smart-evidence-input button:disabled {
@@ -2267,10 +2306,9 @@ button {
   font-size: 10px;
 }
 
+/* border/background/shadow from the shared .soft-subcard group */
 .compare-row {
   padding: 10px;
-  border-radius: 14px;
-  background: rgba(242, 243, 247, 0.62);
   font-size: 12px;
 }
 
@@ -2280,8 +2318,10 @@ button {
   color: var(--muted);
 }
 
+/* real signal (a mismatched field) — accent ring stacked on top of the
+   shared raised-sm shadow */
 .compare-mismatch {
-  box-shadow: inset 0 0 0 1px rgba(245, 184, 0, 0.34);
+  box-shadow: var(--raised-sm), inset 0 0 0 1px var(--amber);
 }
 
 .diagnostic-terminal {
@@ -2839,7 +2879,8 @@ body.stage-artifact .artifact-tick {
    raised shadow pair reads — border and translucency are gone, not just re-colored. */
 .live-diagnosis-panel,
 .workspace-card,
-.artifact-toolbar {
+.artifact-toolbar,
+.workspace-panel {
   background: var(--background);
   border: none;
   border-radius: var(--r-card);
@@ -2865,7 +2906,11 @@ body.stage-artifact .artifact-tick {
 .understand-teach-score,
 .understand-teach-section-label,
 .shareable-insight-tag,
-.dash-nav-badge {
+.dash-nav-badge,
+.priority-pill,
+.branch-evidence-badge,
+.map-state,
+.hop-node em {
   border: none;
   border-radius: 999px;
   background: var(--background);
@@ -2944,6 +2989,26 @@ body.stage-artifact .artifact-tick {
   box-shadow: var(--pressed);
 }
 
+/* .soft-subcard: a non-interactive nested box (no onClick, no :active state) —
+   raised-sm, same material as a button at rest but never presses. Resolved
+   from Fix's usage: stat/detail rows and read-only content blocks that sit
+   inside an already-raised parent card. */
+.soft-subcard,
+.failure-branch-column,
+.timeline-item,
+.scratchpad-list article,
+.compare-row,
+.evidence-branch-section,
+.investigation-branch-evidence,
+.investigation-next-action,
+.next-action,
+.command-card {
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+}
+
 .live-diagnosis-panel {
   padding: 28px;
   border-radius: 34px;
@@ -2966,26 +3031,26 @@ body.stage-artifact .artifact-tick {
   line-height: 0.98;
 }
 
+/* stat card, same treatment as .understand-clarity-pill */
 .confidence-pill {
   min-width: 124px;
   padding: 8px 10px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 14px 34px rgba(47, 52, 65, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
 }
 
 .confidence-pill span {
   display: block;
   margin-bottom: 4px;
-  color: var(--muted);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 9px;
 }
 
 .confidence-pill strong {
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 10.5px;
 }
@@ -3092,6 +3157,8 @@ body.stage-artifact .artifact-tick {
   line-height: 1.5;
 }
 
+/* base rule (the concept-snapshot-scoped override further down handles that
+   variant) — same carved-well treatment as everywhere else this appears */
 .original-issue-meta {
   display: flex;
   flex-wrap: wrap;
@@ -3099,13 +3166,14 @@ body.stage-artifact .artifact-tick {
   align-items: center;
   margin-top: 18px;
   padding: 12px 14px;
-  border: 1px solid rgba(47, 52, 65, 0.07);
-  border-radius: 18px;
-  background: rgba(242, 243, 247, 0.68);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset);
 }
 
 .original-issue-meta span {
-  color: rgba(47, 52, 65, 0.55);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 10px;
   letter-spacing: 0.02em;
@@ -3113,7 +3181,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .original-issue-meta strong {
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 12px;
   font-weight: 500;
@@ -3121,14 +3189,15 @@ body.stage-artifact .artifact-tick {
   overflow-wrap: anywhere;
 }
 
+/* FLATTENED: was a solid amber-filled hero card. Same raised treatment as
+   every other section now that it's no longer "embedded" transparent. */
 .infrastructure-map {
   margin-top: 20px;
   padding: 22px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 30px;
-  background: #f5b800;
-  box-shadow: 0 30px 80px rgba(245, 184, 0, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  border: none;
+  border-radius: var(--r-card);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .map-header {
@@ -3139,14 +3208,14 @@ body.stage-artifact .artifact-tick {
 
 .map-kicker {
   margin: 0 0 10px;
-  color: rgba(47, 52, 65, 0.62);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 12px;
 }
 
 .map-header h3 {
   margin: 0;
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: 30px;
   font-weight: 500;
@@ -3154,15 +3223,11 @@ body.stage-artifact .artifact-tick {
   line-height: 1;
 }
 
+/* border/background/shadow from the shared soft-tag group above */
 .map-state {
   height: fit-content;
   padding: 8px 11px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 10px 22px rgba(47, 52, 65, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 11px;
 }
@@ -3180,81 +3245,68 @@ body.stage-artifact .artifact-tick {
   display: contents;
 }
 
+/* status is a real signal (healthy/warning/failed) — kept as a colored ring
+   accent instead of a colored border; the em label stays a soft-tag with
+   status-colored text instead of a status-colored fill */
 .hop-node {
   min-width: 160px;
   padding: 16px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.64);
-  box-shadow: 0 12px 26px rgba(47, 52, 65, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.74);
-  transition: transform 0.36s ease, box-shadow 0.36s ease, border-color 0.36s ease;
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  transition: box-shadow 0.36s ease;
 }
 
 .hop-index {
   display: block;
   margin-bottom: 9px;
-  color: var(--text);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 11px;
 }
 
 .hop-node strong {
   display: block;
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 13px;
   line-height: 1.3;
 }
 
+/* soft-tag base supplies border/background/shadow — status text color only here */
 .hop-node em {
   display: inline-flex;
   margin-top: 10px;
   padding: 5px 8px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  color: rgba(47, 52, 65, 0.72);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 10px;
   font-style: normal;
 }
 
 .hop-node[data-status="healthy"] {
-  border-color: rgba(0, 191, 99, 0.86);
-  box-shadow: 0 0 0 3px rgba(0, 191, 99, 0.14),
-    0 12px 26px rgba(47, 52, 65, 0.08);
+  box-shadow: var(--raised-sm), 0 0 0 3px rgba(0, 191, 99, 0.22);
 }
 
 .hop-node[data-status="healthy"] em {
-  background: #00bf63;
-  border-color: #00bf63;
-  color: #ffffff;
+  color: var(--green);
 }
 
 .hop-node[data-status="failed"] {
-  border-color: rgba(47, 52, 65, 0.7);
-  transform: translateY(-2px);
-  box-shadow: 0 0 0 3px rgba(47, 52, 65, 0.12),
-    0 12px 26px rgba(47, 52, 65, 0.08);
+  box-shadow: var(--raised-sm), 0 0 0 3px rgba(47, 52, 65, 0.22);
 }
 
 .hop-node[data-status="failed"] em {
-  background: var(--text);
-  border-color: var(--text);
-  color: #ffffff;
+  color: var(--ink);
 }
 
 .hop-node[data-status="warning"] {
-  border-color: rgba(56, 182, 255, 0.92);
-  box-shadow: 0 0 0 3px rgba(56, 182, 255, 0.16),
-    0 12px 26px rgba(47, 52, 65, 0.08);
+  box-shadow: var(--raised-sm), 0 0 0 3px rgba(56, 182, 255, 0.24);
 }
 
 .hop-node[data-status="warning"] em {
-  background: #38b6ff;
-  border-color: #38b6ff;
-  color: #ffffff;
+  color: var(--blue);
 }
 
 .hop-line {
@@ -3481,48 +3533,25 @@ body.stage-artifact .artifact-tick {
   margin-top: 0;
 }
 
-.live-diagnosis-panel {
-  background: radial-gradient(
-      circle at 92% 0%,
-      rgba(255, 255, 255, 0.34),
-      transparent 32%
-    ),
-    var(--yellow);
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  box-shadow: 0 30px 80px rgba(245, 184, 0, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.34);
-}
-
+/* FLATTENED: another full opaque yellow hero fill (same pattern as
+   Understand's old concept-snapshot). Neutral raised now; no further
+   descendant color over-tuning needed since it's no longer sitting on a
+   bright fill. */
 .live-diagnosis-panel .block-label,
 .live-diagnosis-panel .diagnosis-answer,
 .live-diagnosis-panel .original-issue-meta span {
-  color: rgba(47, 52, 65, 0.68);
+  color: var(--faint);
 }
 
 .live-diagnosis-panel h2,
 .live-diagnosis-panel .original-issue-meta strong {
-  color: var(--text);
-}
-
-.live-diagnosis-panel .confidence-pill,
-.live-diagnosis-panel .original-issue-meta {
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  background: #ffffff;
-}
-
-.live-diagnosis-panel .confidence-pill {
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
-}
-
-.infrastructure-map {
-  background: linear-gradient(135deg, #f5b800 0%, #ffd51e 100%);
+  color: var(--ink);
 }
 
 .failure-branches-panel {
   display: grid;
   gap: 18px;
   padding: 24px;
-  background: #ffffff;
 }
 
 .failure-branches-grid,
@@ -3532,38 +3561,37 @@ body.stage-artifact .artifact-tick {
   gap: 16px;
 }
 
+/* FLATTENED: each branch tone (green/blue/purple/neutral) used to fill the
+   WHOLE card with a gradient, further overridden by priority+slot combos
+   that could silently swap a card's displayed color away from its actual
+   category. Both signals now coexist instead of one clobbering the other:
+   category (branch tone) reads via the left-edge bar + kicker color; a
+   card's priority reads via the priority-pill text color. Card material
+   itself is uniform raised-sm regardless of tone or priority. */
 .failure-branch-card {
+  position: relative;
   min-width: 0;
-  padding: 18px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 20px;
-  background: rgba(242, 243, 247, 0.66);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.52);
+  padding: 18px 18px 18px 22px;
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--muted);
 }
 
-.failure-branch-card.branch-green {
-  border-color: rgba(0, 191, 99, 0.28);
-  background: linear-gradient(135deg, var(--green) 0%, #27d77f 100%);
-  color: #ffffff;
+.failure-branch-card.branch-green { box-shadow: var(--raised-sm), inset 4px 0 0 var(--green); }
+.failure-branch-card.branch-blue { box-shadow: var(--raised-sm), inset 4px 0 0 var(--blue); }
+.failure-branch-card.branch-purple { box-shadow: var(--raised-sm), inset 4px 0 0 var(--soft-purple); }
+.failure-branch-card.branch-neutral { box-shadow: var(--raised-sm), inset 4px 0 0 var(--amber); }
+
+/* real signal: evidence matched this branch — an accent ring, not a bigger card */
+.failure-branch-card.has-evidence {
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--muted), 0 0 0 3px rgba(139, 124, 240, 0.22);
 }
 
-.failure-branch-card.branch-blue {
-  border-color: rgba(56, 182, 255, 0.32);
-  background: linear-gradient(135deg, var(--blue) 0%, #63caff 100%);
-  color: #ffffff;
-}
-
-.failure-branch-card.branch-purple {
-  border-color: rgba(178, 165, 255, 0.34);
-  background: linear-gradient(135deg, #b2a5ff 0%, #c4bbff 100%);
-  color: var(--text);
-}
-
-.failure-branch-card.branch-neutral {
-  border-color: rgba(245, 184, 0, 0.34);
-  background: linear-gradient(135deg, #f5b800 0%, #ffd51e 100%);
-  color: var(--text);
-}
+.failure-branch-card.has-evidence.branch-green { box-shadow: var(--raised-sm), inset 4px 0 0 var(--green), 0 0 0 3px rgba(139, 124, 240, 0.22); }
+.failure-branch-card.has-evidence.branch-blue { box-shadow: var(--raised-sm), inset 4px 0 0 var(--blue), 0 0 0 3px rgba(139, 124, 240, 0.22); }
+.failure-branch-card.has-evidence.branch-purple { box-shadow: var(--raised-sm), inset 4px 0 0 var(--soft-purple), 0 0 0 3px rgba(139, 124, 240, 0.22); }
+.failure-branch-card.has-evidence.branch-neutral { box-shadow: var(--raised-sm), inset 4px 0 0 var(--amber), 0 0 0 3px rgba(139, 124, 240, 0.22); }
 
 .failure-branch-meta {
   display: flex;
@@ -3574,7 +3602,7 @@ body.stage-artifact .artifact-tick {
 
 .failure-branch-card h4 {
   margin: 0;
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: 18px;
   letter-spacing: -0.04em;
@@ -3583,22 +3611,25 @@ body.stage-artifact .artifact-tick {
 
 .failure-branch-card p {
   margin: 11px 0 0;
-  color: rgba(47, 52, 65, 0.72);
+  color: var(--body);
   font-size: 13px;
   line-height: 1.45;
   overflow-wrap: anywhere;
 }
 
+/* soft-tag base supplies border/background/shadow — uniform regardless of
+   branch tone; priority is the only color signal this pill carries now */
 .failure-branch-card .priority-pill {
   flex: 0 0 auto;
   padding: 6px 8px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.62);
-  color: rgba(47, 52, 65, 0.72);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 10px;
 }
+
+.failure-branch-card.priority-high .priority-pill { color: var(--danger); }
+.failure-branch-card.priority-medium .priority-pill { color: var(--amber); }
+.failure-branch-card.priority-low .priority-pill { color: var(--muted); }
 
 .failure-branch-card .failure-branch-columns {
   gap: 18px;
@@ -3606,7 +3637,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .failure-branch-card strong {
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 11px;
 }
@@ -3616,7 +3647,7 @@ body.stage-artifact .artifact-tick {
   gap: 8px;
   margin: 9px 0 0;
   padding-left: 16px;
-  color: rgba(47, 52, 65, 0.68);
+  color: var(--muted);
   font-size: 12px;
   line-height: 1.45;
 }
@@ -3625,95 +3656,15 @@ body.stage-artifact .artifact-tick {
   overflow-wrap: anywhere;
 }
 
-.failure-branch-card.has-evidence {
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.16),
-    0 18px 44px rgba(47, 52, 65, 0.12);
-}
-
+/* soft-tag base supplies border/background/shadow */
 .branch-evidence-badge {
   display: inline-flex;
   width: fit-content;
   margin-top: 10px;
   padding: 6px 9px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.66);
-  color: rgba(47, 52, 65, 0.78);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 10px;
-}
-
-.failure-branch-card.branch-blue .branch-evidence-badge,
-.failure-branch-card.branch-green .branch-evidence-badge,
-.failure-branch-card.branch-purple .branch-evidence-badge,
-.failure-branch-card.branch-neutral .branch-evidence-badge {
-  border-color: rgba(255, 255, 255, 0.24);
-  background: rgba(255, 255, 255, 0.28);
-  color: var(--text);
-}
-
-.failure-branch-card.branch-blue h4,
-.failure-branch-card.branch-green h4,
-.failure-branch-card.branch-purple h4,
-.failure-branch-card.branch-neutral h4,
-.failure-branch-card.branch-blue p,
-.failure-branch-card.branch-green p,
-.failure-branch-card.branch-purple p,
-.failure-branch-card.branch-neutral p,
-.failure-branch-card.branch-blue li,
-.failure-branch-card.branch-green li,
-.failure-branch-card.branch-purple li,
-.failure-branch-card.branch-neutral li,
-.failure-branch-card.branch-blue strong,
-.failure-branch-card.branch-green strong,
-.failure-branch-card.branch-purple strong,
-.failure-branch-card.branch-neutral strong {
-  color: var(--text);
-}
-
-.failure-branch-card.branch-blue ul,
-.failure-branch-card.branch-green ul,
-.failure-branch-card.branch-purple ul,
-.failure-branch-card.branch-neutral ul {
-  color: rgba(47, 52, 65, 0.72);
-}
-
-.failure-branch-card.branch-blue .mini-label,
-.failure-branch-card.branch-green .mini-label,
-.failure-branch-card.branch-purple .mini-label,
-.failure-branch-card.branch-neutral .mini-label {
-  color: rgba(47, 52, 65, 0.62);
-}
-
-.failure-branch-card.branch-blue .priority-pill,
-.failure-branch-card.branch-green .priority-pill,
-.failure-branch-card.branch-purple .priority-pill,
-.failure-branch-card.branch-neutral .priority-pill {
-  background: rgba(255, 255, 255, 0.34);
-  color: var(--text);
-  border-color: rgba(255, 255, 255, 0.28);
-}
-
-.failure-branch-card.branch-green h4,
-.failure-branch-card.branch-green p,
-.failure-branch-card.branch-green li,
-.failure-branch-card.branch-green strong {
-  color: rgba(255, 255, 255, 0.94);
-}
-
-.failure-branch-card.branch-green ul {
-  color: rgba(255, 255, 255, 0.88);
-}
-
-.failure-branch-card.branch-green .mini-label {
-  color: rgba(255, 255, 255, 0.74);
-}
-
-.failure-branch-card.branch-green .priority-pill,
-.failure-branch-card.branch-green .branch-evidence-badge {
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .causal-graph-panel {
@@ -4039,16 +3990,23 @@ body.stage-artifact .artifact-tick {
   margin-top: 12px;
 }
 
+/* soft-btn-style */
 .show-more-checks {
   margin-top: 14px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
+  border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.62);
-  color: var(--text);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 12px;
   padding: 9px 13px;
+  transition: box-shadow 0.15s ease;
+}
+
+.show-more-checks:active {
+  box-shadow: var(--pressed);
 }
 
 .command-card-topline {
@@ -4062,12 +4020,14 @@ body.stage-artifact .artifact-tick {
   align-items: center;
   gap: 8px;
   margin: 0;
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: 19px;
   letter-spacing: -0.045em;
 }
 
+/* category dot — a real technical cue (which kind of check this is), kept as
+   a small color moment */
 .name-resolution-card h4::before,
 .port-reachability-card h4::before {
   width: 9px;
@@ -4078,43 +4038,52 @@ body.stage-artifact .artifact-tick {
 }
 
 .name-resolution-card h4::before {
-  background: #38b6ff;
+  background: var(--blue);
   box-shadow: 0 0 0 4px rgba(56, 182, 255, 0.12);
 }
 
 .port-reachability-card h4::before {
-  background: #00bf63;
+  background: var(--green);
   box-shadow: 0 0 0 4px rgba(0, 191, 99, 0.12);
 }
 
-.copy-btn,
-.evidence-chips button {
-  border: 1px solid rgba(47, 52, 65, 0.08);
+/* soft-btn-style, small */
+.copy-btn {
+  border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--muted);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 10px;
   padding: 6px 9px;
+  transition: box-shadow 0.15s ease;
 }
 
+.copy-btn:active {
+  box-shadow: var(--pressed);
+}
+
+/* dark-soft window embedded in the light command-card — same family as the
+   terminal, dark-inset (not raised, since it's recessed content inside an
+   already-raised parent) with the category accent as an inset stripe (not a
+   literal border) */
 .command-card pre {
   margin: 14px 0;
   padding: 14px;
-  border: 1px solid rgba(56, 182, 255, 0.16);
-  border-radius: 15px;
-  background: #202633;
-  color: #ffffff;
-  box-shadow: inset 4px 0 0 #38b6ff, 0 14px 30px rgba(47, 52, 65, 0.1);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--dark-surface);
+  color: var(--dark-ink);
+  box-shadow: var(--dark-inset), inset 4px 0 0 var(--dark-blue);
   font-family: var(--font-code);
   font-size: 12px;
   line-height: 1.55;
 }
 
 .port-reachability-card pre {
-  border-color: rgba(0, 191, 99, 0.24);
-  box-shadow: inset 4px 0 0 #00bf63, 0 14px 30px rgba(0, 191, 99, 0.1);
+  box-shadow: var(--dark-inset), inset 4px 0 0 var(--dark-green);
 }
 
 .signal-grid {
@@ -4133,28 +4102,29 @@ body.stage-artifact .artifact-tick {
   color: var(--text);
 }
 
+/* hairline divider replaced with an inset emboss groove */
 .decision-row {
   display: grid;
   grid-template-columns: 170px 1fr;
   gap: 14px;
   padding: 14px 0;
-  border-top: 1px solid rgba(47, 52, 65, 0.08);
+  box-shadow: inset 0 1px 0 var(--shadow-hi);
 }
 
 .decision-row:first-of-type {
-  border-top: 0;
+  box-shadow: none;
   padding-top: 0;
 }
 
 .decision-row span {
-  color: #00bf63;
+  color: var(--green);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 600;
 }
 
 .decision-row strong {
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: 17px;
   letter-spacing: -0.04em;
@@ -4168,27 +4138,12 @@ body.stage-artifact .artifact-tick {
   line-height: 1.35;
 }
 
-.path-update-panel {
-  background: #38b6ff;
-  border-color: rgba(47, 52, 65, 0.08);
-  box-shadow: 0 24px 60px rgba(56, 182, 255, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.scratchpad-panel {
-  background: #00bf63;
-  border-color: rgba(47, 52, 65, 0.08);
-  box-shadow: 0 24px 60px rgba(0, 191, 99, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.journey-timeline {
-  background: #b2a5ff;
-  border-color: rgba(47, 52, 65, 0.08);
-  box-shadow: 0 24px 60px rgba(178, 165, 255, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
+/* FLATTENED: path-update-panel/scratchpad-panel/journey-timeline were each a
+   different solid-fill hero color (blue/green/purple) with white text — pure
+   decoration (none of it is status-driven; checked, there's no CSS keyed to
+   pathUpdate.status despite the class hook existing). All three are now the
+   same neutral raised card as everything else; no signal is lost since the
+   status word itself is still rendered as plain text. */
 .journey-timeline.is-collapsed {
   padding-bottom: 20px;
 }
@@ -4207,7 +4162,7 @@ body.stage-artifact .artifact-tick {
 .scratchpad-panel .block-label,
 .journey-timeline .block-label,
 .path-update-panel .mini-label {
-  color: rgba(255, 255, 255, 0.76);
+  color: var(--faint);
 }
 
 .path-update-panel h3,
@@ -4215,7 +4170,7 @@ body.stage-artifact .artifact-tick {
 .journey-timeline h3,
 .path-update-panel .next-action strong,
 .timeline-topline strong {
-  color: #ffffff;
+  color: var(--ink);
 }
 
 .path-update-panel p,
@@ -4224,7 +4179,7 @@ body.stage-artifact .artifact-tick {
 .journey-timeline p,
 .timeline-item p,
 .timeline-topline em {
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--body);
   overflow-wrap: anywhere;
 }
 
@@ -4242,7 +4197,7 @@ body.stage-artifact .artifact-tick {
   align-items: flex-start;
   border: 0;
   background: transparent;
-  color: #ffffff;
+  color: var(--ink);
   cursor: pointer;
   padding: 0;
   text-align: left;
@@ -4255,7 +4210,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .timeline-toggle strong {
-  color: #ffffff;
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: 18px;
   letter-spacing: -0.04em;
@@ -4276,11 +4231,14 @@ body.stage-artifact .artifact-tick {
   font-style: normal;
 }
 
+/* soft-tag-style, static */
 .timeline-toggle-meta em {
   padding: 6px 8px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--muted);
 }
 
 .timeline-toggle-meta b {
@@ -4289,13 +4247,15 @@ body.stage-artifact .artifact-tick {
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
 }
 
 .timeline-collapsed-summary {
   margin: 12px 0 0;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--body);
   font-size: 13px;
   line-height: 1.4;
 }
@@ -4334,14 +4294,17 @@ body.stage-artifact .artifact-tick {
   margin-top: 12px;
 }
 
+/* small inline command chip — dark-soft-sm (lighter offsets than the full
+   terminal recipe read better at this size) */
 .next-action-commands code {
   display: block;
   max-width: 100%;
   overflow-x: auto;
   padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(15, 23, 42, 0.22);
-  color: #ffffff;
+  border-radius: var(--r-ctrl);
+  background: var(--dark-surface);
+  box-shadow: var(--dark-inset-sm);
+  color: var(--dark-ink);
   font-family: var(--font-code);
   font-size: 12px;
   line-height: 1.45;
@@ -4356,19 +4319,17 @@ body.stage-artifact .artifact-tick {
   margin-top: 14px;
 }
 
+/* border/background/shadow from the shared .soft-subcard group */
 .scratchpad-list article {
   min-width: 0;
   max-width: 100%;
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.2);
 }
 
 .scratchpad-list span {
   display: block;
   margin-bottom: 7px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 10px;
 }
@@ -4378,7 +4339,7 @@ body.stage-artifact .artifact-tick {
   max-width: 100%;
   border: 0;
   background: transparent;
-  color: #ffffff;
+  color: var(--soft-purple);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 12px;
@@ -4430,48 +4391,44 @@ body.stage-artifact .artifact-tick {
   font-style: normal;
 }
 
+/* FLATTENED: another solid --yellow fill (same family as live-diagnosis-panel
+   and infrastructure-map). Neutral raised now. */
 .smart-evidence-panel,
 .evidence-panel {
   margin-top: 20px;
   padding: 24px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 28px;
-  background: var(--yellow);
-  box-shadow: 0 30px 80px rgba(245, 184, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.32);
-  color: var(--text);
 }
 
 .smart-evidence-panel h3,
 .evidence-panel h3 {
-  color: var(--text);
+  color: var(--ink);
 }
 
 .smart-evidence-panel p,
 .evidence-panel p {
-  color: rgba(47, 52, 65, 0.72);
+  color: var(--body);
 }
 
 .smart-evidence-panel .section-label,
 .smart-evidence-panel .block-label,
 .evidence-panel .section-label,
 .evidence-panel .block-label {
-  color: rgba(47, 52, 65, 0.62);
+  color: var(--faint);
 }
 
+/* border/background/shadow from the shared .soft-tag group — this was
+   redundantly re-declaring the pre-migration white/bordered pill here,
+   overriding the shared base */
 .drop-pill {
   height: fit-content;
   padding: 8px 10px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 10px 22px rgba(47, 52, 65, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 10px;
 }
 
+/* FLATTENED: flat white card + border + drop-shadow -> carved-in well, same
+   treatment as Understand's teach-textarea */
 .evidence-prompt-shell {
   min-height: 152px;
   width: 100%;
@@ -4480,43 +4437,51 @@ body.stage-artifact .artifact-tick {
   align-items: start;
   gap: 10px;
   padding: 14px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 22px;
-  background: #ffffff;
-  box-shadow: 0 18px 45px rgba(47, 52, 65, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset);
 }
 
 .evidence-prompt-shell:focus-within {
-  border-color: rgba(47, 52, 65, 0.32);
-  background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(47, 52, 65, 0.08),
-    0 18px 45px rgba(47, 52, 65, 0.1);
+  box-shadow: var(--inset), 0 0 0 2px var(--active-shadow-strong);
 }
 
-.evidence-prompt-plus,
+/* static icon, not a control */
+.evidence-prompt-plus {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--faint);
+  font-family: var(--font-code);
+  font-size: 16px;
+}
+
+/* the real submit action — soft-btn circle */
 .evidence-prompt-enter {
   width: 34px;
   height: 34px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(47, 52, 65, 0.1);
+  border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.42);
-  color: rgba(47, 52, 65, 0.58);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   font-family: var(--font-code);
   font-size: 16px;
-}
-
-.evidence-prompt-enter {
   cursor: pointer;
+  transition: box-shadow 0.15s ease;
 }
 
-.evidence-prompt-enter:hover {
-  background: rgba(47, 52, 65, 0.9);
-  border-color: rgba(47, 52, 65, 0.9);
-  color: #ffffff;
-  transform: translateY(-1px);
+.evidence-prompt-enter:hover,
+.evidence-prompt-enter:active {
+  box-shadow: var(--pressed);
 }
 
 .evidence-prompt-shell textarea {
@@ -4526,21 +4491,15 @@ body.stage-artifact .artifact-tick {
   outline: 0;
   resize: vertical;
   background: transparent;
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 13px;
   line-height: 1.55;
 }
 
-.smart-evidence-panel textarea,
-.evidence-panel textarea {
-  background: #ffffff;
-  color: var(--text);
-}
-
 .smart-evidence-panel textarea::placeholder,
 .evidence-panel textarea::placeholder {
-  color: rgba(47, 52, 65, 0.48);
+  color: var(--faint);
 }
 
 .evidence-chips {
@@ -4550,26 +4509,45 @@ body.stage-artifact .artifact-tick {
   margin: 12px 0;
 }
 
-.evidence-chips button,
+/* sample-prompt chip — soft-chip material (these fill the textarea on click,
+   same "pick one" shape as .understand-analogy-tab) */
+.evidence-chips button {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--body);
+  font-family: var(--font-code);
+  font-size: 10px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
 .evidence-mode-pill {
   border: 1px solid rgba(47, 52, 65, 0.1);
   background: rgba(255, 255, 255, 0.4);
   color: rgba(47, 52, 65, 0.72);
 }
 
-.evidence-chips button:hover,
+.evidence-chips button:active {
+  box-shadow: var(--pressed);
+}
+
 .evidence-mode-pill.active {
   border-color: rgba(47, 52, 65, 0.9);
   background: rgba(47, 52, 65, 0.9);
   color: #ffffff;
 }
 
+/* grouping well for the signal chips — inset, like a tray they sit in */
 .detected-signals {
   margin-top: 16px;
   padding: 14px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.72);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset);
 }
 
 .detected-signals-inline-heading {
@@ -4595,12 +4573,16 @@ body.stage-artifact .artifact-tick {
   margin-top: 12px;
 }
 
+/* real signal (which diagnostic category this evidence maps to) — soft-tag
+   material, tone moves to text color instead of a solid fill */
 .detected-signal-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid transparent;
+  border: none;
   border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   padding: 8px 12px;
   font-family: var(--font-code);
   font-size: 11px;
@@ -4610,64 +4592,48 @@ body.stage-artifact .artifact-tick {
 
 .detected-signal-chip.signal-rbac,
 .detected-signal-chip.signal-success {
-  border-color: rgba(0, 191, 99, 0.45);
-  background: var(--green);
-  box-shadow: 0 10px 24px rgba(0, 191, 99, 0.24);
-  color: #ffffff;
+  color: var(--green);
 }
 
-.detected-signal-chip.signal-network {
-  border-color: rgba(56, 182, 255, 0.45);
-  background: var(--blue);
-  box-shadow: 0 10px 24px rgba(56, 182, 255, 0.24);
-  color: #ffffff;
+.detected-signal-chip.signal-network,
+.detected-signal-chip.signal-info {
+  color: var(--blue);
 }
 
 .detected-signal-chip.signal-token {
-  border-color: rgba(178, 165, 255, 0.55);
-  background: #b2a5ff;
-  box-shadow: 0 10px 24px rgba(178, 165, 255, 0.26);
-  color: #ffffff;
+  color: var(--soft-purple);
 }
 
 .detected-signal-chip.signal-critical {
-  border-color: rgba(255, 92, 122, 0.5);
-  background: #ff5c7a;
-  box-shadow: 0 10px 24px rgba(255, 92, 122, 0.22);
-  color: #ffffff;
-}
-
-.detected-signal-chip.signal-info {
-  border-color: rgba(56, 182, 255, 0.45);
-  background: var(--blue);
-  box-shadow: 0 10px 24px rgba(56, 182, 255, 0.22);
-  color: #ffffff;
+  color: var(--danger);
 }
 
 .detected-signals-row.single-signal .detected-signal-chip {
   width: 100%;
   justify-content: space-between;
   padding: 12px 14px;
-  border-radius: 16px;
   font-size: 12px;
 }
 
 .evidence-empty-state {
   margin-top: 12px;
-  border: 1px dashed rgba(47, 52, 65, 0.14);
-  border-radius: 14px;
-  background: #ffffff;
-  color: rgba(47, 52, 65, 0.56);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 11px;
 }
 
+/* grouping well for the investigation-branch cards */
 .investigation-branches {
   margin-top: 16px;
   padding: 14px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.72);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset);
 }
 
 .investigation-branches-heading {
@@ -4689,20 +4655,22 @@ body.stage-artifact .artifact-tick {
   margin-top: 10px;
 }
 
+/* soft-btn-style, small */
 .evidence-branch-controls button {
   border: 0;
   border-radius: 999px;
-  background: rgba(47, 52, 65, 0.08);
-  color: rgba(47, 52, 65, 0.68);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--muted);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 10px;
   padding: 6px 9px;
+  transition: box-shadow 0.15s ease, color 0.15s ease;
 }
 
-.evidence-branch-controls button:hover {
-  background: rgba(47, 52, 65, 0.14);
-  color: var(--text);
+.evidence-branch-controls button:active {
+  box-shadow: var(--pressed);
 }
 
 .investigation-branch-list {
@@ -4711,97 +4679,36 @@ body.stage-artifact .artifact-tick {
   margin-top: 12px;
 }
 
+/* FLATTENED: same pattern as .failure-branch-card — branch tone (rbac/
+   network/token/configuration) used to fill the whole card with a gradient.
+   Tone now lives on the left-edge bar, matching failure-branch-card exactly
+   so Fix's two separate "branch card" systems read as one visual language. */
 .investigation-branch {
   overflow: hidden;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 18px;
-  background: #ffffff;
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--muted);
 }
 
+.investigation-branch.branch-rbac { box-shadow: var(--raised-sm), inset 4px 0 0 var(--green); }
+.investigation-branch.branch-network { box-shadow: var(--raised-sm), inset 4px 0 0 var(--blue); }
+.investigation-branch.branch-token { box-shadow: var(--raised-sm), inset 4px 0 0 var(--soft-purple); }
+.investigation-branch.branch-configuration { box-shadow: var(--raised-sm), inset 4px 0 0 var(--amber); }
+
+/* real signal: this is the branch currently under active investigation */
+.investigation-branch.status-active,
 .evidence-branch-card.is-active {
-  border-color: rgba(0, 191, 99, 0.4);
-  box-shadow: 0 12px 30px rgba(47, 52, 65, 0.08);
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--muted), 0 0 0 3px rgba(139, 124, 240, 0.22);
 }
 
-.evidence-branch-card.is-active.branch-network {
-  border-color: rgba(56, 182, 255, 0.42);
-}
+.investigation-branch.status-active.branch-rbac { box-shadow: var(--raised-sm), inset 4px 0 0 var(--green), 0 0 0 3px rgba(139, 124, 240, 0.22); }
+.investigation-branch.status-active.branch-network { box-shadow: var(--raised-sm), inset 4px 0 0 var(--blue), 0 0 0 3px rgba(139, 124, 240, 0.22); }
+.investigation-branch.status-active.branch-token { box-shadow: var(--raised-sm), inset 4px 0 0 var(--soft-purple), 0 0 0 3px rgba(139, 124, 240, 0.22); }
+.investigation-branch.status-active.branch-configuration { box-shadow: var(--raised-sm), inset 4px 0 0 var(--amber), 0 0 0 3px rgba(139, 124, 240, 0.22); }
 
-.evidence-branch-card.is-active.branch-token {
-  border-color: rgba(178, 165, 255, 0.5);
-}
-
-.evidence-branch-card.is-active.branch-configuration {
-  border-color: rgba(47, 52, 65, 0.34);
-}
-
-.investigation-branch.branch-rbac {
-  border-color: rgba(0, 191, 99, 0.35);
-}
-
-.investigation-branch.branch-network {
-  border-color: rgba(56, 182, 255, 0.35);
-}
-
-.investigation-branch.branch-token {
-  border-color: rgba(178, 165, 255, 0.5);
-}
-
-.investigation-branch.branch-configuration {
-  border-color: rgba(47, 52, 65, 0.2);
-}
-
-.investigation-branch.branch-rbac {
-  background: linear-gradient(135deg, #00bf63 0%, #27d77f 100%);
-  color: #ffffff;
-}
-
-.investigation-branch.branch-network {
-  background: linear-gradient(135deg, #38b6ff 0%, #63caff 100%);
-  color: var(--text);
-}
-
-.investigation-branch.branch-token {
-  background: linear-gradient(135deg, #b2a5ff 0%, #c4bbff 100%);
-  color: var(--text);
-}
-
-.investigation-branch.branch-configuration {
-  background: linear-gradient(135deg, #f5b800 0%, #ffd51e 100%);
-  color: var(--text);
-}
-
-.investigation-branch.status-active {
-  box-shadow: 0 14px 34px rgba(47, 52, 65, 0.08);
-}
-
-.investigation-branch.branch-rbac .investigation-branch-summary,
-.investigation-branch.branch-rbac .evidence-branch-header,
-.investigation-branch.branch-rbac .evidence-branch-title,
-.investigation-branch.branch-rbac .evidence-branch-preview,
-.investigation-branch.branch-rbac .evidence-branch-chevron {
-  color: #ffffff;
-}
-
-.investigation-branch.branch-rbac .evidence-branch-preview {
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.investigation-branch.branch-rbac .evidence-branch-confidence,
-.investigation-branch.branch-rbac .evidence-branch-status,
-.investigation-branch.branch-rbac .evidence-branch-chevron {
-  background: rgba(255, 255, 255, 0.22);
-  color: #ffffff;
-}
-
-.investigation-branch.branch-network .evidence-branch-confidence,
-.investigation-branch.branch-token .evidence-branch-confidence,
-.investigation-branch.branch-configuration .evidence-branch-confidence,
-.investigation-branch.branch-network .evidence-branch-chevron,
-.investigation-branch.branch-token .evidence-branch-chevron,
-.investigation-branch.branch-configuration .evidence-branch-chevron {
-  background: rgba(255, 255, 255, 0.3);
-  color: var(--text);
+.investigation-branch.status-dismissed {
+  opacity: 0.68;
 }
 
 .investigation-branch-summary,
@@ -4813,7 +4720,7 @@ body.stage-artifact .artifact-tick {
   align-items: center;
   border: 0;
   background: transparent;
-  color: var(--text);
+  color: var(--ink);
   cursor: pointer;
   padding: 14px;
   text-align: left;
@@ -4839,7 +4746,7 @@ body.stage-artifact .artifact-tick {
 .evidence-branch-preview {
   max-width: 100%;
   overflow: hidden;
-  color: rgba(47, 52, 65, 0.58);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 12px;
   font-weight: 500;
@@ -4864,51 +4771,31 @@ body.stage-artifact .artifact-tick {
   font-style: normal;
 }
 
-.investigation-branch-summary strong {
+/* soft-tag material — confidence % score, tone-colored text per branch */
+.investigation-branch-summary strong,
+.evidence-branch-confidence {
   padding: 5px 7px;
   border-radius: 999px;
-  background: rgba(47, 52, 65, 0.08);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--muted);
 }
 
-.evidence-branch-confidence {
-  border-radius: 999px;
-  padding: 5px 8px;
-  background: rgba(47, 52, 65, 0.08);
-  color: var(--text);
-  font-family: var(--font-code);
-  font-size: 11px;
-  font-weight: 800;
-}
+.evidence-branch-card.branch-rbac .evidence-branch-confidence { color: var(--green); }
+.evidence-branch-card.branch-network .evidence-branch-confidence { color: var(--blue); }
+.evidence-branch-card.branch-token .evidence-branch-confidence { color: var(--soft-purple); }
 
-.evidence-branch-card.branch-rbac .evidence-branch-confidence {
-  background: rgba(0, 191, 99, 0.16);
-  color: #007a3d;
-}
-
-.evidence-branch-card.branch-network .evidence-branch-confidence {
-  background: rgba(56, 182, 255, 0.16);
-  color: #03658f;
-}
-
-.evidence-branch-card.branch-token .evidence-branch-confidence {
-  background: rgba(178, 165, 255, 0.24);
-  color: #6153b8;
-}
-
-.investigation-branch-summary em {
-  padding: 5px 8px;
-  border-radius: 999px;
-  background: rgba(47, 52, 65, 0.92);
-  color: #ffffff;
-}
-
+/* status word (active/new/confirmed/dismissed) — a real state signal, kept
+   as a soft-tag with status-colored text rather than a solid fill */
+.investigation-branch-summary em,
 .evidence-branch-status {
-  border-radius: 999px;
   padding: 5px 8px;
-  background: rgba(47, 52, 65, 0.92);
-  color: #ffffff;
-  font-family: var(--font-code);
-  font-size: 11px;
+  border-radius: 999px;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--soft-purple);
 }
 
 .evidence-branch-chevron {
@@ -4917,20 +4804,18 @@ body.stage-artifact .artifact-tick {
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: rgba(47, 52, 65, 0.08);
-  color: rgba(47, 52, 65, 0.68);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--muted);
 }
 
 .investigation-branch.status-confirmed .investigation-branch-summary em {
-  background: var(--green);
-}
-
-.investigation-branch.status-dismissed {
-  opacity: 0.68;
+  color: var(--green);
 }
 
 .investigation-branch.status-dismissed .investigation-branch-summary em {
-  background: rgba(47, 52, 65, 0.35);
+  color: var(--faint);
 }
 
 .investigation-branch-detail,
@@ -4943,22 +4828,20 @@ body.stage-artifact .artifact-tick {
 
 .investigation-branch-detail p {
   margin: 0;
-  color: rgba(47, 52, 65, 0.74);
+  color: var(--body);
   font-size: 13px;
   line-height: 1.45;
 }
 
+/* border/background/shadow from the shared .soft-subcard group */
 .evidence-branch-section {
   display: grid;
   gap: 7px;
   padding: 12px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
 }
 
 .evidence-branch-section > span {
-  color: rgba(47, 52, 65, 0.56);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 10px;
   font-weight: 700;
@@ -4967,7 +4850,7 @@ body.stage-artifact .artifact-tick {
 
 .evidence-branch-section p,
 .evidence-branch-section li {
-  color: rgba(47, 52, 65, 0.76);
+  color: var(--body);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -4998,22 +4881,25 @@ body.stage-artifact .artifact-tick {
 }
 
 .evidence-branch-cli-list strong {
-  color: var(--text);
+  color: var(--ink);
 }
 
+/* small inline command chip — dark-soft-sm, same family as next-action-commands */
 .evidence-branch-cli-list code {
   overflow-x: auto;
   padding: 9px;
-  border-radius: 10px;
-  background: rgba(47, 52, 65, 0.94);
-  color: #ffffff;
+  border-radius: var(--r-ctrl);
+  background: var(--dark-surface);
+  box-shadow: var(--dark-inset-sm);
+  color: var(--dark-ink);
   white-space: pre;
 }
 
 .evidence-branch-cli-list em {
-  color: rgba(47, 52, 65, 0.58);
+  color: var(--faint);
 }
 
+/* border/background/shadow from the shared .soft-subcard group */
 .investigation-branch-evidence,
 .investigation-next-action,
 .evidence-branch-excerpt,
@@ -5021,21 +4907,32 @@ body.stage-artifact .artifact-tick {
   display: grid;
   gap: 6px;
   padding: 12px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
 }
 
 .investigation-branch-evidence span,
 .investigation-next-action span {
-  color: rgba(47, 52, 65, 0.56);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 10px;
 }
 
-.investigation-branch-evidence code,
+/* evidence excerpt is quoted raw text, not a shell command — stays a plain
+   inset well rather than dark-soft */
+.investigation-branch-evidence code {
+  display: block;
+  padding: 10px;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--ink);
+  font-family: var(--font-code);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
 .investigation-next-action strong {
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 11px;
   line-height: 1.5;
@@ -5049,44 +4946,52 @@ body.stage-artifact .artifact-tick {
   gap: 8px;
 }
 
+/* soft-tag material */
 .investigation-branch-signals span {
   padding: 7px 9px;
   border-radius: 999px;
-  background: rgba(47, 52, 65, 0.08);
-  color: rgba(47, 52, 65, 0.72);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 10px;
 }
 
+/* soft-btn material */
 .investigation-actions button {
-  border: 1px solid rgba(47, 52, 65, 0.1);
+  border: none;
   border-radius: 999px;
-  background: rgba(47, 52, 65, 0.92);
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--body);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 10px;
   padding: 8px 10px;
+  transition: box-shadow 0.15s ease;
 }
 
-.investigation-actions button:hover {
-  transform: translateY(-1px);
+.investigation-actions button:active {
+  box-shadow: var(--pressed);
 }
 
+/* Fix's main CTA — primary action per the mapping table: bg raised-sm,
+   accent text, press flips to pressed */
 .smart-evidence-panel .continue-btn,
 .analyse-evidence-button {
   border: 0;
   border-radius: 999px;
-  background: rgba(47, 52, 65, 0.94);
-  box-shadow: 0 14px 30px rgba(47, 52, 65, 0.18);
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   font-weight: 700;
+  transition: box-shadow 0.15s ease;
 }
 
-.smart-evidence-panel .continue-btn:hover,
-.analyse-evidence-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 36px rgba(47, 52, 65, 0.24);
+.smart-evidence-panel .continue-btn:active,
+.analyse-evidence-button:active {
+  box-shadow: var(--pressed);
 }
 
 .detected-signals-panel {
@@ -5210,41 +5115,62 @@ body.stage-artifact .artifact-tick {
   font-family: var(--font-code);
 }
 
+/* soft-btn material (superseded by the more specific rule below in every
+   real case, since this button always renders inside .smart-evidence-panel,
+   but kept in sync rather than left dark/dead) */
 .continue-btn {
   margin-top: 12px;
   border: 0;
   border-radius: 999px;
-  background: #00bf63;
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 12px;
   padding: 12px 15px;
-  box-shadow: 0 14px 30px rgba(0, 191, 99, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  transition: box-shadow 0.15s ease;
+}
+
+.continue-btn:active {
+  box-shadow: var(--pressed);
 }
 
 .smart-evidence-panel .continue-btn {
-  background: rgba(47, 52, 65, 0.94);
-  box-shadow: 0 14px 30px rgba(47, 52, 65, 0.18);
-  color: #ffffff;
   font-weight: 700;
 }
 
 .smart-evidence-panel .continue-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 36px rgba(47, 52, 65, 0.24);
+  box-shadow: var(--raised);
 }
 
+/* FLATTENED/DARK-SOFT: was a dark gradient card with a flat border + drop-
+   shadow. Kept dark on purpose (this is a shell, not decoration) but the
+   material is now the same neumorphic shadow-pair logic as every other
+   card, just on --dark-surface instead of --background. Window-dots are
+   the single sanctioned color moment; everything else in here is
+   light-on-dark content, not neumorphed per line. */
 .diagnostic-terminal {
+  position: relative;
   margin-top: 20px;
-  padding: 22px;
-  border: 1px solid rgba(56, 182, 255, 0.16);
-  border-radius: 30px;
-  background: linear-gradient(135deg, #202633 0%, #252d3c 100%);
-  color: #ffffff;
-  box-shadow: 0 30px 86px rgba(47, 52, 65, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: 40px 22px 22px;
+  border: none;
+  border-radius: var(--r-card);
+  background: var(--dark-surface);
+  color: var(--dark-ink);
+  box-shadow: var(--dark-raised);
+}
+
+.diagnostic-terminal::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ff5f56;
+  box-shadow: 16px 0 0 #ffbd2e, 32px 0 0 #27c93f;
 }
 
 .terminal-header {
@@ -5257,14 +5183,14 @@ body.stage-artifact .artifact-tick {
 
 .terminal-kicker {
   margin: 0 0 10px;
-  color: rgba(255, 255, 255, 0.56);
+  color: var(--dark-faint);
   font-family: var(--font-code);
   font-size: 12px;
 }
 
 .terminal-header h3 {
   margin: 0;
-  color: #ffffff;
+  color: var(--dark-ink);
   font-family: var(--font-heading);
   font-size: 30px;
   font-weight: 500;
@@ -5274,21 +5200,23 @@ body.stage-artifact .artifact-tick {
 
 .terminal-header p {
   margin: 9px 0 0;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--dark-body);
   font-size: 14px;
   line-height: 1.4;
 }
 
+/* small static tag on the dark surface — raised-sm, not translucent-white */
 .terminal-mode {
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
   gap: 8px;
   padding: 9px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
+  background: var(--dark-surface);
+  box-shadow: var(--dark-raised-sm);
+  color: var(--dark-ink);
   font-family: var(--font-code);
   font-size: 11px;
 }
@@ -5297,18 +5225,21 @@ body.stage-artifact .artifact-tick {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #38b6ff;
-  box-shadow: 0 0 0 4px rgba(56, 182, 255, 0.16);
+  background: var(--dark-blue);
 }
 
+/* the well holding command lines — inset into the dark surface */
 .terminal-body {
   overflow-x: auto;
   padding: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  background: rgba(13, 18, 28, 0.72);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--dark-shadow-lo);
+  box-shadow: var(--dark-inset);
 }
 
+/* content, not cards — flat on the dark well, hairline divider replaced with
+   a 1px emboss groove instead of a border */
 .terminal-line,
 .terminal-comment {
   display: grid;
@@ -5316,7 +5247,7 @@ body.stage-artifact .artifact-tick {
   gap: 10px;
   align-items: start;
   padding: 9px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
   font-family: var(--font-code);
   font-size: 13px;
   line-height: 1.45;
@@ -5325,27 +5256,27 @@ body.stage-artifact .artifact-tick {
 
 .terminal-line:first-child,
 .terminal-comment:first-child {
-  border-top: 0;
+  box-shadow: none;
   padding-top: 0;
 }
 
 .terminal-line code,
 .terminal-comment code {
-  color: #ffffff;
+  color: var(--dark-ink);
   font-family: var(--font-code);
 }
 
 .terminal-dns span {
-  color: #38b6ff;
+  color: var(--dark-blue);
 }
 
 .terminal-network span {
-  color: #00bf63;
+  color: var(--dark-green);
 }
 
 .terminal-comment span,
 .terminal-comment code {
-  color: #f5b800;
+  color: var(--dark-amber);
 }
 
 .terminal-actions {
@@ -5355,28 +5286,34 @@ body.stage-artifact .artifact-tick {
   margin-top: 16px;
 }
 
+/* real buttons on a dark panel still get press feedback — dark-soft raised-sm
+   at rest, pressed on :active — but no more three different solid fills */
 .terminal-actions button {
   border: 0;
   border-radius: 999px;
+  background: var(--dark-surface);
+  box-shadow: var(--dark-raised-sm);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 12px;
   padding: 11px 14px;
+  transition: box-shadow 150ms ease;
+}
+
+.terminal-actions button:active {
+  box-shadow: var(--dark-pressed);
 }
 
 .terminal-actions button:nth-child(1) {
-  background: #38b6ff;
-  color: #ffffff;
+  color: var(--dark-blue);
 }
 
 .terminal-actions button:nth-child(2) {
-  background: #00bf63;
-  color: #ffffff;
+  color: var(--dark-green);
 }
 
 .terminal-actions button:nth-child(3) {
-  background: #f5b800;
-  color: var(--text);
+  color: var(--dark-amber);
 }
 
 .artifact-toolbar {
@@ -5394,20 +5331,19 @@ body.stage-artifact .artifact-tick {
 }
 
 .artifact-toolbar button:nth-child(1) {
-  background: #38b6ff;
+  color: var(--blue);
 }
 
 .artifact-toolbar button:nth-child(2) {
-  background: #f5b800;
-  color: var(--text);
+  color: var(--amber);
 }
 
 .artifact-toolbar button:nth-child(3) {
-  background: #00bf63;
+  color: var(--green);
 }
 
 .artifact-toolbar button:nth-child(4) {
-  background: var(--text);
+  color: var(--soft-purple);
 }
 
 .artifact-toolbar button {
@@ -6083,13 +6019,14 @@ body.stage-artifact .artifact-tick {
   -webkit-backdrop-filter: blur(8px);
 }
 
+/* FLATTENED: flat card (pre-migration bg + border + heavy drop-shadow) -> raised */
 .artifact-modal {
   width: min(760px, 100%);
   padding: 24px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 28px;
-  background: #f2f3f7;
-  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.22);
+  border: none;
+  border-radius: var(--r-card);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .modal-topline {
@@ -6100,7 +6037,7 @@ body.stage-artifact .artifact-tick {
 
 .modal-topline h3 {
   margin: 0;
-  color: var(--text);
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: 28px;
   letter-spacing: -0.055em;
@@ -6108,16 +6045,31 @@ body.stage-artifact .artifact-tick {
 
 .modal-topline button {
   border: 0;
-  background: transparent;
-  color: var(--text);
+  border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--muted);
   cursor: pointer;
-  font-size: 24px;
+  width: 32px;
+  height: 32px;
+  font-size: 18px;
+  line-height: 1;
+  transition: box-shadow 0.15s ease;
+}
+
+.modal-topline button:active {
+  box-shadow: var(--pressed);
 }
 
 .artifact-modal pre {
   max-height: 50vh;
   overflow: auto;
   white-space: pre-wrap;
+  padding: 14px;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset);
+  color: var(--ink);
 }
 
 .modal-actions {
@@ -6126,15 +6078,22 @@ body.stage-artifact .artifact-tick {
   gap: 10px;
 }
 
+/* soft-btn-style primary actions */
 .modal-actions button {
   border: 0;
   border-radius: 999px;
-  background: var(--text);
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 12px;
   padding: 11px 14px;
+  transition: box-shadow 0.15s ease;
+}
+
+.modal-actions button:active {
+  box-shadow: var(--pressed);
 }
 
 @media (max-width: 980px) {
@@ -16706,15 +16665,14 @@ body.stage-artifact .artifact-tick {
   font-size: 0.88rem;
 }
 
-/* ── Fix: embed diagnosis / failure branches / hop map into the page bg ────── */
+/* RECONCILED: this used to force live-diagnosis-panel/infrastructure-map fully
+   transparent with a yellow left-border as their only definition against the
+   page — a see-through panel can't be neumorphic (nothing to cast a shadow),
+   and the border-left accent doesn't survive the soft material either. Both
+   now get the same raised card treatment as every other section instead of
+   a bespoke "embedded in the page" exception. */
 .live-diagnosis-panel,
 .infrastructure-map {
-  background: transparent !important;
-  border: 0;
-  border-left: 4px solid var(--yellow);
-  border-radius: 0;
-  box-shadow: none;
-  padding: 6px 0 18px 14px;
   margin-top: 0;
 }
 
@@ -16775,18 +16733,18 @@ body.stage-artifact .artifact-tick {
   box-shadow: 0 12px 32px rgba(47, 52, 65, 0.08);
 }
 
+/* branch tone now lives on the card's left-edge bar (above); the kicker
+   stays neutral typography rather than flipping color per tone, so the bar
+   is the one persistent "which category" cue and the kicker reads the same
+   in every card — easier to scan as a set. */
 .branch-card-kicker {
   display: block;
   margin-bottom: 5px;
-  color: rgba(47, 52, 65, 0.56);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-}
-
-.failure-branch-card.branch-green .branch-card-kicker {
-  color: rgba(255, 255, 255, 0.72);
 }
 
 .failure-branch-card p {
@@ -16799,17 +16757,10 @@ body.stage-artifact .artifact-tick {
   margin-top: auto;
 }
 
+/* joins .soft-subcard (border/background/shadow) — layout-only delta here */
 .failure-branch-column {
   min-width: 0;
   padding: 11px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.failure-branch-card.branch-green .failure-branch-column {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.16);
 }
 
 .failure-branch-card ul {
@@ -16819,79 +16770,6 @@ body.stage-artifact .artifact-tick {
 
 .branch-evidence-badge {
   margin-top: 0;
-}
-
-.failure-branch-card.priority-high,
-.failure-branch-card.priority-high.branch-blue,
-.failure-branch-card.priority-high.branch-green,
-.failure-branch-card.priority-high.branch-purple,
-.failure-branch-card.priority-high.branch-neutral {
-  border-color: rgba(245, 184, 0, 0.42);
-  background: linear-gradient(135deg, #f5b800 0%, #ffd51e 100%);
-  color: var(--text);
-}
-
-.failure-branch-card.priority-medium.branch-slot-2,
-.failure-branch-card.priority-medium.branch-slot-2.branch-blue,
-.failure-branch-card.priority-medium.branch-slot-2.branch-green,
-.failure-branch-card.priority-medium.branch-slot-2.branch-purple,
-.failure-branch-card.priority-medium.branch-slot-2.branch-neutral {
-  border-color: rgba(56, 182, 255, 0.38);
-  background: linear-gradient(135deg, #38b6ff 0%, #63caff 100%);
-  color: var(--text);
-}
-
-.failure-branch-card.priority-medium.branch-slot-3,
-.failure-branch-card.priority-medium.branch-slot-3.branch-blue,
-.failure-branch-card.priority-medium.branch-slot-3.branch-green,
-.failure-branch-card.priority-medium.branch-slot-3.branch-purple,
-.failure-branch-card.priority-medium.branch-slot-3.branch-neutral {
-  border-color: rgba(178, 165, 255, 0.42);
-  background: linear-gradient(135deg, #b2a5ff 0%, #c4bbff 100%);
-  color: var(--text);
-}
-
-.failure-branch-card.priority-high h4,
-.failure-branch-card.priority-high p,
-.failure-branch-card.priority-high li,
-.failure-branch-card.priority-high strong,
-.failure-branch-card.priority-medium.branch-slot-2 h4,
-.failure-branch-card.priority-medium.branch-slot-2 p,
-.failure-branch-card.priority-medium.branch-slot-2 li,
-.failure-branch-card.priority-medium.branch-slot-2 strong,
-.failure-branch-card.priority-medium.branch-slot-3 h4,
-.failure-branch-card.priority-medium.branch-slot-3 p,
-.failure-branch-card.priority-medium.branch-slot-3 li,
-.failure-branch-card.priority-medium.branch-slot-3 strong {
-  color: var(--text);
-}
-
-.failure-branch-card.priority-high ul,
-.failure-branch-card.priority-medium.branch-slot-2 ul,
-.failure-branch-card.priority-medium.branch-slot-3 ul {
-  color: rgba(47, 52, 65, 0.74);
-}
-
-.failure-branch-card.priority-high .branch-card-kicker,
-.failure-branch-card.priority-medium.branch-slot-2 .branch-card-kicker,
-.failure-branch-card.priority-medium.branch-slot-3 .branch-card-kicker {
-  color: rgba(47, 52, 65, 0.58);
-}
-
-.failure-branch-card.priority-high .priority-pill,
-.failure-branch-card.priority-medium.branch-slot-2 .priority-pill,
-.failure-branch-card.priority-medium.branch-slot-3 .priority-pill {
-  border-color: rgba(47, 52, 65, 0.12);
-  background: rgba(255, 255, 255, 0.58);
-  color: var(--text);
-}
-
-.failure-branch-card.priority-high .failure-branch-column,
-.failure-branch-card.priority-medium.branch-slot-2 .failure-branch-column,
-.failure-branch-card.priority-medium.branch-slot-3 .failure-branch-column {
-  border-color: rgba(47, 52, 65, 0.08);
-  background: rgba(255, 255, 255, 0.74);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
 .infrastructure-map {
@@ -17084,19 +16962,6 @@ body.stage-artifact .artifact-tick {
   margin: 8px 0 0;
 }
 
-.evidence-chips button:nth-of-type(-n + 3) {
-  border-color: rgba(56, 182, 255, 0.42);
-  background: #38b6ff;
-  color: #ffffff;
-  box-shadow: 0 8px 18px rgba(56, 182, 255, 0.18);
-}
-
-.evidence-chips button:nth-of-type(-n + 3):hover {
-  border-color: #38b6ff;
-  background: #159ee7;
-  color: #ffffff;
-}
-
 .evidence-chips button:nth-of-type(n + 4) {
   display: none;
 }
@@ -17121,14 +16986,20 @@ body.stage-artifact .artifact-tick {
 }
 
 .more-signals-button {
-  border: 1px solid rgba(47, 52, 65, 0.1);
+  border: none;
   border-radius: 999px;
-  background: rgba(47, 52, 65, 0.9);
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--body);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 10px;
   padding: 6px 9px;
+  transition: box-shadow 0.15s ease;
+}
+
+.more-signals-button:active {
+  box-shadow: var(--pressed);
 }
 
 .investigation-branch-summary,
@@ -17153,8 +17024,7 @@ body.stage-artifact .artifact-tick {
 
 .diagnostic-terminal {
   margin-top: 0;
-  padding: 18px;
-  border-radius: 24px;
+  padding: 36px 18px 18px;
 }
 
 .terminal-header {
