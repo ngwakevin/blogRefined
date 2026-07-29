@@ -2864,7 +2864,8 @@ body.stage-artifact .artifact-tick {
 .spark-type-label,
 .understand-teach-score,
 .understand-teach-section-label,
-.shareable-insight-tag {
+.shareable-insight-tag,
+.dash-nav-badge {
   border: none;
   border-radius: 999px;
   background: var(--background);
@@ -9912,7 +9913,7 @@ body.stage-artifact .artifact-tick {
   background: var(--background);
 }
 
-/* sidebar */
+/* sidebar — FLATTENED: was a flat white card (border + drop-shadow). */
 .dash-sidebar {
   position: sticky;
   top: clamp(12px, 1.6vw, 24px);
@@ -9924,10 +9925,10 @@ body.stage-artifact .artifact-tick {
   gap: 14px;
   overflow-y: auto;
   padding: 20px 16px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
-  border-radius: 28px;
-  background: #ffffff;
-  box-shadow: 0 18px 50px rgba(47, 52, 65, 0.07);
+  border: none;
+  border-radius: var(--r-card);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .dash-brand {
@@ -9938,80 +9939,92 @@ body.stage-artifact .artifact-tick {
   text-decoration: none;
 }
 
+/* FLATTENED: was a solid gradient-filled tile (brand color as a full fill).
+   Now a neutral raised-sm tile — the "D" mark carries the accent instead,
+   matching the soft cockpit's logo mark treatment. */
 .dash-brand-mark {
   display: grid;
   width: 36px;
   height: 36px;
   place-items: center;
-  border-radius: 11px;
-  background: linear-gradient(135deg, #8e7df5, #6f5be8);
-  color: #ffffff;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   font-family: var(--font-heading);
   font-size: 19px;
   font-weight: 700;
 }
 
 .dash-brand-name {
-  color: #111827;
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: 17.5px;
   font-weight: 600;
   letter-spacing: -0.03em;
 }
 
+/* FLATTENED: was a solid purple fill button. Primary-action pattern: bg raised-sm,
+   purple text; hover lifts to --raised, press flips to --pressed. */
 .dash-new-btn {
   display: grid;
   place-items: center;
   min-height: 46px;
-  border-radius: 14px;
-  background: #7c6cf0;
-  color: #ffffff;
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  transition: background 200ms ease, transform 250ms ease;
+  transition: box-shadow 200ms ease;
 }
 
-.dash-new-btn:hover { background: var(--landing-dark); transform: translateY(-1px); }
+.dash-new-btn:hover { box-shadow: var(--raised); }
+.dash-new-btn:active { box-shadow: var(--pressed); }
 
 /* flat grouped nav */
 .dash-nav { display: grid; gap: 2px; }
 
+/* Sidebar nav item — FLATTENED: rest state was already flat, but hover/active
+   used a colored tint fill. Per the soft mapping, nav rows stay flat at rest;
+   active flips to --pressed (carved-in) with accent text, matching the
+   soft-cockpit sidebar exactly. */
 .dash-nav-row {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border-radius: 12px;
-  color: var(--landing-muted);
+  border-radius: var(--r-ctrl);
+  color: var(--muted);
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  transition: background 180ms ease, color 180ms ease;
+  transition: box-shadow 180ms ease, color 180ms ease;
 }
 
-.dash-nav-row:hover { background: rgba(47, 52, 65, 0.05); color: var(--text); }
-.dash-nav-row.active { background: rgba(178, 165, 255, 0.22); color: #5b4fd6; }
+.dash-nav-row:hover { box-shadow: var(--inset-sm); color: var(--ink); }
+.dash-nav-row.active { box-shadow: var(--pressed); color: var(--soft-purple); }
 
 .dash-nav-icon { display: grid; width: 18px; height: 18px; flex-shrink: 0; }
 .dash-nav-icon svg { width: 100%; height: 100%; fill: currentColor; }
 .dash-nav-label { flex: 1; min-width: 0; }
 
+/* joins the shared .soft-tag group (border/background/shadow) — color/size delta only */
 .dash-nav-badge {
   display: inline-flex;
   min-width: 22px;
   justify-content: center;
   padding: 2px 7px;
-  border-radius: 999px;
-  background: rgba(47, 52, 65, 0.07);
-  color: var(--landing-muted);
+  color: var(--muted);
   font-size: 11px;
   font-weight: 700;
 }
 
 .dash-side-label {
   margin: 8px 6px 6px;
-  color: var(--landing-muted);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 10.5px;
   letter-spacing: 0.07em;
@@ -10025,22 +10038,26 @@ body.stage-artifact .artifact-tick {
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  border-radius: 12px;
-  color: var(--text);
+  border-radius: var(--r-ctrl);
+  color: var(--ink);
   text-decoration: none;
-  transition: background 180ms ease;
+  transition: box-shadow 180ms ease;
 }
 
-.dash-side-project:hover { background: rgba(47, 52, 65, 0.05); }
+.dash-side-project:hover { box-shadow: var(--inset-sm); }
 
+/* --proj-color is user-chosen per-project color data, not UI chrome — kept as
+   a small fill (same exception the brief makes for status dots/accents).
+   Added a raised-sm shadow so the tile still reads as part of the soft material. */
 .dash-side-project-icon {
   display: grid;
   width: 34px;
   height: 34px;
   flex-shrink: 0;
   place-items: center;
-  border-radius: 10px;
+  border-radius: var(--r-ctrl);
   background: var(--proj-color);
+  box-shadow: var(--raised-sm);
 }
 
 .dash-side-project-icon svg { width: 17px; height: 17px; fill: #ffffff; }
@@ -10056,15 +10073,16 @@ body.stage-artifact .artifact-tick {
 }
 .dash-side-project-text em {
   overflow: hidden;
-  color: var(--landing-muted);
+  color: var(--muted);
   font-size: 11px;
   font-style: normal;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.dash-side-learning.active { background: rgba(178, 165, 255, 0.22); }
-.dash-learning-icon { background: #8e7df5; }
+.dash-side-learning.active { box-shadow: var(--pressed); }
+/* small brand-icon accent, same exception as .dash-side-project-icon's --proj-color */
+.dash-learning-icon { background: #8e7df5; box-shadow: var(--raised-sm); }
 
 .dash-learn-grid {
   display: grid;
@@ -10109,23 +10127,29 @@ body.stage-artifact .artifact-tick {
   line-height: 1.5;
 }
 
+/* ghost action — deliberately lighter than .dash-new-btn so it doesn't compete
+   with the primary CTA; flat at rest, presses in on click */
 .dash-side-new-project {
   padding: 9px 10px;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--r-ctrl);
   background: transparent;
-  color: #7c6cf0;
+  color: var(--soft-purple);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 700;
   text-align: left;
+  transition: box-shadow 180ms ease;
 }
 
-.dash-side-new-project:hover { background: rgba(178, 165, 255, 0.16); }
+.dash-side-new-project:hover { box-shadow: var(--inset-sm); }
+.dash-side-new-project:active { box-shadow: var(--pressed); }
 .dash-user-chevron { font-size: 14px; opacity: 0.6; }
 
-.dash-user { position: relative; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(47, 52, 65, 0.08); }
+/* hairline divider removed per the soft material's no-border rule — replaced
+   with an inset emboss groove */
+.dash-user { position: relative; margin-top: auto; padding-top: 10px; box-shadow: inset 0 1px 0 var(--shadow-hi); }
 
 .dash-user-btn {
   display: flex;
@@ -10134,16 +10158,17 @@ body.stage-artifact .artifact-tick {
   gap: 10px;
   padding: 10px;
   border: 0;
-  border-radius: 14px;
+  border-radius: var(--r-ctrl);
   background: transparent;
   cursor: pointer;
   font-family: var(--font-body);
   text-align: left;
-  transition: background 180ms ease;
+  transition: box-shadow 180ms ease;
 }
 
-.dash-user-btn:hover { background: rgba(47, 52, 65, 0.05); }
+.dash-user-btn:hover { box-shadow: var(--inset-sm); }
 
+/* small avatar-color accent kept, same exception as the project/learning icon tiles */
 .dash-avatar {
   display: grid;
   width: 38px;
@@ -10154,29 +10179,31 @@ body.stage-artifact .artifact-tick {
   color: #111827;
   font-size: 13px;
   font-weight: 700;
+  box-shadow: var(--raised-sm);
 }
 
 .dash-user-text { display: grid; flex: 1; min-width: 0; }
 .dash-user-text strong {
   overflow: hidden;
-  color: var(--text);
+  color: var(--ink);
   font-size: 13.5px;
   letter-spacing: -0.01em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.dash-user-text em { color: var(--landing-muted); font-size: 11.5px; font-style: normal; }
+.dash-user-text em { color: var(--muted); font-size: 11.5px; font-style: normal; }
 
+/* FLATTENED: was a flat white popover with border + drop-shadow. */
 .dash-user-menu {
   position: absolute;
   right: 0;
   bottom: calc(100% + 6px);
   left: 0;
   padding: 6px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 18px 44px rgba(47, 52, 65, 0.16);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .dash-user-menu button,
@@ -10185,19 +10212,28 @@ body.stage-artifact .artifact-tick {
   width: 100%;
   padding: 10px 12px;
   border: 0;
-  border-radius: 10px;
+  border-radius: calc(var(--r-ctrl) - 4px);
   background: transparent;
-  color: var(--text);
+  color: var(--ink);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13.5px;
   font-weight: 600;
   text-align: left;
   text-decoration: none;
+  transition: box-shadow 150ms ease;
 }
 
 .dash-user-menu button:hover,
-.dash-user-menu a:hover { background: rgba(47, 52, 65, 0.06); }
+.dash-user-menu a:hover { box-shadow: var(--inset-sm); }
+
+.dash-user-menu-toggle {
+  padding: 10px 12px;
+  margin-top: 2px;
+  box-shadow: inset 0 1px 0 var(--shadow-hi);
+  color: var(--ink);
+  font-size: 13.5px;
+}
 
 /* main column */
 .dash-main {
@@ -10928,14 +10964,19 @@ body.stage-artifact .artifact-tick {
 
 .dash-toggle input { position: absolute; opacity: 0; pointer-events: none; }
 
+/* FLATTENED: was a grey/purple flat-fill track with a plain drop-shadow knob.
+   Toggle mapping: track stays a neutral inset well in both states; the knob
+   is a neutral raised-sm circle that only picks up a purple fill when "on" —
+   a small color moment, not a state-color fill. Shared with DashboardModals'
+   "Pin to sidebar" toggle, which inherits this for free. */
 .dash-toggle-track {
   position: relative;
   width: 42px;
   height: 24px;
   flex-shrink: 0;
   border-radius: 999px;
-  background: rgba(47, 52, 65, 0.2);
-  transition: background 200ms ease;
+  background: var(--background);
+  box-shadow: var(--inset);
 }
 
 .dash-toggle-knob {
@@ -10945,13 +10986,15 @@ body.stage-artifact .artifact-tick {
   width: 18px;
   height: 18px;
   border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 2px 5px rgba(17, 24, 39, 0.25);
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), background 200ms ease;
 }
 
-.dash-toggle input:checked + .dash-toggle-track { background: #7c6cf0; }
-.dash-toggle input:checked + .dash-toggle-track .dash-toggle-knob { transform: translateX(18px); }
+.dash-toggle input:checked + .dash-toggle-track .dash-toggle-knob {
+  transform: translateX(18px);
+  background: var(--soft-purple);
+}
 
 .dash-path-row { display: flex; flex-wrap: wrap; gap: 8px; }
 
@@ -12665,7 +12708,7 @@ body.stage-artifact .artifact-tick {
 
 .dash-empty p { margin: 0; max-width: 440px; color: var(--landing-muted); font-size: 14.5px; }
 
-/* mobile */
+/* mobile — FLATTENED: was a flat white square with border + drop-shadow. */
 .dash-menu-toggle {
   position: fixed;
   top: 14px;
@@ -12678,14 +12721,14 @@ body.stage-artifact .artifact-tick {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
-  border-radius: 12px;
-  background: #ffffff;
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
   cursor: pointer;
-  box-shadow: 0 10px 26px rgba(47, 52, 65, 0.12);
+  box-shadow: var(--raised-sm);
 }
 
-.dash-menu-toggle span { width: 18px; height: 2px; border-radius: 2px; background: var(--text); }
+.dash-menu-toggle span { width: 18px; height: 2px; border-radius: 2px; background: var(--ink); }
 
 .dash-drawer-overlay {
   position: fixed;
@@ -12725,7 +12768,15 @@ body.stage-artifact .artifact-tick {
 
 @media (prefers-reduced-motion: reduce) {
   .dash-mic.recording { animation: none; }
-  .dash-sidebar { transition: none; }
+  .dash-sidebar,
+  .dash-nav-row,
+  .dash-side-project,
+  .dash-new-btn,
+  .dash-side-new-project,
+  .dash-user-btn,
+  .dash-user-menu button,
+  .dash-user-menu a,
+  .dash-toggle-knob { transition: none; }
 }
 
 /* ── Workspace trace tabs ─────────────────────────────────────────────────── */
