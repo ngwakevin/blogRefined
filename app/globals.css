@@ -16571,6 +16571,8 @@ body.stage-artifact .artifact-tick {
 .upgrade-cta:hover { transform: translateY(-1px); box-shadow: 0 16px 34px rgba(139, 124, 255, 0.5); }
 
 /* ── Billing settings ──────────────────────────────────────────────────────── */
+/* FLATTENED: was a solid dark hero card with white text — same color-
+   rationing rule as every other full-fill card in this migration. */
 .bill-current {
   display: flex;
   align-items: center;
@@ -16578,18 +16580,18 @@ body.stage-artifact .artifact-tick {
   gap: 20px;
   flex-wrap: wrap;
   padding: 22px 24px;
-  background: #111827;
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised);
+  color: var(--text);
   border-radius: 18px;
   margin-bottom: 20px;
 }
-.bill-eyebrow { margin: 0; font-family: var(--font-code); font-size: 11px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(255,255,255,0.65); }
+.bill-eyebrow { margin: 0; font-family: var(--font-code); font-size: 11px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: var(--soft-purple); }
 .bill-current-main h2 { margin: 6px 0 6px; font-family: var(--font-heading); font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; }
-.bill-current-sub { margin: 0; color: rgba(255,255,255,0.78); font-size: 0.86rem; }
+.bill-current-sub { margin: 0; color: var(--body); font-size: 0.86rem; }
 .bill-status { text-transform: capitalize; font-weight: 700; }
-.bill-status.is-active { color: #6ee7a8; }
-.bill-status.is-past_due, .bill-status.is-cancelled { color: #fca5a5; }
-.bill-current-actions .dash-btn-dark { background: #ffffff; color: #111827; }
+.bill-status.is-active { color: var(--green); }
+.bill-status.is-past_due, .bill-status.is-cancelled { color: var(--danger); }
 
 .bill-section { margin-bottom: 24px; }
 .bill-section h3 { margin: 0 0 14px; font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; }
@@ -16597,27 +16599,28 @@ body.stage-artifact .artifact-tick {
 .bill-usage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
 .bill-usage-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; font-size: 0.86rem; }
 .bill-usage-top strong { display: inline-flex; align-items: center; gap: 8px; color: var(--text); }
-.bill-usage-flag { font-style: normal; font-family: var(--font-code); font-size: 10px; font-weight: 700; text-transform: uppercase; color: #8a6200; }
-.bill-usage-flag.is-full { color: #b91c1c; }
-.bill-usage-track { height: 8px; border-radius: 999px; background: rgba(17, 24, 39, 0.08); overflow: hidden; }
-.bill-usage-fill { display: block; height: 100%; border-radius: 999px; background: #38b6ff; transition: width 240ms ease; }
-.bill-usage-fill.is-near { background: #f5b800; }
-.bill-usage-fill.is-full { background: #e0354b; }
+.bill-usage-flag { font-style: normal; font-family: var(--font-code); font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--amber-ink); }
+.bill-usage-flag.is-full { color: var(--danger); }
+.bill-usage-track { height: 8px; border-radius: 999px; background: var(--background); box-shadow: var(--inset-sm); overflow: hidden; }
+.bill-usage-fill { display: block; height: 100%; border-radius: 999px; background: var(--blue); transition: width 240ms ease; }
+.bill-usage-fill.is-near { background: var(--amber); }
+.bill-usage-fill.is-full { background: var(--danger); }
 
 .bill-limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
-.bill-limit { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: #ffffff; border: 1px solid rgba(17, 24, 39, 0.08); border-radius: 12px; font-size: 0.86rem; }
+.bill-limit { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: var(--background); border: none; box-shadow: var(--raised-sm); border-radius: 12px; font-size: 0.86rem; }
 .bill-limit span { color: var(--muted); }
 .bill-limit strong { color: var(--text); }
 
-.bill-demo { padding: 18px 20px; background: #f7f8fb; border: 1px dashed rgba(17, 24, 39, 0.18); border-radius: 16px; }
+.bill-demo { padding: 18px 20px; background: var(--background); border: none; box-shadow: var(--inset); border-radius: 16px; }
 .bill-demo-head { display: flex; align-items: center; gap: 10px; }
 .bill-demo-head h3 { margin: 0; }
-.bill-demo-tag { font-family: var(--font-code); font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--muted); background: rgba(17,24,39,0.06); padding: 3px 9px; border-radius: 999px; }
+/* soft-tag-style, static */
+.bill-demo-tag { font-family: var(--font-code); font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--muted); background: var(--background); box-shadow: var(--inset-sm); padding: 3px 9px; border-radius: 999px; }
 .bill-demo p { margin: 6px 0 12px; color: var(--muted); font-size: 0.86rem; }
 .bill-demo-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
-.bill-demo-btn { border: 1px solid rgba(17, 24, 39, 0.14); background: #ffffff; color: var(--text); border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
-.bill-demo-btn:hover { border-color: var(--purple); }
-.bill-demo-btn.active { background: #111827; color: #ffffff; border-color: #111827; }
+.bill-demo-btn { border: none; background: var(--background); box-shadow: var(--raised-sm); color: var(--text); border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: box-shadow 120ms ease; }
+.bill-demo-btn:hover { box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.18); }
+.bill-demo-btn.active { box-shadow: var(--pressed); color: var(--soft-purple); }
 
 .bill-foot { color: var(--muted); font-size: 0.86rem; }
 .bill-foot a { color: var(--purple); font-weight: 600; text-decoration: none; }
@@ -16625,17 +16628,19 @@ body.stage-artifact .artifact-tick {
 
 /* ── AI provider settings ──────────────────────────────────────────────────── */
 .aip-list { display: grid; gap: 14px; margin-bottom: 20px; }
-.aip-option { padding: 20px 22px; background: #ffffff; border: 1px solid rgba(17, 24, 39, 0.1); border-radius: 16px; }
-.aip-option.is-active { border-color: #b2a5ff; box-shadow: 0 10px 28px rgba(178,165,255,0.22); }
+.aip-option { padding: 20px 22px; background: var(--background); border: none; box-shadow: var(--raised-sm); border-radius: 16px; }
+.aip-option.is-active { box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.28); }
 .aip-option.is-locked { opacity: 0.78; }
 .aip-option-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .aip-option-head h3 { margin: 0; font-family: var(--font-heading); font-size: 1.08rem; font-weight: 700; }
 .aip-option p { margin: 0 0 12px; color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
-.aip-pill { font-family: var(--font-code); font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); background: rgba(17,24,39,0.06); padding: 4px 10px; border-radius: 999px; }
-.aip-pill.is-recommended { background: rgba(178,165,255,0.22); color: #6d5dfc; }
+/* soft-tag-style, static */
+.aip-pill { font-family: var(--font-code); font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); background: var(--background); box-shadow: var(--inset-sm); padding: 4px 10px; border-radius: 999px; }
+.aip-pill.is-recommended { color: var(--soft-purple); }
 .aip-state { font-family: var(--font-code); font-size: 11px; font-weight: 700; text-transform: uppercase; }
-.aip-state.is-on { color: #047a45; }
-.aip-action { display: inline-flex; border: 1px solid rgba(17, 24, 39, 0.14); background: #ffffff; color: var(--text); border-radius: 10px; padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-decoration: none; cursor: pointer; }
+.aip-state.is-on { color: var(--green); }
+.aip-action { display: inline-flex; border: none; background: var(--background); box-shadow: var(--raised-sm); color: var(--text); border-radius: 10px; padding: 8px 14px; font-size: 12.5px; font-weight: 600; text-decoration: none; cursor: pointer; transition: box-shadow 120ms ease; }
+.aip-action:hover:not(:disabled) { box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.18); }
 .aip-action:disabled { opacity: 0.5; cursor: default; }
 
 /* ── Audio guide inside the Audio Guides tab ───────────────────────────────── */
