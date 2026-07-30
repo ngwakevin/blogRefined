@@ -125,6 +125,8 @@ const LIBRARY_ITEMS: NavItem[] = [
   }
 ];
 
+const CONTRAST_STORAGE_KEY = "docredefined.highContrast";
+
 export function DashboardShell({ active, children }: DashboardShellProps) {
   const { profile, clearProfile } = useProfile();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -132,6 +134,25 @@ export function DashboardShell({ active, children }: DashboardShellProps) {
   const [projects, setProjects] = useState<WorkspaceProject[]>([]);
   const [records, setRecords] = useState<DashboardRecord[]>([]);
   const [starredIds, setStarredIds] = useState<string[]>([]);
+  const [highContrast, setHighContrast] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.localStorage.getItem(CONTRAST_STORAGE_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.contrast = highContrast ? "high" : "";
+  }, [highContrast]);
+
+  function toggleHighContrast(next: boolean) {
+    setHighContrast(next);
+    try {
+      window.localStorage.setItem(CONTRAST_STORAGE_KEY, next ? "1" : "0");
+    } catch {}
+  }
 
   useEffect(() => {
     if (!profile) return undefined;
@@ -305,6 +326,17 @@ export function DashboardShell({ active, children }: DashboardShellProps) {
               <Link href="/settings/ai-provider" onClick={() => setUserMenuOpen(false)}>
                 AI provider
               </Link>
+              <label className="dash-toggle dash-user-menu-toggle">
+                <input
+                  type="checkbox"
+                  checked={highContrast}
+                  onChange={(event) => toggleHighContrast(event.target.checked)}
+                />
+                <span className="dash-toggle-track" aria-hidden="true">
+                  <span className="dash-toggle-knob" />
+                </span>
+                <span>High contrast</span>
+              </label>
               <button
                 type="button"
                 onClick={() => {

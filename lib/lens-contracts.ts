@@ -6,6 +6,7 @@ import {
   UnderstandWorkspaceResultSchema
 } from "@/lib/schemas";
 import type { ClassificationResult, RedefinedMode, RedefinedResult } from "@/lib/redefined";
+import { normalizeUnderstandResult } from "@/lib/understand";
 import type { ZodType } from "zod";
 
 /**
@@ -113,42 +114,7 @@ function normalizeToFix(raw: RedefinedResult, originalPrompt?: string): Redefine
 
 function normalizeToUnderstand(raw: RedefinedResult, originalPrompt?: string): RedefinedResult {
   const prompt = promptOf(raw, originalPrompt);
-  const classification = classificationFor(raw, "understand", prompt);
-  const understand = buildLocalRedefinedResult(prompt, classification);
-  const base = preserveContext(understand, raw, "understand", prompt, classification);
-  const topic = classification.topic || prompt;
-
-  // The local understand builder is intentionally light; synthesize the signature fields the
-  // Understand lens needs so it renders as a real learning view rather than an empty shell.
-  return {
-    ...base,
-    clarity: raw.clarity ?? { level: "medium", score: 70 },
-    mentalModel: raw.mentalModel ?? {
-      title: `How ${topic} works`,
-      steps: [
-        { id: "step-0", label: "Concept", description: `What ${topic} is at its core.` },
-        { id: "step-1", label: "Structure", description: "The key parts and how they relate." },
-        { id: "step-2", label: "Behavior", description: "How it behaves in practice." },
-        { id: "step-3", label: "Outcome", description: "What it produces or enables." }
-      ]
-    },
-    coreBuildingBlocks: raw.coreBuildingBlocks?.length
-      ? raw.coreBuildingBlocks
-      : [
-          {
-            id: "block-0",
-            title: topic,
-            description:
-              "The core concept. Add a specific question or evidence for a deeper breakdown."
-          }
-        ],
-    misconceptions: raw.misconceptions ?? [],
-    decisionQuestions: raw.decisionQuestions ?? [
-      `Does ${topic} apply to your current situation?`,
-      "What outcome are you trying to achieve?"
-    ],
-    nextActions: raw.nextActions ?? []
-  };
+  return normalizeUnderstandResult(raw, prompt);
 }
 
 function normalizeToBuild(raw: RedefinedResult, originalPrompt?: string): RedefinedResult {
@@ -198,9 +164,14 @@ export const LENS_CONTRACTS: Record<LensId, LensContract> = {
       "quickTests",
       "scratchpad",
       "pathUpdate",
-      "causalGraph"
+      "causalGraph",
+      "artifactPreview"
     ],
-    matches: (r) => Boolean(r.mentalModel && (r.coreBuildingBlocks?.length ?? 0) > 0),
+    matches: (r) => Boolean(
+      r.conceptSnapshot
+      && r.mentalModel?.flow?.length
+      && (r.buildingBlocks?.length ?? 0) > 0
+    ),
     normalize: ({ rawResult, originalPrompt }) => normalizeToUnderstand(rawResult, originalPrompt),
     instruction:
       "The selected lens is Understand. Produce a learning result only: concept snapshot, mental model, core building blocks, common assumptions/misconceptions, analogy, real-world example, and questions. Do not include diagnostic terminal, failure branches, incident actions, or build/artifact sections."
@@ -312,7 +283,10 @@ export const RAW_FORBIDDEN_FIELDS: Record<LensId, string[]> = {
     "issueMap",
     "quickTests",
     "scratchpad",
-    "pathUpdate"
+    "pathUpdate",
+    "implementationPhases",
+    "artifactPreview",
+    "exportSurface"
   ],
   fix: [
     "conceptSnapshot",
