@@ -975,19 +975,25 @@ button {
 }
 
 /* Embedded workspace header */
+/* FLATTENED: was "embedded in the page" — a colored left-border (per lens
+   mode) as its only definition, same anti-pattern found in Fix/Artifact.
+   Now a proper raised card; the mode accent survives as the eyebrow text
+   color and reinforces via the active tab in the segmented nav below. */
 .workspace-header {
-  --workspace-accent: #111827;
+  --workspace-accent: var(--muted);
   width: 100%;
-  margin: 0 0 clamp(48px, 6vh, 80px);
-  padding: 6px 0 16px 14px;
-  border-left: 4px solid var(--workspace-accent);
+  margin: 0 0 clamp(32px, 4vh, 56px);
+  padding: 22px 26px;
+  border: none;
+  border-radius: var(--r-card);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
-.workspace-header.mode-understand { --workspace-accent: #b2a5ff; }
-.workspace-header.mode-build { --workspace-accent: #38b6ff; }
-.workspace-header.mode-fix { --workspace-accent: #f5b800; }
-.workspace-header.mode-artifact { --workspace-accent: #00bf63; }
-.workspace-header.mode-auto { --workspace-accent: #111827; }
+.workspace-header.mode-understand { --workspace-accent: var(--soft-purple); }
+.workspace-header.mode-build { --workspace-accent: var(--blue); }
+.workspace-header.mode-fix { --workspace-accent: var(--amber); }
+.workspace-header.mode-artifact { --workspace-accent: var(--green); }
 
 .workspace-header-top {
   display: flex;
@@ -1005,7 +1011,7 @@ button {
 
 .workspace-eyebrow {
   margin: 0;
-  color: #8b8fa3;
+  color: var(--workspace-accent);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
@@ -1017,7 +1023,7 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  color: #8b8fa3;
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 12px;
 }
@@ -1031,15 +1037,17 @@ button {
   flex-wrap: wrap;
 }
 
+/* soft-btn material */
 .workspace-actions button,
 .workspace-actions a {
   appearance: none;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  background: #ffffff;
-  color: #2f3441;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--body);
   border-radius: 999px;
   padding: 9px 15px;
   font-family: var(--font-body);
@@ -1048,8 +1056,7 @@ button {
   line-height: 1;
   text-decoration: none;
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(17, 24, 39, 0.04);
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  transition: box-shadow 180ms ease;
 }
 
 .wa-ico {
@@ -1059,28 +1066,23 @@ button {
 }
 
 .wa-ico svg { width: 15px; height: 15px; }
-.wa-ico-blue { color: #38b6ff; }
-.wa-ico-green { color: #00bf63; }
-.wa-ico-neutral { color: rgba(47, 52, 65, 0.5); }
+.wa-ico-blue { color: var(--blue); }
+.wa-ico-green { color: var(--green); }
+.wa-ico-neutral { color: var(--muted); }
 
-.workspace-actions button:hover,
-.workspace-actions a:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.08);
+.workspace-actions button:active,
+.workspace-actions a:active {
+  box-shadow: var(--pressed);
 }
 
-/* Primary action filled with the workspace mode color (B1). */
+/* FLATTENED: was a full mode-color fill (the "primary" action). Accent text
+   instead of a fill, same convention as every other lens's primary CTA. */
 .workspace-actions .dark-action {
-  background: var(--workspace-accent, #111827);
-  color: #ffffff;
-  border-color: var(--workspace-accent, #111827);
-  box-shadow: 0 8px 22px color-mix(in srgb, var(--workspace-accent, #111827) 35%, transparent);
+  color: var(--workspace-accent);
 }
-
-.workspace-header.mode-fix .workspace-actions .dark-action { color: #111827; }
 
 .workspace-export-button {
-  background: #ffffff;
+  background: var(--background);
 }
 
 .workspace-more {
@@ -1091,6 +1093,7 @@ button {
   min-width: 72px;
 }
 
+/* FLATTENED: flat white popover + border + shadow -> raised */
 .workspace-more-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -1100,10 +1103,10 @@ button {
   gap: 4px;
   min-width: 180px;
   padding: 8px;
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 20px 50px rgba(17, 24, 39, 0.14);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .workspace-more-menu button {
@@ -1115,13 +1118,19 @@ button {
   text-align: left;
 }
 
+.workspace-more-menu button:hover {
+  box-shadow: var(--inset-sm);
+}
+
+/* FLATTENED: flat white bordered input -> carved-in well */
 .workspace-rename-input-inline {
   width: min(620px, 100%);
   padding: 8px 14px;
-  border: 1px solid rgba(17, 24, 39, 0.16);
-  border-radius: 14px;
-  background: #ffffff;
-  color: #2f3441;
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--inset);
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: clamp(30px, 4vw, 48px);
   font-weight: 800;
@@ -1131,7 +1140,7 @@ button {
 
 .workspace-title-block h1 {
   margin: 0;
-  color: #2f3441;
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: clamp(34px, 4.2vw, 52px);
   line-height: 1;
@@ -1143,7 +1152,7 @@ button {
 .workspace-title-block p {
   max-width: 720px;
   margin: 10px 0 0;
-  color: #374151;
+  color: var(--body);
   font-size: clamp(16px, 1.4vw, 19px);
   font-weight: 600;
   line-height: 1.35;
@@ -1158,13 +1167,18 @@ button {
   margin-top: 14px;
 }
 
+/* soft-tag base supplies border/background/shadow — color/size delta only.
+   Real signal (run status / target lens) kept as text color, fill dropped. */
 .status-badge,
 .path-badge,
 .saved-badge {
   display: inline-flex;
   align-items: center;
   height: 28px;
+  border: none;
   border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   padding: 0 12px;
   font-family: var(--font-code);
   font-size: 11px;
@@ -1172,18 +1186,18 @@ button {
   letter-spacing: 0.04em;
 }
 
-.status-badge.status-completed { background: rgba(0, 191, 99, 0.14); color: #047a45; }
-.status-badge.status-empty { background: rgba(17, 24, 39, 0.08); color: #4b5563; }
-.status-badge.status-running { background: rgba(56, 182, 255, 0.14); color: #0369a1; }
-.status-badge.status-error { background: rgba(239, 68, 68, 0.14); color: #b91c1c; }
+.status-badge.status-completed { color: var(--green); }
+.status-badge.status-empty { color: var(--muted); }
+.status-badge.status-running { color: var(--blue); }
+.status-badge.status-error { color: var(--danger); }
 
-.path-badge.path-understand { background: rgba(178, 165, 255, 0.18); color: #6d5dfc; }
-.path-badge.path-build { background: rgba(56, 182, 255, 0.18); color: #0284c7; }
-.path-badge.path-fix { background: rgba(245, 184, 0, 0.22); color: #8a6200; }
-.path-badge.path-artifact { background: rgba(0, 191, 99, 0.16); color: #047a45; }
-.path-badge.path-auto { background: rgba(17, 24, 39, 0.08); color: #374151; }
+.path-badge.path-understand { color: var(--soft-purple); }
+.path-badge.path-build { color: var(--blue); }
+.path-badge.path-fix { color: var(--amber); }
+.path-badge.path-artifact { color: var(--green); }
+.path-badge.path-auto { color: var(--muted); }
 
-.saved-badge { background: rgba(17, 24, 39, 0.06); color: #6b7280; }
+.saved-badge { color: var(--muted); }
 
 @media (max-width: 900px) {
   .workspace-header {
@@ -1218,10 +1232,10 @@ button {
 .ws-followup {
   min-width: 0;
   padding: 18px 20px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
+  border: none;
   border-radius: 22px;
-  background: #ffffff;
-  box-shadow: 0 12px 34px rgba(47, 52, 65, 0.06);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .workspace-audio-guide {
@@ -1250,7 +1264,7 @@ button {
 .workspace-audio-eyebrow,
 .ws-followup-kicker {
   margin: 0 0 5px;
-  color: rgba(47, 52, 65, 0.54);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 11px;
   letter-spacing: 0.04em;
@@ -1271,12 +1285,13 @@ button {
 .workspace-audio-description,
 .ws-followup-head p {
   margin: 8px 0 0;
-  color: rgba(47, 52, 65, 0.74);
+  color: var(--body);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.5;
 }
 
+/* soft-tag-style, static; state color carried by text only */
 .workspace-audio-status-chip {
   flex: 0 0 auto;
   display: inline-flex;
@@ -1284,8 +1299,9 @@ button {
   min-height: 30px;
   padding: 0 11px;
   border-radius: 999px;
-  background: rgba(47, 52, 65, 0.07);
-  color: rgba(47, 52, 65, 0.8);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 700;
@@ -1294,20 +1310,17 @@ button {
 }
 
 .workspace-audio-status-chip.state-generating {
-  background: rgba(56, 182, 255, 0.14);
-  color: #0284c7;
+  color: var(--blue);
 }
 
 .workspace-audio-status-chip.state-ready,
 .workspace-audio-status-chip.state-playing,
 .workspace-audio-status-chip.state-paused {
-  background: rgba(0, 191, 99, 0.14);
-  color: #047a45;
+  color: var(--green);
 }
 
 .workspace-audio-status-chip.state-error {
-  background: rgba(245, 184, 0, 0.18);
-  color: #8a6200;
+  color: var(--amber-ink);
 }
 
 .workspace-audio-guide .workspace-audio-status {
@@ -1316,7 +1329,7 @@ button {
 
 .workspace-audio-error {
   margin: 0;
-  color: #b42318;
+  color: var(--danger);
   font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -1330,14 +1343,16 @@ button {
 
 .workspace-audio-actions button {
   min-height: 38px;
-  border: 1px solid rgba(47, 52, 65, 0.12);
+  border: none;
   border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 11px;
   line-height: 1;
   padding: 8px 13px;
-  transition: box-shadow 180ms ease, transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  transition: box-shadow 180ms ease;
 }
 
 .workspace-audio-actions button:disabled {
@@ -1345,27 +1360,28 @@ button {
   opacity: 0.72;
 }
 
+.workspace-audio-actions button:not(:disabled):active {
+  box-shadow: var(--pressed);
+}
+
 .workspace-audio-primary {
-  background: var(--text);
-  color: #ffffff;
-  box-shadow: 0 12px 28px rgba(47, 52, 65, 0.14);
+  color: var(--soft-purple);
 }
 
 .workspace-audio-primary:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 34px rgba(47, 52, 65, 0.18);
+  box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.22);
 }
 
 .workspace-audio-secondary {
-  background: rgba(47, 52, 65, 0.05);
   color: var(--text);
 }
 
 .workspace-audio-script {
   padding: 16px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
+  border: none;
   border-radius: 16px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--inset);
 }
 
 .workspace-audio-script-topline {
@@ -1388,8 +1404,9 @@ button {
 .workspace-audio-script span {
   flex: 0 0 auto;
   border-radius: 999px;
-  background: rgba(47, 52, 65, 0.08);
-  color: rgba(47, 52, 65, 0.72);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 11px;
   padding: 7px 9px;
@@ -1397,7 +1414,7 @@ button {
 
 .workspace-audio-script p {
   margin: 0;
-  color: rgba(47, 52, 65, 0.84);
+  color: var(--body);
   font-size: 14px;
   line-height: 1.65;
   white-space: pre-wrap;
@@ -2950,7 +2967,8 @@ body.stage-artifact .artifact-tick {
 
 .soft-segment-track,
 .understand-tab-bar,
-.artifact-format-tabs {
+.artifact-format-tabs,
+.workspace-tab-bar {
   border: none;
   border-radius: var(--r-ctrl);
   background: var(--background);
@@ -2962,7 +2980,8 @@ body.stage-artifact .artifact-tick {
 
 .soft-segment-tab,
 .understand-tab,
-.artifact-format-tab {
+.artifact-format-tab,
+.workspace-tab {
   border: none;
   border-radius: calc(var(--r-ctrl) - 4px);
   background: transparent;
@@ -3129,7 +3148,7 @@ body.stage-artifact .artifact-tick {
   max-width: 100%;
   border: 0;
   background: transparent;
-  color: #38b6ff;
+  color: var(--blue);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 10.5px;
@@ -10366,9 +10385,118 @@ body.stage-artifact .artifact-tick {
   margin: clamp(18px, 3.4vh, 34px) auto 0;
 }
 
-.dash-command .command-strip { background: #ffffff; }
+/* SCOPED SOFT OVERRIDE: .command-strip/.command-plus/.command-enter/
+   .prompt-voice-button/.path-panel are shared with the out-of-scope landing
+   PromptCard, which keeps its original glass/color-fill look untouched. These
+   rules apply only inside the in-app .dash-command/.ws-command contexts. */
+.dash-command .command-strip,
+.ws-command .command-strip {
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.dash-command .command-strip.processing,
+.ws-command .command-strip.processing {
+  box-shadow: var(--raised), 0 0 0 3px var(--active-shadow-strong);
+}
+
+.dash-command .command-plus,
+.dash-command .command-enter,
+.ws-command .command-plus,
+.ws-command .command-enter {
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--muted);
+}
+
+.dash-command .command-enter.ready,
+.dash-command .command-mic-recording,
+.ws-command .command-enter.ready,
+.ws-command .command-mic-recording {
+  box-shadow: var(--raised-sm), 0 0 0 3px var(--active-shadow-strong);
+  color: var(--active);
+}
+
+.dash-command .command-enter:hover,
+.ws-command .command-enter:hover {
+  box-shadow: var(--pressed);
+  color: var(--active);
+  transform: none;
+}
+
+.dash-command .prompt-voice-button,
+.ws-command .prompt-voice-button {
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--blue);
+}
+
+.dash-command .prompt-voice-button:hover,
+.ws-command .prompt-voice-button:hover {
+  box-shadow: var(--raised-sm);
+  background: var(--background);
+  color: var(--blue);
+  transform: none;
+}
+
+.dash-command .prompt-voice-button.is-recording,
+.ws-command .prompt-voice-button.is-recording {
+  border: none;
+  box-shadow: var(--pressed);
+  background: var(--background);
+  color: #ff4d5e;
+}
+
+.dash-command .prompt-voice-button.is-transcribing,
+.ws-command .prompt-voice-button.is-transcribing {
+  border: none;
+  box-shadow: var(--pressed);
+  background: var(--background);
+  color: var(--blue);
+}
+
+.dash-command .prompt-voice-button.is-ready,
+.ws-command .prompt-voice-button.is-ready {
+  border: none;
+  box-shadow: var(--pressed);
+  background: var(--background);
+  color: var(--green);
+}
+
+.dash-command .prompt-voice-button.is-error,
+.ws-command .prompt-voice-button.is-error {
+  border: none;
+  box-shadow: var(--pressed);
+  background: var(--background);
+  color: var(--amber-ink);
+}
+
+.dash-command .path-panel,
+.ws-command .path-panel {
+  text-align: left;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised);
+}
+
+.dash-command .active-stage,
+.ws-command .active-stage {
+  color: var(--active);
+}
+
+.dash-command .path-label,
+.dash-command .path-panel p,
+.ws-command .path-label,
+.ws-command .path-panel p {
+  color: var(--body);
+}
+
 .dash-command .dash-chips { margin-top: 14px; }
-.dash-command .path-panel { text-align: left; }
 
 .ws-command {
   width: min(1120px, 100%);
@@ -10401,7 +10529,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .ws-run-pill:hover {
-  border-color: rgba(47, 52, 65, 0.12);
+  box-shadow: var(--raised-sm);
 }
 
 .ws-command-status-panel {
@@ -10409,11 +10537,10 @@ body.stage-artifact .artifact-tick {
   width: min(760px, 100%);
   gap: 12px;
   padding: clamp(22px, 3vw, 30px);
-  border: 1px solid var(--active-border);
+  border: none;
   border-radius: 22px;
-  background: #ffffff;
-  box-shadow: 0 24px 70px rgba(47, 52, 65, 0.08),
-    0 0 0 4px var(--active-shadow);
+  background: var(--background);
+  box-shadow: var(--raised), 0 0 0 3px var(--active-shadow);
 }
 
 .ws-command-status-panel p {
@@ -10436,18 +10563,16 @@ body.stage-artifact .artifact-tick {
 }
 
 .ws-command-status-panel .ws-terminal-spinner {
-  border-color: rgba(47, 52, 65, 0.16);
+  border-color: var(--shadow-lo);
   border-top-color: var(--active);
 }
 
 .ws-command-status-panel.is-error {
-  border-color: rgba(255, 77, 94, 0.28);
-  box-shadow: 0 24px 70px rgba(47, 52, 65, 0.08),
-    0 0 0 4px rgba(255, 77, 94, 0.12);
+  box-shadow: var(--raised), 0 0 0 3px rgba(255, 80, 80, 0.22);
 }
 
 .ws-command-error {
-  color: rgba(224, 53, 75, 0.86);
+  color: var(--danger);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -10478,24 +10603,25 @@ body.stage-artifact .artifact-tick {
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  border: 1px solid rgba(47, 52, 65, 0.12);
+  border: none;
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition: box-shadow 180ms ease;
 }
 
-.dash-run-pill:hover { border-color: var(--purple); }
+.dash-run-pill:hover { box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.22); }
 .dash-run-pill strong { font-weight: 700; }
 .dash-run-dot {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--purple);
+  background: var(--soft-purple);
 }
 .dash-run-caret { font-size: 11px; opacity: 0.6; }
 
@@ -10514,10 +10640,10 @@ body.stage-artifact .artifact-tick {
   display: grid;
   min-width: 230px;
   padding: 6px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
+  border: none;
   border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 18px 44px rgba(47, 52, 65, 0.18);
+  background: var(--background);
+  box-shadow: var(--raised);
   transform: translateX(-50%);
 }
 
@@ -10539,18 +10665,19 @@ body.stage-artifact .artifact-tick {
   text-align: left;
 }
 
-.dash-run-menu button:hover { background: rgba(47, 52, 65, 0.06); }
-.dash-run-menu button.active { background: rgba(178, 165, 255, 0.2); }
+.dash-run-menu button:hover { box-shadow: var(--inset-sm); }
+.dash-run-menu button.active { box-shadow: var(--inset-sm); color: var(--soft-purple); }
 .dash-run-menu-tag {
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(56, 182, 255, 0.16);
-  color: #1d7fc0;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--blue);
   font-family: var(--font-code);
   font-size: 10px;
   font-weight: 700;
 }
-.dash-run-menu-new { color: #7c6cf0; margin-top: 2px; border-top: 1px solid rgba(47, 52, 65, 0.08); }
+.dash-run-menu-new { color: var(--soft-purple); margin-top: 2px; box-shadow: inset 0 1px 0 var(--shadow-lo); border-top: none; }
 
 /* ── dashboard prompt destination selector (workspace-first) ───────────────── */
 .dash-dest-menu {
@@ -11256,30 +11383,43 @@ body.stage-artifact .artifact-tick {
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
-.ws-badge-idle { background: rgba(47, 52, 65, 0.08); color: var(--landing-muted); }
-.ws-badge-running { background: rgba(56, 182, 255, 0.16); color: #1d7fc0; }
-.ws-badge-ready { background: rgba(0, 191, 99, 0.16); color: #007940; }
-.ws-badge-error { background: rgba(224, 53, 75, 0.12); color: #e0354b; }
-.ws-badge-path { background: rgba(178, 165, 255, 0.2); color: #5b4fd6; }
-.ws-badge-path[data-mode="build"] { background: rgba(56, 182, 255, 0.18); color: #1d7fc0; }
-.ws-badge-path[data-mode="fix"] { background: rgba(245, 184, 0, 0.2); color: #8a6a00; }
-.ws-badge-path[data-mode="artifact"] { background: rgba(0, 191, 99, 0.18); color: #007940; }
+/* soft-tag-style, static; fills dropped, status/mode color carried by text only */
+.ws-badge-idle,
+.ws-badge-running,
+.ws-badge-ready,
+.ws-badge-error,
+.ws-badge-path {
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+}
+.ws-badge-idle { color: var(--muted); }
+.ws-badge-running { color: var(--blue); }
+.ws-badge-ready { color: var(--green); }
+.ws-badge-error { color: var(--danger); }
+.ws-badge-path { color: var(--soft-purple); }
+.ws-badge-path[data-mode="build"] { color: var(--blue); }
+.ws-badge-path[data-mode="fix"] { color: var(--amber-ink); }
+.ws-badge-path[data-mode="artifact"] { color: var(--green); }
 
 .ws-head-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .ws-head-actions > button,
 .ws-move > button {
   padding: 9px 14px;
-  border: 1px solid var(--landing-border);
+  border: none;
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 12.5px;
   font-weight: 600;
+  transition: box-shadow 120ms ease;
 }
 .ws-head-actions > button:hover,
-.ws-move > button:hover { border-color: var(--purple); }
+.ws-move > button:hover { box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.22); }
+.ws-head-actions > button:active,
+.ws-move > button:active { box-shadow: var(--pressed); }
 .ws-move { position: relative; }
 .ws-move-menu {
   position: absolute;
@@ -11289,10 +11429,10 @@ body.stage-artifact .artifact-tick {
   display: grid;
   min-width: 200px;
   padding: 6px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
+  border: none;
   border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 18px 44px rgba(47, 52, 65, 0.18);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 .ws-move-menu button {
   padding: 9px 12px;
@@ -11306,15 +11446,15 @@ body.stage-artifact .artifact-tick {
   font-weight: 600;
   text-align: left;
 }
-.ws-move-menu button:hover:not(:disabled) { background: rgba(47, 52, 65, 0.06); }
-.ws-move-menu button:disabled { color: var(--landing-muted); cursor: default; }
+.ws-move-menu button:hover:not(:disabled) { box-shadow: var(--inset-sm); }
+.ws-move-menu button:disabled { color: var(--faint); cursor: default; }
 
 /* sections nav — close to the header */
 .ws-sections { margin-bottom: 16px; }
 .ws-sections-label {
   display: block;
   margin-bottom: 8px;
-  color: var(--landing-muted);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 11px;
   letter-spacing: 0.06em;
@@ -11324,12 +11464,13 @@ body.stage-artifact .artifact-tick {
 .ws-section-chip {
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--landing-border);
+  border: none;
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   overflow: hidden;
 }
-.ws-section-chip.active { border-color: var(--purple); box-shadow: 0 0 0 1.5px rgba(178, 165, 255, 0.55); }
+.ws-section-chip.active { box-shadow: var(--pressed); }
 .ws-section-name {
   border: 0;
   background: transparent;
@@ -11340,28 +11481,32 @@ body.stage-artifact .artifact-tick {
   font-size: 12.5px;
   font-weight: 600;
 }
+.ws-section-chip.active .ws-section-name { color: var(--soft-purple); }
 .ws-section-remove {
   border: 0;
   background: transparent;
   padding: 8px 11px 8px 4px;
-  color: var(--landing-muted);
+  color: var(--faint);
   cursor: pointer;
   font-size: 11px;
 }
-.ws-section-remove:hover { color: #e0354b; }
+.ws-section-remove:hover { color: var(--danger); }
 .ws-sections-tools { display: inline-flex; gap: 6px; margin-left: auto; }
 .ws-sections-tools button {
-  border: 1px solid var(--landing-border);
+  border: none;
   border-radius: 999px;
   padding: 6px 12px;
-  background: #ffffff;
-  color: var(--landing-muted);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--muted);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 600;
+  transition: box-shadow 120ms ease;
 }
-.ws-sections-tools button:hover { color: var(--text); border-color: var(--purple); }
+.ws-sections-tools button:hover { color: var(--soft-purple); box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.18); }
+.ws-sections-tools button:active { box-shadow: var(--pressed); }
 
 /* dark terminal — primary action area */
 .ws-terminal {
@@ -11382,11 +11527,15 @@ body.stage-artifact .artifact-tick {
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+/* FLATTENED: was a white ring, only legible against the (now-dead) dark
+   .ws-terminal wrapper. This spinner actually renders on light soft
+   backgrounds (WorkspaceArtifacts generating-state, WorkspaceFollowUp
+   running-note), so it's recolored for legibility there. */
 .ws-terminal-spinner {
   width: 13px;
   height: 13px;
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  border-top-color: #ffffff;
+  border: 2px solid var(--shadow-lo);
+  border-top-color: var(--soft-purple);
   border-radius: 999px;
   animation: wsSpin 0.8s linear infinite;
 }
@@ -11469,16 +11618,17 @@ body.stage-artifact .artifact-tick {
 }
 .ws-section-card {
   padding: 18px;
-  border: 1px solid var(--landing-border);
+  border: none;
   border-radius: 16px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   cursor: pointer;
   text-align: left;
   font-family: var(--font-body);
-  transition: border-color 180ms ease, box-shadow 180ms ease;
+  transition: box-shadow 180ms ease;
 }
-.ws-section-card:hover { border-color: rgba(124, 108, 240, 0.45); }
-.ws-section-card.active { border-color: var(--purple); box-shadow: 0 0 0 1.5px rgba(178, 165, 255, 0.5); }
+.ws-section-card:hover { box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.18); }
+.ws-section-card.active { box-shadow: var(--pressed), 0 0 0 2px rgba(139, 124, 240, 0.3); }
 .ws-section-card h3 {
   margin: 0 0 6px;
   font-family: var(--font-heading);
@@ -11680,6 +11830,9 @@ body.stage-artifact .artifact-tick {
 
 .dash-continue-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 
+/* FLATTENED: three solid-fill button variants (dark/light/purple) -> one
+   neutral raised soft-btn; the variant now lives in text color only. Shared
+   across Dashboard, Workspace, Artifacts/Projects/Settings pages. */
 .dash-btn-dark, .dash-btn-light, .dash-btn-purple {
   display: inline-flex;
   align-items: center;
@@ -11687,20 +11840,29 @@ body.stage-artifact .artifact-tick {
   padding: 12px 18px;
   border: 0;
   border-radius: 12px;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13.5px;
   font-weight: 600;
   text-decoration: none;
-  transition: transform 220ms ease, background 200ms ease;
+  transition: box-shadow 180ms ease;
 }
 
-.dash-btn-dark { background: #111827; color: #ffffff; }
-.dash-btn-dark:hover { transform: translateY(-1px); }
-.dash-btn-light { background: rgba(255, 255, 255, 0.92); color: #111827; }
-.dash-btn-light:hover { background: #ffffff; transform: translateY(-1px); }
-.dash-btn-purple { background: #7c6cf0; color: #ffffff; }
-.dash-btn-purple:hover { background: #111827; transform: translateY(-1px); }
+.dash-btn-dark, .dash-btn-light, .dash-btn-purple {
+  color: var(--text);
+}
+
+.dash-btn-dark:hover, .dash-btn-light:hover, .dash-btn-purple:hover {
+  box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.2);
+}
+
+.dash-btn-dark:active, .dash-btn-light:active, .dash-btn-purple:active {
+  box-shadow: var(--pressed);
+}
+
+.dash-btn-purple { color: var(--soft-purple); }
 
 /* workspace cards */
 .dash-ws-grid {
@@ -12725,17 +12887,14 @@ body.stage-artifact .artifact-tick {
   width: 100%;
 }
 
+/* soft-segment-track base supplies border/background/shadow */
 .workspace-tab-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 4px;
   width: fit-content;
   max-width: 100%;
-  padding: 0;
   margin: 0 auto;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
 }
 
 /* Tab nav merged into the workspace header, occupying the old actions slot (top-right). */
@@ -12756,115 +12915,80 @@ body.stage-artifact .artifact-tick {
   .workspace-header-tabs .workspace-tab-bar { justify-content: flex-start; }
 }
 
+/* soft-segment-tab base supplies border/background/shadow/color at rest */
 .workspace-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
+  min-height: 38px;
   padding: 0 17px;
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  border-radius: 999px;
-  background: #ffffff;
-  color: var(--text);
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
-  box-shadow: 0 6px 16px rgba(17, 24, 39, 0.05);
+  transition: box-shadow 160ms ease, color 160ms ease;
 }
 
-.workspace-tab:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.09);
-}
-
+/* FLATTENED: was a full mode-accent fill (background+border both --ws-accent,
+   white/dark text depending on data-fg). Segmented-control pattern now: pops
+   raised-sm like every other active tab, accent lives in the text color
+   instead of the fill — same "which lens am I in" signal, less shouty. */
 .workspace-tab.is-active {
-  background: var(--ws-accent, #111827);
-  border-color: var(--ws-accent, #111827);
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--ws-accent, #111827) 35%, transparent);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--ws-accent, var(--soft-purple));
 }
 
-.workspace-tab-bar[data-fg="light"] .workspace-tab.is-active { color: #ffffff; }
-.workspace-tab-bar[data-fg="dark"] .workspace-tab.is-active { color: #111827; }
-
-/* colored count chips */
+/* soft-tag-style count chip — neutral regardless of "tone" (the tone
+   variants were all rendering the same color already, so nothing is lost
+   by making that explicit instead of leaving 5 identical-looking rules) */
 .workspace-tab-count {
   display: inline-grid;
   place-items: center;
   min-width: 18px;
   height: 18px;
   padding: 0 6px;
+  border: none;
   border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--muted);
   font-style: normal;
   font-size: 11px;
   font-weight: 800;
   line-height: 1;
 }
 
-.workspace-tab-count.tone-purple { background: rgba(255, 255, 255, 0.5); color: #5f55cf; }
-.workspace-tab-count.tone-blue { background: rgba(255, 255, 255, 0.52); color: #5f55cf; }
-.workspace-tab-count.tone-green { background: rgba(255, 255, 255, 0.52); color: #5f55cf; }
-.workspace-tab-count.tone-yellow { background: rgba(255, 255, 255, 0.52); color: #5f55cf; }
-.workspace-tab-count.tone-neutral { background: rgba(255, 255, 255, 0.52); color: #5f55cf; }
-
-/* on the filled active tab, chips become translucent so they stay legible */
 .workspace-tab.is-active .workspace-tab-count {
-  background: rgba(255, 255, 255, 0.68);
-  color: inherit;
-}
-
-.workspace-tab-bar[data-fg="dark"] .workspace-tab.is-active .workspace-tab-count {
-  background: rgba(255, 255, 255, 0.68);
+  color: var(--ws-accent, var(--soft-purple));
 }
 
 .workspace-trace-panel {
   width: 100%;
 }
 
+/* Per-lens accent used only as a small color moment now (left-bar stripes,
+   index badges, hero badge text) — never a full card/button fill. */
 .workspace-lens-guide {
-  --guide-accent: #b2a5ff;
-  --guide-soft: rgba(178, 165, 255, 0.1);
-  --guide-bg: #f7f8fb;
-  --guide-card: #ffffff;
-  --guide-text: #111827;
-  --guide-muted: #6b7280;
-  --guide-border: rgba(17, 24, 39, 0.1);
+  --guide-accent: var(--soft-purple);
   width: min(1280px, 100%);
   display: grid;
   gap: 18px;
   margin: clamp(16px, 2.6vh, 36px) 0 0;
-  color: var(--guide-text);
+  color: var(--ink);
 }
 
-.workspace-lens-guide.guide-purple {
-  --guide-accent: #b2a5ff;
-  --guide-soft: rgba(178, 165, 255, 0.1);
-}
+.workspace-lens-guide.guide-purple { --guide-accent: var(--soft-purple); }
+.workspace-lens-guide.guide-blue { --guide-accent: var(--blue); }
+.workspace-lens-guide.guide-yellow { --guide-accent: var(--amber); }
+.workspace-lens-guide.guide-green { --guide-accent: var(--green); }
 
-.workspace-lens-guide.guide-blue {
-  --guide-accent: #38b6ff;
-  --guide-soft: rgba(56, 182, 255, 0.1);
-}
-
-.workspace-lens-guide.guide-yellow {
-  --guide-accent: #f5b800;
-  --guide-soft: rgba(245, 184, 0, 0.1);
-}
-
-.workspace-lens-guide.guide-green {
-  --guide-accent: #00bf63;
-  --guide-soft: rgba(0, 191, 99, 0.1);
-}
-
+/* FLATTENED: flat white cards + border + drop-shadow -> raised */
 .guide-hero-card,
 .workspace-guide-card,
 .guide-next-card,
 .guide-action-row {
-  border: 1px solid var(--guide-border);
-  background: var(--guide-card);
-  box-shadow: 0 18px 46px rgba(17, 24, 39, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  border: none;
+  border-radius: var(--r-card);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .guide-hero-card {
@@ -12873,14 +12997,12 @@ body.stage-artifact .artifact-tick {
   gap: 20px;
   align-items: flex-start;
   padding: 24px;
-  border-left: 5px solid var(--guide-accent);
-  border-radius: 26px;
-  background: var(--guide-card);
+  box-shadow: var(--raised), inset 5px 0 0 var(--guide-accent);
 }
 
 .workspace-guide-label {
   margin: 0 0 8px;
-  color: var(--guide-muted);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
@@ -12890,7 +13012,7 @@ body.stage-artifact .artifact-tick {
 
 .guide-hero-card h2 {
   margin: 0;
-  color: var(--guide-text);
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: clamp(30px, 4vw, 48px);
   font-weight: 800;
@@ -12901,17 +13023,20 @@ body.stage-artifact .artifact-tick {
 .guide-hero-card p:not(.workspace-guide-label) {
   max-width: 680px;
   margin: 10px 0 0;
-  color: var(--guide-muted);
+  color: var(--body);
   font-size: 15px;
   line-height: 1.45;
 }
 
+/* FLATTENED: solid accent-filled pill -> soft-tag, accent moves to text */
 .guide-hero-badge {
   flex: 0 0 auto;
   padding: 9px 12px;
+  border: none;
   border-radius: 999px;
-  background: var(--guide-accent);
-  color: var(--guide-text);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--guide-accent);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
@@ -12934,24 +13059,20 @@ body.stage-artifact .artifact-tick {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* FLATTENED: the accent stripe was a positioned ::before element acting as a
+   border; converted to the same inset-shadow left-bar technique used
+   everywhere else (Fix/Build/Artifact branch & status cards). */
 .workspace-guide-card,
 .guide-next-card {
   position: relative;
   min-width: 0;
   overflow: hidden;
   padding: 20px;
-  border-radius: 22px;
+  border-radius: var(--r-ctrl);
+  box-shadow: var(--raised), inset 4px 0 0 var(--guide-accent);
 }
 
-.workspace-guide-card::before,
-.guide-next-card::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 4px;
-  background: var(--guide-accent);
-}
-
+/* FLATTENED: solid accent-filled circle -> neutral raised-sm, accent moves to text */
 .guide-step-num {
   display: inline-grid;
   place-items: center;
@@ -12959,8 +13080,9 @@ body.stage-artifact .artifact-tick {
   height: 28px;
   margin-bottom: 12px;
   border-radius: 999px;
-  background: var(--guide-accent);
-  color: var(--guide-text);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--guide-accent);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 900;
@@ -12969,7 +13091,7 @@ body.stage-artifact .artifact-tick {
 .workspace-guide-card p:not(.workspace-guide-label),
 .guide-next-card h3 {
   margin: 0;
-  color: var(--guide-text);
+  color: var(--ink);
 }
 
 .workspace-guide-card p:not(.workspace-guide-label) {
@@ -12982,27 +13104,17 @@ body.stage-artifact .artifact-tick {
   gap: 7px;
   margin: 12px 0 0;
   padding-left: 18px;
-  color: var(--guide-muted);
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.4;
 }
 
 .workspace-guide-card.is-compact {
   padding: 18px;
-  background: var(--guide-card);
-}
-
-.workspace-guide-card.is-compact .guide-step-num {
-  background: var(--guide-accent);
-}
-
-.guide-next-card {
-  border-color: var(--guide-accent);
-  background: var(--guide-card);
 }
 
 .guide-next-card .workspace-guide-label {
-  color: rgba(47, 52, 65, 0.62);
+  color: var(--faint);
 }
 
 .guide-next-card h3 {
@@ -13021,56 +13133,63 @@ body.stage-artifact .artifact-tick {
   justify-content: center;
 }
 
+/* soft-btn material — dark-fill primary + accent-fill secondary both drop to
+   neutral raised-sm, keeping only their text color as the "which one is
+   primary" cue */
 .guide-action-row button {
   min-height: 36px;
-  border: 1px solid rgba(17, 24, 39, 0.1);
+  border: none;
   border-radius: 999px;
-  background: #ffffff;
-  color: var(--guide-text);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--ink);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: -0.01em;
   padding: 9px 14px;
+  transition: box-shadow 0.15s ease;
 }
 
-.guide-action-row button:first-child {
-  background: #111827;
-  color: #ffffff;
+.guide-action-row button:active {
+  box-shadow: var(--pressed);
 }
 
 .guide-action-row button:nth-child(2) {
-  border-color: var(--guide-accent);
-  background: var(--guide-accent);
-  color: var(--guide-text);
+  color: var(--guide-accent);
 }
 
 .fix-playbook-guide {
   gap: clamp(56px, 6vh, 88px);
 }
 
+/* FLATTENED: same "embedded in the page" anti-pattern found repeatedly in
+   Fix's own lens (live-diagnosis-panel/infrastructure-map) — transparent
+   with a colored left-border as the only definition. Raised card now. */
 .fix-playbook-hero {
-  padding: 6px 0 16px 14px;
-  border: 0;
-  border-left: 4px solid #f5b800;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
+  padding: 24px 28px;
+  border: none;
+  border-radius: var(--r-card);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
+/* soft-tag-style, static */
 .fix-playbook-hero .workspace-guide-label {
   display: inline-flex;
   width: fit-content;
   margin-bottom: 12px;
   padding: 7px 11px;
+  border: none;
   border-radius: 999px;
-  background: #f5b800;
-  color: #111827;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--amber);
 }
 
 .fix-playbook-hero h2 {
-  color: #2f3441;
+  color: var(--ink);
   font-size: clamp(34px, 4.2vw, 52px);
   line-height: 1;
   letter-spacing: -0.05em;
@@ -13079,22 +13198,23 @@ body.stage-artifact .artifact-tick {
 .fix-playbook-hero p:not(.workspace-guide-label) {
   max-width: 720px;
   margin: 10px 0 0;
-  color: #374151;
+  color: var(--body);
   font-size: clamp(16px, 1.4vw, 19px);
   font-weight: 600;
   line-height: 1.35;
   letter-spacing: -0.02em;
 }
 
-.fix-playbook-flow-card,
+/* FLATTENED: flat white cards + border + shadow -> raised. Flow-card wrapper
+   stays transparent (it's a layout shell for the flow nodes, same pattern
+   as Fix's own failure-branches-panel — the children carry the material). */
 .fix-recommended-panel,
 .fix-interpret-panel,
 .fix-rail-card,
 .fix-rail-actions {
-  border: 1px solid rgba(17, 24, 39, 0.1);
-  background: #ffffff;
-  box-shadow: 0 18px 46px rgba(17, 24, 39, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .fix-playbook-flow-card {
@@ -13103,10 +13223,9 @@ body.stage-artifact .artifact-tick {
   box-shadow: none;
 }
 
-.fix-playbook-flow-card,
 .fix-recommended-panel,
 .fix-interpret-panel {
-  border-radius: 24px;
+  border-radius: var(--r-card);
   padding: 24px;
 }
 
@@ -13125,7 +13244,7 @@ body.stage-artifact .artifact-tick {
 
 .fix-playbook-section-head h3 {
   margin: 0;
-  color: #111827;
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: 24px;
   font-weight: 800;
@@ -13133,12 +13252,15 @@ body.stage-artifact .artifact-tick {
   line-height: 1.05;
 }
 
+/* soft-tag-style, static */
 .fix-playbook-section-head > span {
   flex: 0 0 auto;
   padding: 7px 10px;
+  border: none;
   border-radius: 999px;
-  background: #111827;
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
@@ -13150,6 +13272,11 @@ body.stage-artifact .artifact-tick {
   gap: 12px;
 }
 
+/* FLATTENED: each of the 6 flow stages was filled with a different solid
+   color purely by grid position (nth-child) — same non-functional rainbow
+   pattern found and fixed in the Artifact lens's own delivery pipeline
+   (confirmed: no CSS ties the fill to any real step state). Neutral
+   raised-sm now; the active step reads via an accent ring instead. */
 .fix-flow-node {
   position: relative;
   display: grid;
@@ -13158,23 +13285,14 @@ body.stage-artifact .artifact-tick {
   gap: 12px;
   padding: 20px 18px;
   border: 0;
-  border-radius: 28px;
-  background: var(--flow-color, #111827);
-  box-shadow: 0 22px 42px rgba(17, 24, 39, 0.14);
+  border-radius: var(--r-card);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
 }
 
 .fix-flow-node.is-active {
-  box-shadow: 0 26px 48px rgba(17, 24, 39, 0.18);
-  outline: 4px solid rgba(255, 255, 255, 0.88);
-  outline-offset: -10px;
+  box-shadow: var(--raised-sm), 0 0 0 3px rgba(139, 124, 240, 0.28);
 }
-
-.fix-flow-node:nth-child(1) { --flow-color: #00bf63; }
-.fix-flow-node:nth-child(2) { --flow-color: #b2a5ff; }
-.fix-flow-node:nth-child(3) { --flow-color: #38b6ff; }
-.fix-flow-node:nth-child(4) { --flow-color: #f5b800; }
-.fix-flow-node:nth-child(5) { --flow-color: #b2a5ff; }
-.fix-flow-node:nth-child(6) { --flow-color: #00bf63; }
 
 .fix-flow-node:not(:last-child)::after {
   content: "→";
@@ -13186,25 +13304,28 @@ body.stage-artifact .artifact-tick {
   place-items: center;
   width: 24px;
   height: 24px;
+  border: none;
   border-radius: 999px;
-  background: #111827;
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 13px;
   font-weight: 900;
-  box-shadow: 0 4px 10px rgba(17, 24, 39, 0.25);
   transform: translateY(-50%);
 }
 
+/* soft-tag-style, static */
 .fix-flow-number {
   display: grid;
   place-items: center;
   width: 32px;
   height: 32px;
-  border: 2px solid rgba(255, 255, 255, 0.92);
+  border: none;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 12px;
   font-weight: 900;
@@ -13212,18 +13333,19 @@ body.stage-artifact .artifact-tick {
 
 .fix-flow-node h4 {
   margin: 0;
-  color: #ffffff;
+  color: var(--ink);
   font-size: 15px;
   font-weight: 850;
 }
 
 .fix-flow-node p {
   margin: 6px 0 0;
-  color: rgba(255, 255, 255, 0.86);
+  color: var(--body);
   font-size: 12.5px;
   line-height: 1.35;
 }
 
+/* soft-tag-style, static */
 .fix-flow-node em {
   align-self: end;
   display: -webkit-box;
@@ -13231,9 +13353,11 @@ body.stage-artifact .artifact-tick {
   max-width: 100%;
   min-height: 30px;
   padding: 7px 11px;
+  border: none;
   border-radius: 14px;
-  background: #ffffff;
-  color: #4b5563;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 10.5px;
   font-style: normal;
@@ -13247,8 +13371,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .fix-flow-node.is-active em {
-  background: #ffffff;
-  color: #111827;
+  color: var(--soft-purple);
 }
 
 .fix-playbook-layout {
@@ -13282,14 +13405,13 @@ body.stage-artifact .artifact-tick {
   gap: 12px;
   align-items: center;
   padding: 12px;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  border: none;
   border-radius: 16px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
 }
 
-.fix-recommended-step:nth-child(even) {
-  background: #f7f8fb;
-}
+/* zebra striping dropped — position carried no status meaning */
 
 .fix-recommended-step > span {
   display: grid;
@@ -13297,8 +13419,9 @@ body.stage-artifact .artifact-tick {
   width: 34px;
   height: 34px;
   border-radius: 12px;
-  background: rgba(17, 24, 39, 0.06);
-  color: #374151;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--body);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 900;
@@ -13306,7 +13429,7 @@ body.stage-artifact .artifact-tick {
 
 .fix-recommended-step strong {
   display: block;
-  color: #111827;
+  color: var(--ink);
   font-size: 14px;
   line-height: 1.25;
 }
@@ -13314,16 +13437,19 @@ body.stage-artifact .artifact-tick {
 .fix-recommended-step small {
   display: block;
   margin-top: 4px;
-  color: #6b7280;
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 10.5px;
   font-weight: 700;
   text-transform: uppercase;
 }
 
+/* soft-tag-style, static; status color carried by text only */
 .fix-status-badge {
   padding: 7px 9px;
   border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   font-family: var(--font-code);
   font-size: 10.5px;
   font-style: normal;
@@ -13332,23 +13458,20 @@ body.stage-artifact .artifact-tick {
 }
 
 .fix-status-badge.status-done {
-  background: #00bf63;
-  color: #ffffff;
+  color: var(--green);
 }
 
 .fix-status-badge.status-active {
-  background: #38b6ff;
-  color: #111827;
+  color: var(--blue);
 }
 
 .fix-status-badge.status-not-started {
-  background: #e5e7eb;
-  color: #6b7280;
+  color: var(--faint);
 }
 
 .fix-interpret-panel h3 {
   margin: 0;
-  color: #111827;
+  color: var(--ink);
   font-family: var(--font-heading);
   font-size: 22px;
   letter-spacing: -0.035em;
@@ -13356,7 +13479,7 @@ body.stage-artifact .artifact-tick {
 
 .fix-interpret-panel > p:not(.workspace-guide-label) {
   margin: 8px 0 0;
-  color: #6b7280;
+  color: var(--body);
   font-size: 14px;
   line-height: 1.45;
 }
@@ -13368,35 +13491,37 @@ body.stage-artifact .artifact-tick {
   margin-top: 14px;
 }
 
+/* soft-tag-style, static */
 .fix-interpret-grid span {
   padding: 8px 10px;
   border-radius: 999px;
-  background: #f3f4f6;
-  color: #111827;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--ink);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
 }
 
+/* rail color kept as a left-edge accent stripe, not a full border/fill */
 .fix-rail-card {
   display: grid;
   gap: 7px;
   padding: 16px;
   border-radius: 20px;
-  border: 1px solid rgba(17, 24, 39, 0.1);
-  border-left: 5px solid var(--rail-color);
-  background: #ffffff;
-  box-shadow: 0 14px 34px rgba(17, 24, 39, 0.06);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--rail-color);
 }
 
-.fix-rail-card.rail-yellow { --rail-color: #f5b800; }
-.fix-rail-card.rail-blue { --rail-color: #38b6ff; }
-.fix-rail-card.rail-green { --rail-color: #00bf63; }
-.fix-rail-card.rail-purple { --rail-color: #b2a5ff; }
+.fix-rail-card.rail-yellow { --rail-color: var(--amber); }
+.fix-rail-card.rail-blue { --rail-color: var(--blue); }
+.fix-rail-card.rail-green { --rail-color: var(--green); }
+.fix-rail-card.rail-purple { --rail-color: var(--soft-purple); }
 
 .fix-rail-card p {
   margin: 0;
-  color: #6b7280;
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 10.5px;
   font-weight: 850;
@@ -13404,13 +13529,13 @@ body.stage-artifact .artifact-tick {
 }
 
 .fix-rail-card strong {
-  color: #111827;
+  color: var(--ink);
   font-size: 17px;
   line-height: 1.2;
 }
 
 .fix-rail-card span {
-  color: #6b7280;
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.35;
 }
@@ -13424,10 +13549,11 @@ body.stage-artifact .artifact-tick {
 
 .fix-rail-actions button {
   min-height: 40px;
-  border: 1px solid rgba(17, 24, 39, 0.1);
+  border: none;
   border-radius: 999px;
-  background: #ffffff;
-  color: #111827;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--ink);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13px;
@@ -13435,25 +13561,25 @@ body.stage-artifact .artifact-tick {
   letter-spacing: -0.01em;
 }
 
+/* primary/secondary distinguished by text color only, not a solid fill */
 .fix-rail-actions button:first-child {
-  border-color: #111827;
-  background: #111827;
-  color: #ffffff;
+  color: var(--soft-purple);
 }
 
 .fix-rail-actions button:nth-child(2) {
-  border-color: #f5b800;
-  background: #f5b800;
-  color: #111827;
+  color: var(--amber-ink);
 }
 
 .fix-rail-actions button {
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  transition: box-shadow 0.12s ease;
 }
 
 .fix-rail-actions button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.12);
+  box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.18);
+}
+
+.fix-rail-actions button:active {
+  box-shadow: var(--pressed);
 }
 
 @media (max-width: 980px) {
@@ -13519,7 +13645,7 @@ body.stage-artifact .artifact-tick {
 
 .workspace-worklog-header p {
   margin: 0;
-  color: #8b8fa3;
+  color: var(--muted);
   font-size: 13.5px;
 }
 
@@ -13535,7 +13661,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .workspace-run-card.is-static:hover {
-  border-color: rgba(17, 24, 39, 0.08);
+  box-shadow: var(--raised);
   transform: none;
 }
 
@@ -13557,20 +13683,20 @@ body.stage-artifact .artifact-tick {
 .workspace-trace-preview-body,
 .workspace-trace-preview-links {
   padding: 18px;
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: var(--background);
+  border: none;
   border-radius: 18px;
-  box-shadow: 0 12px 32px rgba(17, 24, 39, 0.05);
+  box-shadow: var(--raised);
 }
 
 .workspace-run-card {
   cursor: pointer;
-  transition: border-color 150ms ease, transform 150ms ease;
+  transition: box-shadow 150ms ease, transform 150ms ease;
 }
 
 .workspace-run-card:hover,
 .workspace-run-card.is-active {
-  border-color: var(--purple);
+  box-shadow: var(--raised), 0 0 0 2px rgba(139, 124, 240, 0.28);
   transform: translateY(-1px);
 }
 
@@ -13597,7 +13723,7 @@ body.stage-artifact .artifact-tick {
 
 .workspace-run-kicker,
 .workspace-trace-preview-source {
-  color: #8b8fa3;
+  color: var(--muted);
 }
 
 .workspace-run-card h3,
@@ -13613,13 +13739,13 @@ body.stage-artifact .artifact-tick {
 }
 
 .workspace-run-status {
-  color: #4b5563;
+  color: var(--body);
 }
 
 .ws-run-status.is-running { color: var(--blue); }
 .ws-run-status.is-completed { color: var(--green); }
-.ws-run-status.is-cancelled { color: #8b8fa3; }
-.ws-run-status.is-failed { color: #b42318; }
+.ws-run-status.is-cancelled { color: var(--muted); }
+.ws-run-status.is-failed { color: var(--danger); }
 
 .workspace-run-meta {
   display: flex;
@@ -13637,7 +13763,7 @@ body.stage-artifact .artifact-tick {
 .workspace-run-linked-label {
   display: block;
   margin-bottom: 8px;
-  color: #8b8fa3;
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
@@ -13657,15 +13783,22 @@ body.stage-artifact .artifact-tick {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(17, 24, 39, 0.1);
+  border: none;
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
+  transition: box-shadow 120ms ease;
+}
+
+.workspace-run-actions button:active,
+.workspace-timeline-link:active {
+  box-shadow: var(--pressed);
 }
 
 .workspace-run-chip {
@@ -13723,12 +13856,15 @@ body.stage-artifact .artifact-tick {
   display: flex;
   gap: 12px;
   padding: 16px 18px;
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: var(--background);
+  border: none;
   border-radius: 18px;
-  box-shadow: 0 12px 32px rgba(17, 24, 39, 0.05);
+  box-shadow: var(--raised);
 }
 
+/* NOTE: background-color here is set inline (JS-driven, timelineTone() in
+   WorkspaceTraceTabs.tsx) — left untouched per scope; only the surrounding
+   shape/depth is restyled. */
 .workspace-timeline-marker {
   display: inline-flex;
   align-items: center;
@@ -13737,6 +13873,7 @@ body.stage-artifact .artifact-tick {
   height: 28px;
   flex-shrink: 0;
   border-radius: 999px;
+  box-shadow: var(--raised-sm);
   color: #ffffff;
   font-size: 15px;
   font-weight: 700;
@@ -13755,7 +13892,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .workspace-timeline-time {
-  color: #8b8fa3;
+  color: var(--muted);
   white-space: nowrap;
 }
 
@@ -13804,9 +13941,9 @@ body.stage-artifact .artifact-tick {
   height: 56px;
   max-width: 100%;
   border-radius: 16px;
-  border-color: rgba(17, 24, 39, 0.12);
-  background: #ffffff;
-  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.05);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
@@ -13839,28 +13976,25 @@ body.stage-artifact .artifact-tick {
   align-items: center;
   min-height: 34px;
   padding: 8px 13px;
-  border: 1px solid rgba(178, 165, 255, 0.25);
+  border: none;
   border-radius: 999px;
-  background: rgba(178, 165, 255, 0.12);
-  color: #5f55cf;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
 .ws-followup-chip:hover,
 .ws-followup-chip-more:hover {
   transform: translateY(-1px);
-  background: rgba(178, 165, 255, 0.18);
-  border-color: rgba(178, 165, 255, 0.35);
 }
 
 .ws-followup-chip-more {
-  background: rgba(47, 52, 65, 0.04);
-  border-color: rgba(47, 52, 65, 0.1);
   color: var(--text);
 }
 
@@ -13875,10 +14009,10 @@ body.stage-artifact .artifact-tick {
   z-index: 20;
   min-width: 240px;
   padding: 8px;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  border: none;
   border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 18px 36px rgba(17, 24, 39, 0.12);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .ws-followup-menu button {
@@ -13909,7 +14043,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .ws-followup-target-label {
-  color: rgba(47, 52, 65, 0.72);
+  color: var(--body);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
@@ -13921,8 +14055,9 @@ body.stage-artifact .artifact-tick {
 
 .ws-followup-select select {
   appearance: none;
-  border: 1px solid rgba(17, 24, 39, 0.12);
-  background: #ffffff;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   border-radius: 999px;
   color: var(--text);
   font-family: var(--font-body);
@@ -13931,13 +14066,12 @@ body.stage-artifact .artifact-tick {
   cursor: pointer;
   min-width: 190px;
   padding: 9px 14px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease;
 }
 
 .ws-followup-select select:hover,
 .ws-followup-select select:focus {
-  border-color: var(--purple);
-  box-shadow: 0 0 0 3px rgba(178, 165, 255, 0.18);
+  box-shadow: var(--inset-sm), 0 0 0 3px rgba(178, 165, 255, 0.28);
   outline: 0;
 }
 
@@ -13962,29 +14096,35 @@ body.stage-artifact .artifact-tick {
   gap: 12px;
   margin-top: 0;
   padding: 10px 14px;
-  background: #fff5f5;
-  border: 1px solid rgba(220, 53, 69, 0.25);
+  background: var(--background);
+  border: none;
   border-radius: 12px;
+  box-shadow: var(--raised-sm), inset 3px 0 0 var(--danger);
   font-size: 0.85rem;
-  color: #b42318;
+  color: var(--danger);
 }
 
 .ws-followup-error button {
   border: none;
-  background: #b42318;
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--danger);
   padding: 6px 14px;
   border-radius: 8px;
   font-size: 0.8rem;
   cursor: pointer;
 }
 
+.ws-followup-error button:active {
+  box-shadow: var(--pressed);
+}
+
 .ws-followup-latest {
   padding: 16px 18px;
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: var(--background);
+  border: none;
   border-radius: 18px;
-  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.05);
+  box-shadow: var(--raised);
 }
 
 .ws-followup-latest-head {
@@ -14003,25 +14143,28 @@ body.stage-artifact .artifact-tick {
 .ws-followup-latest-section {
   font-size: 0.75rem;
   color: var(--muted);
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.1);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  border: none;
   border-radius: 999px;
   padding: 3px 10px;
 }
 
+/* soft-tag-style, static; fill dropped, mode color carried by text only */
 .ws-followup-badge {
   text-transform: capitalize;
   font-size: 0.7rem;
   font-weight: 700;
   padding: 3px 9px;
   border-radius: 999px;
-  color: #1f1147;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
 }
 
-.ws-followup-badge-understand { background: #ded7fb; }
-.ws-followup-badge-build { background: #d3ecff; }
-.ws-followup-badge-fix { background: #fbeab8; }
-.ws-followup-badge-artifact { background: #cdf3de; }
+.ws-followup-badge-understand { color: var(--soft-purple); }
+.ws-followup-badge-build { color: var(--blue); }
+.ws-followup-badge-fix { color: var(--amber-ink); }
+.ws-followup-badge-artifact { color: var(--green); }
 
 .ws-fu-content p {
   margin: 10px 0 0;
@@ -14030,11 +14173,13 @@ body.stage-artifact .artifact-tick {
   line-height: 1.55;
 }
 
+/* dark-soft: reused code-chrome recipe established in the Fix lens */
 .ws-fu-pre {
   margin: 12px 0 0;
   padding: 12px 14px;
-  background: #111827;
-  color: #e5e7eb;
+  background: var(--dark-surface);
+  box-shadow: var(--dark-raised-sm);
+  color: var(--dark-body);
   border-radius: 10px;
   font-family: var(--font-code);
   font-size: 0.8rem;
@@ -14264,10 +14409,10 @@ body.stage-artifact .artifact-tick {
 .ws-artifacts {
   margin: 18px 0;
   padding: 20px 22px;
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: var(--background);
+  border: none;
   border-radius: 18px;
-  box-shadow: 0 12px 32px rgba(17, 24, 39, 0.05);
+  box-shadow: var(--raised);
 }
 
 .ws-artifacts-head {
@@ -14288,13 +14433,20 @@ body.stage-artifact .artifact-tick {
 .ws-artifacts-generate,
 .ws-artifacts-empty-cta {
   border: none;
-  background: #111827;
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   border-radius: 10px;
   padding: 9px 16px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  transition: box-shadow 120ms ease;
+}
+
+.ws-artifacts-generate:active,
+.ws-artifacts-empty-cta:active {
+  box-shadow: var(--pressed);
 }
 
 .ws-artifacts-empty {
@@ -14302,8 +14454,9 @@ body.stage-artifact .artifact-tick {
   justify-items: center;
   gap: 10px;
   padding: 26px 20px;
-  border: 1px dashed rgba(17, 24, 39, 0.16);
+  border: none;
   border-radius: 14px;
+  box-shadow: var(--inset);
   text-align: center;
 }
 
@@ -14331,15 +14484,18 @@ body.stage-artifact .artifact-tick {
 
 .ws-artifacts-chips button {
   padding: 6px 13px;
-  border: 1px solid rgba(17, 24, 39, 0.12);
+  border: none;
   border-radius: 999px;
-  background: #f3f1ff;
-  color: #4b3fae;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   font-size: 0.8rem;
   cursor: pointer;
+  transition: box-shadow 120ms ease;
 }
 
-.ws-artifacts-chips button:hover { border-color: var(--purple); }
+.ws-artifacts-chips button:hover { box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.18); }
+.ws-artifacts-chips button:active { box-shadow: var(--pressed); }
 
 .ws-artifacts-grid {
   display: grid;
@@ -14449,9 +14605,9 @@ body.stage-artifact .artifact-tick {
   width: min(620px, 100%);
   max-height: 88vh;
   overflow: auto;
-  background: #ffffff;
+  background: var(--background);
   border-radius: 20px;
-  box-shadow: 0 32px 90px rgba(17, 24, 39, 0.28);
+  box-shadow: var(--raised);
 }
 
 .ws-genart-head,
@@ -14481,13 +14637,20 @@ body.stage-artifact .artifact-tick {
 .ws-genart-head button,
 .ws-artifact-dialog-head button {
   border: none;
-  background: rgba(17, 24, 39, 0.06);
-  color: var(--text);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--muted);
   width: 30px;
   height: 30px;
   border-radius: 8px;
   cursor: pointer;
   flex-shrink: 0;
+  transition: box-shadow 120ms ease;
+}
+
+.ws-genart-head button:active,
+.ws-artifact-dialog-head button:active {
+  box-shadow: var(--pressed);
 }
 
 .ws-genart-form {
@@ -14515,26 +14678,28 @@ body.stage-artifact .artifact-tick {
 
 .ws-genart-type {
   padding: 7px 13px;
-  border: 1px solid rgba(17, 24, 39, 0.12);
+  border: none;
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   font-size: 0.8rem;
   color: var(--text);
   cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: box-shadow 0.15s ease;
 }
 
-.ws-genart-type:hover { border-color: var(--purple); }
+.ws-genart-type:hover { box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.18); }
 .ws-genart-type.active {
-  background: #111827;
-  border-color: #111827;
-  color: #ffffff;
+  box-shadow: var(--pressed);
+  color: var(--soft-purple);
 }
 
 .ws-genart-field input,
 .ws-genart-field textarea {
   width: 100%;
-  border: 1px solid rgba(17, 24, 39, 0.14);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   border-radius: 12px;
   padding: 10px 13px;
   font-family: var(--font-body);
@@ -14545,7 +14710,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .ws-genart-field input:focus,
-.ws-genart-field textarea:focus { border-color: var(--purple); }
+.ws-genart-field textarea:focus { box-shadow: var(--inset-sm), 0 0 0 3px rgba(178, 165, 255, 0.28); }
 
 .ws-genart-actions {
   display: flex;
@@ -14555,26 +14720,34 @@ body.stage-artifact .artifact-tick {
 }
 
 .ws-genart-cancel {
-  border: 1px solid rgba(17, 24, 39, 0.12);
-  background: #ffffff;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
   border-radius: 10px;
   padding: 10px 16px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: box-shadow 120ms ease;
 }
+
+.ws-genart-cancel:active { box-shadow: var(--pressed); }
 
 .ws-genart-submit {
   border: none;
-  background: #111827;
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   border-radius: 10px;
   padding: 10px 18px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  transition: box-shadow 120ms ease;
 }
+
+.ws-genart-submit:active { box-shadow: var(--pressed); }
 
 .ws-genart-submit:disabled,
 .ws-genart-cancel:disabled { opacity: 0.55; cursor: default; }
@@ -14631,9 +14804,9 @@ body.stage-artifact .artifact-tick {
   width: min(960px, 100%);
   max-height: 90vh;
   overflow: auto;
-  background: #ffffff;
+  background: var(--background);
   border-radius: 22px;
-  box-shadow: 0 32px 90px rgba(17, 24, 39, 0.28);
+  box-shadow: var(--raised);
 }
 
 .ws-export-head {
@@ -14659,14 +14832,18 @@ body.stage-artifact .artifact-tick {
 
 .ws-export-head button {
   border: none;
-  background: rgba(17, 24, 39, 0.06);
-  color: var(--text);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--muted);
   width: 30px;
   height: 30px;
   border-radius: 8px;
   cursor: pointer;
   flex-shrink: 0;
+  transition: box-shadow 120ms ease;
 }
+
+.ws-export-head button:active { box-shadow: var(--pressed); }
 
 .ws-export-form {
   display: grid;
@@ -14681,9 +14858,10 @@ body.stage-artifact .artifact-tick {
   justify-content: space-between;
   gap: 12px;
   padding: 16px 18px;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  border: none;
   border-radius: 16px;
-  background: #f7f8fb;
+  background: var(--background);
+  box-shadow: var(--inset);
 }
 
 .ws-export-summary strong {
@@ -14697,7 +14875,7 @@ body.stage-artifact .artifact-tick {
 .ws-export-summary span {
   display: block;
   margin-top: 3px;
-  color: #8b8fa3;
+  color: var(--muted);
   font-size: 13px;
   font-weight: 600;
 }
@@ -14716,20 +14894,21 @@ body.stage-artifact .artifact-tick {
 }
 
 .ws-export-format {
-  border: 1px solid rgba(17, 24, 39, 0.12);
-  background: #ffffff;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
   border-radius: 999px;
   padding: 8px 14px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  transition: box-shadow 120ms ease;
 }
 
 .ws-export-format.active {
-  background: #111827;
-  border-color: #111827;
-  color: #ffffff;
+  box-shadow: var(--pressed);
+  color: var(--soft-purple);
 }
 
 .ws-export-format.disabled {
@@ -14738,9 +14917,10 @@ body.stage-artifact .artifact-tick {
 }
 
 .ws-export-preview {
-  border: 1px solid rgba(17, 24, 39, 0.1);
+  border: none;
   border-radius: 16px;
-  background: #f7f8fb;
+  background: var(--background);
+  box-shadow: var(--inset);
   overflow: hidden;
 }
 
@@ -14761,7 +14941,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .ws-export-preview-head span {
-  color: #8b8fa3;
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 700;
@@ -14791,26 +14971,30 @@ body.stage-artifact .artifact-tick {
 .ws-export-copy,
 .ws-export-download,
 .ws-export-close {
-  border: 1px solid rgba(17, 24, 39, 0.12);
-  background: #ffffff;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
   border-radius: 10px;
   padding: 10px 16px;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  transition: box-shadow 120ms ease;
+}
+
+.ws-export-copy:active,
+.ws-export-download:active,
+.ws-export-close:active {
+  box-shadow: var(--pressed);
 }
 
 .ws-export-download {
-  background: #111827;
-  border-color: #111827;
-  color: #ffffff;
+  color: var(--soft-purple);
 }
 
 .ws-export-download-json {
-  background: #38b6ff;
-  border-color: #38b6ff;
-  color: #ffffff;
+  color: var(--blue);
 }
 
 /* ── Artifact document presentation (badges, cards, preview) ───────────────── */
@@ -14939,9 +15123,10 @@ body.stage-artifact .artifact-tick {
   gap: 12px;
   padding: 16px 18px;
   margin-bottom: 14px;
-  background: #f6f4ff;
-  border: 1px solid rgba(178, 165, 255, 0.4);
+  background: var(--background);
+  border: none;
   border-radius: 14px;
+  box-shadow: var(--inset);
 }
 
 .ws-artifacts-generating strong { color: var(--text); font-size: 0.92rem; }
@@ -15454,22 +15639,25 @@ body.stage-artifact .artifact-tick {
   gap: 16px;
 }
 
+/* FLATTENED: was a full-bleed solid fill in the artifact's own tone color
+   (--art-color), with a light/dark text-scheme flip per tone. Same
+   color-rationing rule already applied to .path-panel: the type/tone signal
+   now lives in a left-edge accent stripe + badge text, not a full-card fill. */
 .art-color-card {
   position: relative;
   display: flex;
   flex-direction: column;
   min-height: 188px;
   border-radius: 20px;
-  background: var(--art-color);
-  box-shadow: 0 14px 38px rgba(47, 52, 65, 0.13);
+  background: var(--background);
+  box-shadow: var(--raised), inset 4px 0 0 var(--art-color);
+  color: var(--text);
   cursor: pointer;
   transition: transform 250ms ease, box-shadow 250ms ease;
 }
 
-.art-color-card:hover { transform: translateY(-4px); box-shadow: 0 22px 50px rgba(47, 52, 65, 0.18); }
-.art-color-card:focus-visible { outline: 3px solid rgba(17, 24, 39, 0.4); outline-offset: 2px; }
-.art-color-card[data-fg="dark"] { color: #111827; }
-.art-color-card[data-fg="light"] { color: #ffffff; }
+.art-color-card:hover { transform: translateY(-4px); box-shadow: var(--raised), inset 4px 0 0 var(--art-color); }
+.art-color-card:focus-visible { outline: 3px solid rgba(139, 124, 240, 0.4); outline-offset: 2px; }
 
 .art-color-top {
   display: flex;
@@ -15478,12 +15666,16 @@ body.stage-artifact .artifact-tick {
   padding: 14px 12px 0 16px;
 }
 
+/* soft-tag-style, static; tone color carried by text only */
 .art-color-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 5px 11px;
   border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--art-color);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 700;
@@ -15491,8 +15683,6 @@ body.stage-artifact .artifact-tick {
   text-transform: uppercase;
 }
 
-.art-color-card[data-fg="light"] .art-color-badge { background: rgba(255, 255, 255, 0.26); color: #ffffff; }
-.art-color-card[data-fg="dark"] .art-color-badge { background: rgba(255, 255, 255, 0.62); color: #111827; }
 .art-color-archived { font-weight: 600; opacity: 0.85; text-transform: none; }
 
 .art-color-tools { position: relative; display: flex; gap: 2px; }
@@ -15505,16 +15695,15 @@ body.stage-artifact .artifact-tick {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: inherit;
+  color: var(--muted);
   cursor: pointer;
   font-size: 17px;
   line-height: 1;
-  transition: background 180ms ease, transform 180ms ease;
+  transition: box-shadow 180ms ease, transform 180ms ease;
 }
 
 .art-color-icon svg { width: 17px; height: 17px; }
-.art-color-icon:hover { background: rgba(255, 255, 255, 0.28); transform: scale(1.06); }
-.art-color-card[data-fg="dark"] .art-color-icon:hover { background: rgba(255, 255, 255, 0.5); }
+.art-color-icon:hover { box-shadow: var(--inset-sm); transform: scale(1.06); }
 
 .art-color-menu {
   position: absolute;
@@ -15524,10 +15713,10 @@ body.stage-artifact .artifact-tick {
   display: grid;
   min-width: 160px;
   padding: 6px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
+  border: none;
   border-radius: 14px;
-  background: #ffffff;
-  box-shadow: 0 18px 44px rgba(47, 52, 65, 0.18);
+  background: var(--background);
+  box-shadow: var(--raised);
   color: var(--text);
 }
 
@@ -15546,8 +15735,8 @@ body.stage-artifact .artifact-tick {
   text-align: left;
 }
 
-.art-color-menu button:hover { background: rgba(47, 52, 65, 0.06); }
-.art-color-menu .danger { color: #c42239; }
+.art-color-menu button:hover { box-shadow: var(--inset-sm); }
+.art-color-menu .danger { color: var(--danger); }
 
 .art-color-body {
   display: flex;
@@ -15577,8 +15766,8 @@ body.stage-artifact .artifact-tick {
   overflow: hidden;
 }
 
-.art-color-divider { display: block; height: 1px; margin-top: auto; background: currentColor; opacity: 0.25; }
-.art-color-meta { display: flex; flex-direction: column; gap: 2px; font-size: 0.76rem; font-weight: 600; opacity: 0.92; }
+.art-color-divider { display: block; height: 1px; margin-top: auto; background: transparent; box-shadow: inset 0 1px 0 var(--shadow-lo); }
+.art-color-meta { display: flex; flex-direction: column; gap: 2px; color: var(--muted); font-size: 0.76rem; font-weight: 600; }
 
 @media (max-width: 980px) { .art-color-grid { grid-template-columns: 1fr; } }
 
@@ -17083,24 +17272,29 @@ body.stage-artifact .artifact-tick {
 .ws-followup-actions-button,
 .ws-followup-send {
   min-height: 32px;
-  border: 1px solid rgba(17, 24, 39, 0.1);
+  border: none;
   border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 800;
   padding: 7px 12px;
+  transition: box-shadow 120ms ease;
+}
+
+.ws-followup-actions-button:active,
+.ws-followup-send:active {
+  box-shadow: var(--pressed);
 }
 
 .ws-followup-actions-button {
-  background: #ffffff;
   color: var(--text);
 }
 
 .ws-followup-send {
-  border-color: rgba(47, 52, 65, 0.92);
-  background: rgba(47, 52, 65, 0.92);
-  color: #ffffff;
+  color: var(--soft-purple);
 }
 
 .ws-followup-send:disabled {
@@ -17123,7 +17317,8 @@ body.stage-artifact .artifact-tick {
   gap: 8px;
   margin-top: 6px;
   padding: 10px 8px 8px;
-  border-top: 1px solid rgba(17, 24, 39, 0.08);
+  border-top: none;
+  box-shadow: inset 0 1px 0 var(--shadow-lo);
 }
 
 .ws-followup-menu-section > span {
@@ -17147,8 +17342,8 @@ body.stage-artifact .artifact-tick {
 }
 
 .ws-followup-mode-grid button.active {
-  background: rgba(47, 52, 65, 0.92);
-  color: #ffffff;
+  box-shadow: var(--pressed);
+  color: var(--soft-purple);
 }
 
 .ws-followup-menu .ws-followup-select,
@@ -17197,6 +17392,7 @@ body.stage-artifact .artifact-tick {
 .workspace-tab-more { position: relative; display: inline-flex; }
 .workspace-tab-caret { font-size: 10px; opacity: 0.7; }
 
+/* FLATTENED: flat white popover + purple-tinted border + heavy shadow -> raised */
 .workspace-tab-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -17207,10 +17403,10 @@ body.stage-artifact .artifact-tick {
   gap: 2px;
   min-width: 220px;
   padding: 6px;
-  border: 1px solid rgba(178, 165, 255, 0.3);
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 22px 52px rgba(47, 52, 65, 0.2);
+  border: none;
+  border-radius: var(--r-ctrl);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .workspace-tab-menu-item {
@@ -17223,7 +17419,7 @@ body.stage-artifact .artifact-tick {
   border: 0;
   border-radius: 11px;
   background: transparent;
-  color: var(--text);
+  color: var(--ink);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13.5px;
@@ -17231,18 +17427,20 @@ body.stage-artifact .artifact-tick {
   text-align: left;
 }
 
-.workspace-tab-menu-item:hover { background: rgba(178, 165, 255, 0.14); }
-.workspace-tab-menu-item.active { background: rgba(178, 165, 255, 0.22); color: #4b3fae; }
+.workspace-tab-menu-item:hover { box-shadow: var(--inset-sm); }
+.workspace-tab-menu-item.active { box-shadow: var(--pressed); color: var(--soft-purple); }
 
+/* hairline divider replaced with an inset emboss groove */
 .workspace-tab-menu-sep {
   height: 1px;
   margin: 6px 4px;
-  background: rgba(17, 24, 39, 0.08);
+  background: transparent;
+  box-shadow: inset 0 1px 0 var(--shadow-lo);
 }
 
 .workspace-tab-menu-label {
   margin: 2px 9px;
-  color: #8b8fa3;
+  color: var(--faint);
   font-family: var(--font-code);
   font-size: 10.5px;
   font-weight: 800;
@@ -17252,7 +17450,7 @@ body.stage-artifact .artifact-tick {
 
 .workspace-tab-menu-item.is-action {
   justify-content: flex-start;
-  color: var(--text);
+  color: var(--ink);
   text-decoration: none;
 }
 
@@ -17260,7 +17458,7 @@ body.stage-artifact .artifact-tick {
   display: inline-flex;
   width: 16px;
   height: 16px;
-  color: rgba(47, 52, 65, 0.6);
+  color: var(--muted);
 }
 
 .workspace-tab-menu-ico svg { width: 16px; height: 16px; }
