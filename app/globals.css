@@ -12775,16 +12775,17 @@ body.stage-artifact .artifact-tick {
   flex: 1;
   min-width: 220px;
   padding: 12px 16px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
+  border: none;
   border-radius: 14px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
   outline: 0;
 }
 
-.dash-search:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(178, 165, 255, 0.25); }
+.dash-search:focus { box-shadow: var(--inset-sm), 0 0 0 3px rgba(178, 165, 255, 0.28); }
 
 .dash-view-toggle {
   display: inline-flex;
@@ -14248,9 +14249,10 @@ body.stage-artifact .artifact-tick {
 
 .art-select {
   appearance: none;
-  border: 1px solid rgba(17, 24, 39, 0.12);
+  border: none;
   border-radius: 10px;
-  background: #ffffff;
+  background-color: var(--background);
+  box-shadow: var(--inset-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 13px;
@@ -14263,22 +14265,22 @@ body.stage-artifact .artifact-tick {
 }
 
 .art-archive-toggle {
-  border: 1px solid rgba(17, 24, 39, 0.12);
+  border: none;
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   padding: 9px 14px;
   cursor: pointer;
-  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+  transition: box-shadow 160ms ease, color 160ms ease;
 }
 
 .art-archive-toggle.active {
-  background: #111827;
-  border-color: #111827;
-  color: #ffffff;
+  box-shadow: var(--pressed);
+  color: var(--soft-purple);
 }
 
 .art-grid {
@@ -15038,12 +15040,15 @@ body.stage-artifact .artifact-tick {
 }
 
 /* ── Artifact document presentation (badges, cards, preview) ───────────────── */
+/* soft-tag-style, static; tone fills dropped, tone color carried by text only */
 .art-tone-pill {
   display: inline-flex;
   align-items: center;
   height: 22px;
   padding: 0 10px;
   border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   font-family: var(--font-code);
   font-size: 10.5px;
   font-weight: 800;
@@ -15052,11 +15057,11 @@ body.stage-artifact .artifact-tick {
   width: fit-content;
 }
 
-.art-tone-purple { background: rgba(178, 165, 255, 0.18); color: #6d5dfc; }
-.art-tone-green { background: rgba(0, 191, 99, 0.16); color: #047a45; }
-.art-tone-yellow { background: rgba(245, 184, 0, 0.22); color: #8a6200; }
-.art-tone-blue { background: rgba(56, 182, 255, 0.18); color: #0284c7; }
-.art-tone-dark { background: rgba(17, 24, 39, 0.88); color: #ffffff; }
+.art-tone-purple { color: var(--soft-purple); }
+.art-tone-green { color: var(--green); }
+.art-tone-yellow { color: var(--amber-ink); }
+.art-tone-blue { color: var(--blue); }
+.art-tone-dark { color: var(--ink); }
 
 /* document-style cards (workspace + library share this) */
 .art-doc-grid {
@@ -15371,10 +15376,11 @@ body.stage-artifact .artifact-tick {
   font-weight: 600;
 }
 
-.art-detail-top a:hover { color: var(--purple); }
-.art-detail-top-sep { color: rgba(17, 24, 39, 0.3); }
+.art-detail-top a:hover { color: var(--soft-purple); }
+.art-detail-top-sep { color: var(--faint); }
 .art-detail-top-project { color: var(--muted); }
 
+/* accent color kept as a left-edge stripe, not a literal border */
 .art-detail-header {
   display: flex;
   align-items: flex-start;
@@ -15382,19 +15388,18 @@ body.stage-artifact .artifact-tick {
   gap: 24px;
   flex-wrap: wrap;
   padding: 22px 26px;
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  border-left: 5px solid var(--purple);
+  background: var(--background);
+  border: none;
   border-radius: 18px;
-  box-shadow: 0 12px 32px rgba(17, 24, 39, 0.05);
+  box-shadow: var(--raised), inset 5px 0 0 var(--soft-purple);
   margin-bottom: 18px;
 }
 
-.art-detail-header.art-accent-purple { border-left-color: #b2a5ff; }
-.art-detail-header.art-accent-green { border-left-color: #00bf63; }
-.art-detail-header.art-accent-yellow { border-left-color: #f5b800; }
-.art-detail-header.art-accent-blue { border-left-color: #38b6ff; }
-.art-detail-header.art-accent-dark { border-left-color: #111827; }
+.art-detail-header.art-accent-purple { box-shadow: var(--raised), inset 5px 0 0 var(--soft-purple); }
+.art-detail-header.art-accent-green { box-shadow: var(--raised), inset 5px 0 0 var(--green); }
+.art-detail-header.art-accent-yellow { box-shadow: var(--raised), inset 5px 0 0 var(--amber); }
+.art-detail-header.art-accent-blue { box-shadow: var(--raised), inset 5px 0 0 var(--blue); }
+.art-detail-header.art-accent-dark { box-shadow: var(--raised), inset 5px 0 0 var(--ink); }
 
 .art-detail-header-main h1 {
   margin: 6px 0 10px;
@@ -15423,20 +15428,22 @@ body.stage-artifact .artifact-tick {
 }
 
 .art-detail-actions button {
-  border: 1px solid rgba(17, 24, 39, 0.12);
-  background: #ffffff;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
   border-radius: 9px;
   padding: 8px 13px;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 150ms ease;
+  transition: box-shadow 150ms ease;
 }
 
-.art-detail-actions button:hover { border-color: var(--purple); }
-.art-detail-actions .art-danger { color: #b42318; }
-.art-detail-actions .art-danger:hover { border-color: #b42318; background: #fff5f5; }
+.art-detail-actions button:hover { box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.18); }
+.art-detail-actions button:active { box-shadow: var(--pressed); }
+.art-detail-actions .art-danger { color: var(--danger); }
+.art-detail-actions .art-danger:hover { box-shadow: var(--raised-sm), 0 0 0 2px rgba(255, 80, 80, 0.22); }
 
 .art-detail-layout {
   display: grid;
@@ -15448,10 +15455,10 @@ body.stage-artifact .artifact-tick {
 .art-detail-doc {
   max-width: 940px;
   padding: 32px 38px;
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: var(--background);
+  border: none;
   border-radius: 18px;
-  box-shadow: 0 12px 32px rgba(17, 24, 39, 0.05);
+  box-shadow: var(--raised);
 }
 
 .art-detail-aside {
@@ -15463,10 +15470,10 @@ body.stage-artifact .artifact-tick {
 
 .art-detail-panel {
   padding: 18px;
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: var(--background);
+  border: none;
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.04);
+  box-shadow: var(--raised-sm);
 }
 
 .art-detail-panel h3 {
@@ -15500,7 +15507,7 @@ body.stage-artifact .artifact-tick {
   color: var(--text);
 }
 
-.art-detail-panel dd a { color: var(--purple); text-decoration: none; font-weight: 600; }
+.art-detail-panel dd a { color: var(--soft-purple); text-decoration: none; font-weight: 600; }
 .art-detail-panel dd a:hover { text-decoration: underline; }
 
 .art-detail-related {
@@ -15521,7 +15528,7 @@ body.stage-artifact .artifact-tick {
   transition: background 150ms ease;
 }
 
-.art-detail-related a:hover { background: #f6f4ff; }
+.art-detail-related a:hover { box-shadow: var(--inset-sm); }
 
 .art-detail-related-dot {
   flex-shrink: 0;
@@ -15555,7 +15562,8 @@ body.stage-artifact .artifact-tick {
 .art-doc-rendered .art-doc-h2 {
   margin: 26px 0 10px;
   padding-top: 18px;
-  border-top: 1px solid rgba(17, 24, 39, 0.08);
+  border-top: none;
+  box-shadow: inset 0 1px 0 var(--shadow-lo);
   font-family: var(--font-heading);
   font-size: 1.2rem;
   font-weight: 700;
@@ -15599,8 +15607,9 @@ body.stage-artifact .artifact-tick {
   align-items: flex-start;
   gap: 12px;
   padding: 10px 12px;
-  background: #f7f8fb;
-  border: 1px solid rgba(17, 24, 39, 0.07);
+  background: var(--background);
+  border: none;
+  box-shadow: var(--inset-sm);
   border-radius: 10px;
   font-size: 0.93rem;
   line-height: 1.45;
@@ -15629,11 +15638,13 @@ body.stage-artifact .artifact-tick {
   background: rgba(0, 191, 99, 0.12);
 }
 
+/* dark-soft: reused code-chrome recipe established in the Fix lens */
 .art-doc-rendered .art-doc-code {
   margin: 0 0 16px;
   padding: 14px 16px;
-  background: #111827;
-  color: #e5e7eb;
+  background: var(--dark-surface);
+  box-shadow: var(--dark-raised-sm);
+  color: var(--dark-body);
   border-radius: 12px;
   font-family: var(--font-code);
   font-size: 0.82rem;
@@ -15645,7 +15656,8 @@ body.stage-artifact .artifact-tick {
 .art-doc-rendered .art-doc-inline-code {
   font-family: var(--font-code);
   font-size: 0.86em;
-  background: rgba(17, 24, 39, 0.07);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   padding: 1px 6px;
   border-radius: 5px;
 }
@@ -15653,9 +15665,10 @@ body.stage-artifact .artifact-tick {
 .art-doc-rendered .art-doc-callout {
   margin: 0 0 16px;
   padding: 12px 16px;
-  background: rgba(245, 184, 0, 0.1);
-  border-left: 3px solid #f5b800;
-  border-radius: 0 10px 10px 0;
+  background: var(--background);
+  border-left: none;
+  box-shadow: var(--raised-sm), inset 3px 0 0 var(--amber);
+  border-radius: 10px;
 }
 
 .art-doc-rendered .art-doc-callout p {
@@ -15854,7 +15867,8 @@ body.stage-artifact .artifact-tick {
 .art-doc-table td {
   text-align: left;
   padding: 9px 13px;
-  border-bottom: 1px solid rgba(17, 24, 39, 0.1);
+  border-bottom: none;
+  box-shadow: inset 0 -1px 0 var(--shadow-lo);
 }
 
 .art-doc-table th {
@@ -15864,10 +15878,10 @@ body.stage-artifact .artifact-tick {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
-  background: #f7f8fb;
+  background: var(--background);
 }
 
-.art-doc-table tr:last-child td { border-bottom: 0; }
+.art-doc-table tr:last-child td { box-shadow: none; }
 
 /* ── Audio Guides library ──────────────────────────────────────────────────── */
 .audio-grid {
@@ -16709,17 +16723,23 @@ body.stage-artifact .artifact-tick {
   color: var(--muted);
 }
 
+/* FLATTENED: the whole rendered-document card system (exec summary, concept/
+   step/phase/state cards, callouts, ticket subject) used a tinted
+   color-mix(--doc-accent) background + literal border-left per block type.
+   Converted to soft material: neutral raised/inset cards, accent color
+   moves to an inset left-edge stripe (kept literal border only for the
+   .art-doc-box checkbox glyph, which is a real form control, not a card). */
 .art-exec-card {
   margin: 0 0 22px;
   padding: 20px 22px;
   border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--doc-accent, #b2a5ff) 35%, rgba(17, 24, 39, 0.08));
-  border-left: 4px solid var(--doc-accent, #b2a5ff);
-  background: color-mix(in srgb, var(--doc-accent, #b2a5ff) 8%, #ffffff);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--doc-accent, var(--soft-purple));
 }
 
 .art-exec-card > p:last-child { margin: 0; font-size: 1.02rem; line-height: 1.6; color: var(--text); }
-.art-exec-card .art-card-eyebrow { color: color-mix(in srgb, var(--doc-accent, #b2a5ff) 70%, #4b5563); }
+.art-exec-card .art-card-eyebrow { color: var(--doc-accent, var(--soft-purple)); }
 
 .art-concept-grid {
   display: grid;
@@ -16731,8 +16751,9 @@ body.stage-artifact .artifact-tick {
   display: grid;
   gap: 4px;
   padding: 14px 16px;
-  background: #f7f8fb;
-  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: var(--background);
+  border: none;
+  box-shadow: var(--raised-sm);
   border-radius: 12px;
 }
 
@@ -16746,28 +16767,28 @@ body.stage-artifact .artifact-tick {
   margin: 0 0 20px;
   padding: 16px 18px;
   border-radius: 14px;
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  border-left: 4px solid var(--doc-accent, #b2a5ff);
-  background: color-mix(in srgb, var(--doc-accent, #b2a5ff) 7%, #ffffff);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm), inset 4px 0 0 var(--doc-accent, var(--soft-purple));
 }
 
 .art-callout-card .art-card-eyebrow { margin-bottom: 4px; }
 .art-callout-card > div > *:last-child { margin-bottom: 0; }
 .art-callout-icon { font-size: 1.2rem; line-height: 1.4; flex-shrink: 0; }
 
-.art-callout-mental { border-left-color: #b2a5ff; background: rgba(178, 165, 255, 0.1); }
-.art-callout-info { border-left-color: #38b6ff; background: rgba(56, 182, 255, 0.09); }
-.art-callout-success { border-left-color: #00bf63; background: rgba(0, 191, 99, 0.09); }
-.art-callout-warn { border-left-color: #f5b800; background: rgba(245, 184, 0, 0.12); }
+.art-callout-mental { box-shadow: var(--raised-sm), inset 4px 0 0 var(--soft-purple); }
+.art-callout-info { box-shadow: var(--raised-sm), inset 4px 0 0 var(--blue); }
+.art-callout-success { box-shadow: var(--raised-sm), inset 4px 0 0 var(--green); }
+.art-callout-warn { box-shadow: var(--raised-sm), inset 4px 0 0 var(--amber); }
 
 .art-example-card,
 .art-closing-card {
   margin: 0 0 20px;
   padding: 16px 18px;
   border-radius: 14px;
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  background: #ffffff;
-  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.04);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .art-closing-card .art-card-eyebrow:not(:first-child) { margin-top: 14px; }
@@ -16779,8 +16800,9 @@ body.stage-artifact .artifact-tick {
   align-items: flex-start;
   gap: 12px;
   padding: 12px 14px;
-  background: #f7f8fb;
-  border: 1px solid rgba(17, 24, 39, 0.07);
+  background: var(--background);
+  border: none;
+  box-shadow: var(--raised-sm);
   border-radius: 12px;
   font-size: 0.95rem;
   line-height: 1.5;
@@ -16792,8 +16814,9 @@ body.stage-artifact .artifact-tick {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--doc-accent, #b2a5ff);
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--doc-accent, var(--soft-purple));
   font-size: 12px;
   font-weight: 800;
 }
@@ -16807,21 +16830,23 @@ body.stage-artifact .artifact-tick {
   place-items: center;
   padding: 3px 10px;
   border-radius: 999px;
-  background: rgba(17, 24, 39, 0.08);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
   color: var(--muted);
 }
-.art-status-chip.art-status-active { background: rgba(0, 191, 99, 0.16); color: #047a45; }
+.art-status-chip.art-status-active { color: var(--green); }
 
 /* ticket */
 .art-ticket-subject {
   margin: 0 0 20px;
   padding: 16px 18px;
   border-radius: 14px;
-  border: 1px solid rgba(17, 24, 39, 0.1);
-  background: #f7f8fb;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
 }
 .art-ticket-subject h3 { margin: 0 0 8px; font-family: var(--font-heading); font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; }
 
@@ -16830,10 +16855,9 @@ body.stage-artifact .artifact-tick {
   margin: 0 0 16px;
   padding: 16px 18px;
   border-radius: 14px;
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  border-left: 4px solid var(--doc-accent, #38b6ff);
-  background: #ffffff;
-  box-shadow: 0 6px 18px rgba(17, 24, 39, 0.04);
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised), inset 4px 0 0 var(--doc-accent, var(--blue));
 }
 .art-phase-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .art-phase-head h3 { margin: 0; font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; }
@@ -16844,8 +16868,9 @@ body.stage-artifact .artifact-tick {
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  background: var(--doc-accent, #38b6ff);
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--doc-accent, var(--blue));
   font-size: 13px;
   font-weight: 800;
 }
@@ -16855,10 +16880,11 @@ body.stage-artifact .artifact-tick {
 .art-state-card {
   padding: 16px 18px;
   border-radius: 14px;
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  background: #f7f8fb;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
 }
-.art-state-card.art-state-target { background: color-mix(in srgb, var(--doc-accent, #00bf63) 8%, #ffffff); border-color: color-mix(in srgb, var(--doc-accent, #00bf63) 30%, rgba(17, 24, 39, 0.08)); }
+.art-state-card.art-state-target { box-shadow: var(--raised-sm), inset 4px 0 0 var(--doc-accent, var(--green)); }
 .art-state-card > *:last-child { margin-bottom: 0; }
 
 .art-diagram-placeholder {
@@ -16866,7 +16892,8 @@ body.stage-artifact .artifact-tick {
   place-items: center;
   min-height: 120px;
   margin: 0 0 20px;
-  border: 1.5px dashed rgba(17, 24, 39, 0.2);
+  border: none;
+  box-shadow: var(--inset);
   border-radius: 14px;
   color: var(--muted);
   font-size: 0.88rem;
