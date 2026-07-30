@@ -5649,14 +5649,15 @@ body.stage-artifact .artifact-tick {
   background: var(--background);
 }
 
+/* FLATTENED: was a glass card (translucent + tinted border). */
 .auth-card,
 .signup-placeholder-card {
   width: min(620px, 100%);
   padding: 34px;
-  border: 1px solid rgba(178, 165, 255, 0.24);
+  border: none;
   border-radius: 30px;
-  background: rgba(255, 255, 255, 0.62);
-  box-shadow: 0 24px 70px rgba(47, 52, 65, 0.12);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .auth-card h1,
@@ -5698,26 +5699,27 @@ body.stage-artifact .artifact-tick {
 .auth-form input {
   width: 100%;
   height: 54px;
-  border: 1px solid rgba(178, 165, 255, 0.26);
+  border: none;
   border-radius: 999px;
   outline: 0;
   padding: 0 18px;
-  background: rgba(242, 243, 247, 0.78);
+  background: var(--background);
+  box-shadow: var(--inset);
   color: var(--text);
   font: 15px var(--font-body);
 }
 
 .auth-form input:focus {
-  border-color: rgba(178, 165, 255, 0.62);
-  box-shadow: 0 0 0 4px rgba(178, 165, 255, 0.12);
+  box-shadow: var(--inset), 0 0 0 4px rgba(178, 165, 255, 0.22);
 }
 
 .auth-error {
   padding: 10px 12px;
-  border: 1px solid rgba(245, 184, 0, 0.28);
+  border: none;
   border-radius: 16px;
-  background: rgba(245, 184, 0, 0.12);
-  color: var(--text);
+  background: var(--background);
+  box-shadow: var(--raised-sm), inset 3px 0 0 var(--amber);
+  color: var(--amber-ink);
   font-size: 13px;
 }
 
@@ -5736,22 +5738,33 @@ body.stage-artifact .artifact-tick {
   justify-content: center;
   border: 0;
   border-radius: 999px;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   padding: 0 16px;
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 12px;
   text-decoration: none;
+  transition: box-shadow 150ms ease;
+}
+
+.auth-actions button:hover,
+.auth-actions a:hover {
+  box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.18);
+}
+
+.auth-actions button:active,
+.auth-actions a:active {
+  box-shadow: var(--pressed);
 }
 
 .auth-actions button,
 .auth-actions a:first-child {
-  background: var(--yellow);
-  color: var(--text);
+  color: var(--amber-ink);
 }
 
 .auth-actions a:last-child {
-  background: var(--text);
-  color: #ffffff;
+  color: var(--ink);
 }
 
 .journey-history-page,
@@ -16265,8 +16278,9 @@ body.stage-artifact .artifact-tick {
 }
 .pricing-topnav a:hover, .pricing-topnav a.active { color: var(--text); }
 .pricing-topcta {
-  background: #111827;
-  color: #ffffff !important;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple) !important;
   padding: 9px 16px;
   border-radius: 999px;
 }
@@ -16294,25 +16308,26 @@ body.stage-artifact .artifact-tick {
   flex-direction: column;
   gap: 8px;
   padding: 24px 22px;
-  background: #ffffff;
-  border: 1px solid rgba(17, 24, 39, 0.1);
+  background: var(--background);
+  border: none;
   border-radius: 18px;
-  box-shadow: 0 12px 32px rgba(17, 24, 39, 0.05);
+  box-shadow: var(--raised-sm);
 }
 
 .pricing-card.is-popular {
-  border-color: #b2a5ff;
-  box-shadow: 0 18px 48px rgba(178, 165, 255, 0.3);
+  box-shadow: var(--raised), 0 0 0 2px rgba(139, 124, 240, 0.35);
 }
 
-.pricing-card.is-current { outline: 2px solid rgba(0, 191, 99, 0.5); }
+.pricing-card.is-current { box-shadow: var(--raised-sm), 0 0 0 2px rgba(0, 191, 99, 0.5); }
 
+/* soft-tag-style, static */
 .pricing-badge {
   position: absolute;
   top: -11px;
   left: 22px;
-  background: #b2a5ff;
-  color: #1f1147;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   font-family: var(--font-code);
   font-size: 10.5px;
   font-weight: 800;
@@ -16333,22 +16348,25 @@ body.stage-artifact .artifact-tick {
   display: inline-flex;
   justify-content: center;
   padding: 10px 14px;
-  border: 1px solid rgba(17, 24, 39, 0.14);
+  border: none;
   border-radius: 11px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
   font-size: 13.5px;
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
+  transition: box-shadow 150ms ease;
 }
-.pricing-cta:hover { border-color: var(--purple); }
-.pricing-cta.is-strong { background: #111827; color: #ffffff; border-color: #111827; }
-.pricing-cta.is-current-cta { background: rgba(0, 191, 99, 0.12); color: #047a45; border-color: transparent; cursor: default; }
+.pricing-cta:hover { box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.2); }
+.pricing-cta:active { box-shadow: var(--pressed); }
+.pricing-cta.is-strong { color: var(--soft-purple); }
+.pricing-cta.is-current-cta { box-shadow: var(--inset-sm); color: var(--green); cursor: default; }
 
-.pricing-features { list-style: none; margin: 12px 0 0; padding: 14px 0 0; border-top: 1px solid rgba(17, 24, 39, 0.08); display: grid; gap: 8px; }
+.pricing-features { list-style: none; margin: 12px 0 0; padding: 14px 0 0; border-top: none; box-shadow: inset 0 1px 0 var(--shadow-lo); display: grid; gap: 8px; }
 .pricing-features li { position: relative; padding-left: 22px; font-size: 0.85rem; color: var(--text); line-height: 1.4; }
-.pricing-features li::before { content: "✓"; position: absolute; left: 0; color: #00bf63; font-weight: 800; }
+.pricing-features li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 800; }
 
 .pricing-foot-note { margin: 28px auto 0; max-width: 640px; text-align: center; color: var(--muted); font-size: 0.84rem; line-height: 1.6; }
 
