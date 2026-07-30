@@ -1,11 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
   RedefinedResult,
   UnderstandNextAction,
   UnderstandAnalogy
 } from "@/lib/redefined";
+import {
+  cleanUnderstandState,
+  getAdaptiveNextAction,
+  getDepthContent,
+  getMasterySummary,
+  getNextTraceIndex,
+  loadUnderstandState,
+  saveUnderstandState,
+  startScenarioTrace,
+  updateBlockConfidence
+} from "@/lib/understand-state";
 import type { ResultSource } from "@/components/results/ResultSourceBadge";
 import { ResultSourceBadge } from "@/components/results/ResultSourceBadge";
 import { WorkspaceAudioGuide } from "@/components/workspace/WorkspaceAudioGuide";
@@ -72,10 +83,24 @@ export function UnderstandWorkspace({
   const mentalModel = result.mentalModel;
   const blocks = result.coreBuildingBlocks ?? [];
   const misconceptions = result.misconceptions ?? [];
+  const misconceptionTraps = result.commonMisunderstandings ?? [];
+  const recallQuestions = result.checkYourUnderstanding ?? [];
   const example = result.realWorldExample;
   const questions = result.decisionQuestions ?? [];
   const nextActions = result.nextActions ?? [];
   const domain = result.domain ?? "general";
+  const workspaceId = result.workspaceMeta?.workspaceId ?? result.id;
+  const flow = useMemo(
+    () => result.mentalModel?.flow ?? result.mentalModel?.steps ?? [],
+    [result.mentalModel]
+  );
+  const [understandingState, setUnderstandingState] = useState(() => loadUnderstandState(workspaceId, result));
+  const depthContent = useMemo(
+    () => getDepthContent(result, understandingState.selectedDepth),
+    [result, understandingState.selectedDepth]
+  );
+  const mastery = useMemo(() => getMasterySummary(result, understandingState), [result, understandingState]);
+  const adaptiveAction = useMemo(() => getAdaptiveNextAction(result, understandingState), [result, understandingState]);
 
   // interactive state
   const [activeTab, setActiveTab] = useState<"workspace" | "guide">("workspace");
@@ -84,13 +109,41 @@ export function UnderstandWorkspace({
     result.analogySwitcher?.analogies.find((a) => a.isDefault)?.id ?? result.analogySwitcher?.analogies[0]?.id ?? null
   );
   const [blindSpotRevealed, setBlindSpotRevealed] = useState(false);
-  const [teachBackText, setTeachBackText] = useState("");
+  const [teachBackText, setTeachBackText] = useState(understandingState.teachBackAnswer);
   const [teachBackFeedback, setTeachBackFeedback] = useState<TeachBackFeedback | null>(null);
   const [teachBackLoading, setTeachBackLoading] = useState(false);
   const [teachBackSubmitted, setTeachBackSubmitted] = useState(false);
+  const [teachBackError, setTeachBackError] = useState<string | null>(null);
   const [checkedRefinements, setCheckedRefinements] = useState<Set<string>>(new Set());
   const [refineLoading, setRefineLoading] = useState(false);
   const [insightCopied, setInsightCopied] = useState(false);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setUnderstandingState((current) => cleanUnderstandState(current, result));
+    }, 0);
+    return () => window.clearTimeout(timeout);
+  }, [result]);
+
+  useEffect(() => {
+    saveUnderstandState(workspaceId, understandingState);
+  }, [understandingState, workspaceId]);
+
+  useEffect(() => {
+    if (!understandingState.isTracePlaying || flow.length === 0) return;
+    const interval = window.setInterval(() => {
+      setUnderstandingState((current) => {
+        const nextIndex = getNextTraceIndex(current.traceStepIndex, flow.length);
+        return {
+          ...current,
+          traceStepIndex: nextIndex,
+          selectedMentalModelNode: flow[nextIndex]?.id,
+          isTracePlaying: nextIndex < flow.length - 1
+        };
+      });
+    }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 1800 : 900);
+    return () => window.clearInterval(interval);
+  }, [flow, understandingState.isTracePlaying]);
   const {
     voiceInputState: teachBackVoiceState,
     voiceStatusMessage: teachBackVoiceStatus,
@@ -112,6 +165,8 @@ export function UnderstandWorkspace({
   async function handleTeachBackSubmit() {
     if (!teachBackText.trim() || teachBackLoading) return;
     setTeachBackLoading(true);
+    setTeachBackError(null);
+    setUnderstandingState((current) => ({ ...current, teachBackAnswer: teachBackText }));
     try {
       const res = await fetch("/api/teach-back", {
         method: "POST",
@@ -126,8 +181,16 @@ export function UnderstandWorkspace({
       if (res.ok) {
         const data = await res.json();
         setTeachBackFeedback(data.feedback ?? null);
+        setUnderstandingState((current) => ({
+          ...current,
+          teachBackFeedback: data.feedback ?? undefined
+        }));
         setTeachBackSubmitted(true);
+      } else {
+        setTeachBackError("Evaluation is unavailable. Your explanation has been saved.");
       }
+    } catch {
+      setTeachBackError("Evaluation is unavailable. Your explanation has been saved.");
     } finally {
       setTeachBackLoading(false);
     }
@@ -281,6 +344,54 @@ export function UnderstandWorkspace({
             </div>
           </div>
 
+          <div className="workspace-card" aria-label="Understanding controls">
+            <div>
+              <span>Depth</span>
+              {(["eli5", "practitioner", "expert"] as const).map((depth) => (
+                <button
+                  key={depth}
+                  type="button"
+                  aria-pressed={understandingState.selectedDepth === depth}
+                  onClick={() => setUnderstandingState((current) => ({ ...current, selectedDepth: depth }))}
+                >
+                  {depth === "eli5" ? "ELI5" : depth}
+                </button>
+              ))}
+            </div>
+            <label>
+              Anchor context
+              <select
+                value={understandingState.anchorContext}
+                onChange={(event) => setUnderstandingState((current) => ({
+                  ...current,
+                  anchorContext: event.target.value as typeof current.anchorContext
+                }))}
+              >
+                <option value="new_to_this">New to this</option>
+                <option value="networking">Networking</option>
+                <option value="web_development">Web development</option>
+                <option value="azure">Azure</option>
+                <option value="security">Security</option>
+                <option value="databases">Databases</option>
+                <option value="custom">Custom</option>
+              </select>
+            </label>
+            {understandingState.anchorContext === "custom" && (
+              <input
+                value={understandingState.customAnchorContext}
+                aria-label="Custom anchor context"
+                onChange={(event) => setUnderstandingState((current) => ({
+                  ...current,
+                  customAnchorContext: event.target.value
+                }))}
+              />
+            )}
+            <p>{depthContent.summary}</p>
+            {depthContent.analogy && <p>{depthContent.analogy}</p>}
+            <p>Mastery: {mastery.masteryPercent}% · {mastery.solidCount}/{mastery.totalBlocks} solid</p>
+            <p>Suggested next step: {adaptiveAction.label}</p>
+          </div>
+
           {/* 1. Knowledge Level Check */}
           {result.userLevelCheck && (
             <div className="workspace-card understand-level-check">
@@ -338,18 +449,49 @@ export function UnderstandWorkspace({
                 </div>
                 <span className="drop-pill">{mentalModel.steps.length} steps</span>
               </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setUnderstandingState((current) => ({
+                    ...current,
+                    isTracePlaying: !current.isTracePlaying
+                  }))}
+                >
+                  {understandingState.isTracePlaying ? "Pause trace" : "Play trace"}
+                </button>
+                {result.practicalExample && (
+                  <button
+                    type="button"
+                    onClick={() => setUnderstandingState((current) => startScenarioTrace(current))}
+                  >
+                    Run scenario
+                  </button>
+                )}
+              </div>
 
               <div className="mental-model-steps">
-                {mentalModel.steps.map((step, i) => (
-                  <div key={step.id} className="mental-model-step">
+                {flow.map((step, i) => (
+                  <div
+                    key={step.id}
+                    className="mental-model-step"
+                    data-active={understandingState.traceStepIndex === i || undefined}
+                    onClick={() => setUnderstandingState((current) => ({
+                      ...current,
+                      traceStepIndex: i,
+                      selectedMentalModelNode: step.id,
+                      isTracePlaying: false
+                    }))}
+                  >
                     <div className="mental-model-step-inner">
                       <span className="mental-model-step-index">{i + 1}</span>
                       <strong className="mental-model-step-label">{step.label}</strong>
                       {step.description && (
                         <p className="mental-model-step-desc">{step.description}</p>
                       )}
+                      {step.whatIsPassed && <p>Passes: {step.whatIsPassed}</p>}
+                      {step.commonFailure && <p>Watch for: {step.commonFailure}</p>}
                     </div>
-                    {i < mentalModel.steps.length - 1 && (
+                    {i < flow.length - 1 && (
                       <span className="mental-model-arrow" aria-hidden="true">→</span>
                     )}
                   </div>
@@ -392,6 +534,20 @@ export function UnderstandWorkspace({
                         <span className="building-block-confidence-label">{block.confidence}% clarity</span>
                       </div>
                     )}
+                    <div aria-label={`Confidence in ${block.title}`}>
+                      {(["lost", "fuzzy", "solid"] as const).map((rating) => (
+                        <button
+                          key={rating}
+                          type="button"
+                          aria-pressed={understandingState.blockConfidence[block.id] === rating}
+                          onClick={() => setUnderstandingState((current) =>
+                            updateBlockConfidence(current, result, block.id, rating)
+                          )}
+                        >
+                          {rating}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -462,6 +618,38 @@ export function UnderstandWorkspace({
                   </div>
                 </div>
               )}
+              {misconceptionTraps.length > 0 && (
+                <div className="workspace-card">
+                  <h3>Misconception traps</h3>
+                  {misconceptionTraps.map((trap) => {
+                    const answer = understandingState.misconceptionAnswers[trap.id];
+                    return (
+                      <div key={trap.id}>
+                        <p>{trap.statement}</p>
+                        {[true, false].map((choice) => (
+                          <button
+                            key={String(choice)}
+                            type="button"
+                            aria-pressed={answer === choice}
+                            onClick={() => setUnderstandingState((current) => ({
+                              ...current,
+                              misconceptionAnswers: {
+                                ...current.misconceptionAnswers,
+                                [trap.id]: choice
+                              }
+                            }))}
+                          >
+                            {choice ? "True" : "False"}
+                          </button>
+                        ))}
+                        {typeof answer === "boolean" && (
+                          <p>{answer === trap.correctAnswer ? "Correct." : "Not quite."} {trap.explanation}</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* 7. Real World Example */}
               {example && example.scenario && (
@@ -509,6 +697,65 @@ export function UnderstandWorkspace({
                   </div>
                 </div>
               )}
+              {recallQuestions.length > 0 && (
+                <div className="workspace-card">
+                  <h3>Active recall</h3>
+                  {recallQuestions.map((question) => (
+                    <div key={question.id}>
+                      <label>
+                        {question.question}
+                        <textarea
+                          value={understandingState.recallAnswers[question.id] ?? ""}
+                          onChange={(event) => setUnderstandingState((current) => ({
+                            ...current,
+                            recallAnswers: {
+                              ...current.recallAnswers,
+                              [question.id]: event.target.value
+                            }
+                          }))}
+                        />
+                      </label>
+                      {(["lost", "fuzzy", "solid"] as const).map((rating) => (
+                        <button
+                          key={rating}
+                          type="button"
+                          aria-pressed={understandingState.recallRatings[question.id] === rating}
+                          onClick={() => setUnderstandingState((current) => ({
+                            ...current,
+                            recallRatings: { ...current.recallRatings, [question.id]: rating }
+                          }))}
+                        >
+                          {rating}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {(result.compareWith?.length ?? 0) > 0 && (
+                <div className="workspace-card">
+                  <h3>Compare with</h3>
+                  <select
+                    value={understandingState.selectedComparisonId ?? result.compareWith?.[0]?.id}
+                    onChange={(event) => setUnderstandingState((current) => ({
+                      ...current,
+                      selectedComparisonId: event.target.value
+                    }))}
+                  >
+                    {result.compareWith?.map((comparison) => (
+                      <option key={comparison.id} value={comparison.id}>{comparison.concept}</option>
+                    ))}
+                  </select>
+                  {result.compareWith?.filter((comparison) =>
+                    comparison.id === (understandingState.selectedComparisonId ?? result.compareWith?.[0]?.id)
+                  ).map((comparison) => (
+                    <div key={comparison.id}>
+                      <p>{comparison.summary}</p>
+                      <ul>{comparison.differences.map((difference) => <li key={difference}>{difference}</li>)}</ul>
+                    </div>
+                  ))}
+                </div>
+              )}
               {/* 13. Teach It Back */}
               {result.teachBack && (
                 <div className="workspace-card understand-teach-back">
@@ -531,7 +778,10 @@ export function UnderstandWorkspace({
                       <textarea
                         className="understand-teach-textarea"
                         value={teachBackText}
-                        onChange={(e) => setTeachBackText(e.target.value)}
+                        onChange={(e) => {
+                          setTeachBackText(e.target.value);
+                          setUnderstandingState((current) => ({ ...current, teachBackAnswer: e.target.value }));
+                        }}
                         placeholder={result.teachBack.placeholder}
                         rows={4}
                       />
@@ -565,6 +815,7 @@ export function UnderstandWorkspace({
                       >
                         {teachBackLoading ? "Evaluating…" : "Submit explanation"}
                       </button>
+                      {teachBackError && <p role="status">{teachBackError}</p>}
                     </>
                   ) : (
                     <div className="understand-teach-feedback">

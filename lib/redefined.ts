@@ -286,6 +286,92 @@ export type UnderstandMentalModelStep = {
   id: string;
   label: string;
   description?: string;
+  whatHappens?: string;
+  whyItExists?: string;
+  whatIsPassed?: string;
+  commonFailure?: string;
+};
+
+export type UnderstandDepth = "eli5" | "practitioner" | "expert";
+export type UnderstandRating = "solid" | "fuzzy" | "lost";
+export type UnderstandAnchor =
+  | "new_to_this"
+  | "networking"
+  | "web_development"
+  | "azure"
+  | "security"
+  | "databases"
+  | "custom";
+
+export type UnderstandConceptSnapshot = {
+  oneLineMeaning: string;
+  whyItMatters: string;
+  keyIdea?: string;
+};
+
+export type UnderstandDepthProfile = {
+  summary: string;
+  analogy?: string;
+  example?: string;
+};
+
+export type UnderstandPracticalExample = {
+  title: string;
+  scenario: string;
+  steps?: string[];
+  outcome: string;
+};
+
+export type UnderstandMisconceptionTrap = {
+  id: string;
+  statement: string;
+  correctAnswer: boolean;
+  explanation: string;
+  myth?: string;
+  reality?: string;
+};
+
+export type UnderstandRecallQuestion = {
+  id: string;
+  question: string;
+  expectedKeywords?: string[];
+};
+
+export type UnderstandComparison = {
+  id: string;
+  concept: string;
+  summary: string;
+  similarities?: string[];
+  differences: string[];
+  whenToUse?: string;
+};
+
+export type UnderstandRail = {
+  nextBestQuestion: string;
+  relatedPrompts?: string[];
+};
+
+export type UnderstandState = {
+  selectedDepth: UnderstandDepth;
+  anchorContext: UnderstandAnchor;
+  customAnchorContext: string;
+  traceStepIndex: number;
+  selectedMentalModelNode?: string;
+  isTracePlaying: boolean;
+  scenarioMode?: boolean;
+  blockConfidence: Record<string, UnderstandRating>;
+  misconceptionAnswers: Record<string, boolean>;
+  recallAnswers: Record<string, string>;
+  recallRatings: Record<string, UnderstandRating>;
+  teachBackAnswer: string;
+  teachBackFeedback?: {
+    score: number;
+    feedback: string;
+    gaps: string[];
+    strengths: string[];
+    expertVersion?: string;
+  };
+  selectedComparisonId?: string;
 };
 
 export type UnderstandBuildingBlock = {
@@ -466,14 +552,25 @@ export type RedefinedResult = {
   mentalModel?: {
     title: string;
     steps: UnderstandMentalModelStep[];
+    flow?: UnderstandMentalModelStep[];
+    analogy?: string;
   };
+  conceptSnapshot?: UnderstandConceptSnapshot;
+  depthProfiles?: Partial<Record<UnderstandDepth, UnderstandDepthProfile>>;
   coreBuildingBlocks?: UnderstandBuildingBlock[];
+  buildingBlocks?: UnderstandBuildingBlock[];
   misconceptions?: UnderstandMisconception[];
+  commonMisunderstandings?: UnderstandMisconceptionTrap[];
   realWorldExample?: {
     title: string;
     scenario: string;
     explanation: string;
   };
+  practicalExample?: UnderstandPracticalExample;
+  checkYourUnderstanding?: UnderstandRecallQuestion[];
+  compareWith?: UnderstandComparison[];
+  whereToGoNext?: UnderstandNextAction[];
+  rail?: UnderstandRail;
   decisionQuestions?: string[];
   nextActions?: UnderstandNextAction[];
   userLevelCheck?: {

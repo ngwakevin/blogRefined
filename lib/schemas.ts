@@ -335,7 +335,11 @@ export const FollowUpResultSchema = z.object({
 const UnderstandMentalModelStepSchema = z.object({
   id: z.string(),
   label: z.string(),
-  description: z.string().optional()
+  description: z.string().optional(),
+  whatHappens: z.string().optional(),
+  whyItExists: z.string().optional(),
+  whatIsPassed: z.string().optional(),
+  commonFailure: z.string().optional()
 });
 
 const UnderstandBuildingBlockSchema = z.object({
@@ -350,6 +354,36 @@ const UnderstandMisconceptionSchema = z.object({
   id: z.string(),
   misconception: z.string(),
   reality: z.string()
+});
+
+const UnderstandMisconceptionTrapSchema = z.object({
+  id: z.string(),
+  statement: z.string(),
+  correctAnswer: z.boolean(),
+  explanation: z.string(),
+  myth: z.string().optional(),
+  reality: z.string().optional()
+});
+
+const UnderstandRecallQuestionSchema = z.object({
+  id: z.string(),
+  question: z.string(),
+  expectedKeywords: z.array(z.string()).optional()
+});
+
+const UnderstandComparisonSchema = z.object({
+  id: z.string(),
+  concept: z.string(),
+  summary: z.string(),
+  similarities: z.array(z.string()).optional(),
+  differences: z.array(z.string()),
+  whenToUse: z.string().optional()
+});
+
+const UnderstandDepthProfileSchema = z.object({
+  summary: z.string(),
+  analogy: z.string().optional(),
+  example: z.string().optional()
 });
 
 const UnderstandNextActionSchema = z.object({
@@ -417,17 +451,44 @@ export const UnderstandWorkspaceResultSchema = z.object({
   }),
   mentalModel: z.object({
     title: z.string(),
-    steps: z.array(UnderstandMentalModelStepSchema).min(1)
+    steps: z.array(UnderstandMentalModelStepSchema).min(1),
+    flow: z.array(UnderstandMentalModelStepSchema).optional(),
+    analogy: z.string().optional()
   }),
+  conceptSnapshot: z.object({
+    oneLineMeaning: z.string(),
+    whyItMatters: z.string(),
+    keyIdea: z.string().optional()
+  }).optional(),
+  depthProfiles: z.object({
+    eli5: UnderstandDepthProfileSchema.optional(),
+    practitioner: UnderstandDepthProfileSchema.optional(),
+    expert: UnderstandDepthProfileSchema.optional()
+  }).optional(),
   coreBuildingBlocks: z.array(UnderstandBuildingBlockSchema).min(1),
+  buildingBlocks: z.array(UnderstandBuildingBlockSchema).optional(),
   misconceptions: z.array(UnderstandMisconceptionSchema),
+  commonMisunderstandings: z.array(UnderstandMisconceptionTrapSchema).optional(),
   realWorldExample: z.object({
     title: z.string(),
     scenario: z.string(),
     explanation: z.string()
   }),
   decisionQuestions: z.array(z.string()),
+  practicalExample: z.object({
+    title: z.string(),
+    scenario: z.string(),
+    steps: z.array(z.string()).optional(),
+    outcome: z.string()
+  }).optional(),
+  checkYourUnderstanding: z.array(UnderstandRecallQuestionSchema).optional(),
+  compareWith: z.array(UnderstandComparisonSchema).optional(),
   nextActions: z.array(UnderstandNextActionSchema),
+  whereToGoNext: z.array(UnderstandNextActionSchema).optional(),
+  rail: z.object({
+    nextBestQuestion: z.string(),
+    relatedPrompts: z.array(z.string()).optional()
+  }).optional(),
   userLevelCheck: z.object({
     question: z.string(),
     options: z.array(UnderstandUserLevelOptionSchema)

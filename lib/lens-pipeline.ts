@@ -7,7 +7,7 @@ import {
 import { repairFixWorkspaceWithAI, repairUnderstandResultWithAI } from "@/lib/ai";
 import { enrichFixResultForKnownPatterns } from "@/lib/enrich-fix-result";
 import { detectForbiddenSections, LENS_CONTRACTS, type LensId } from "@/lib/lens-contracts";
-import { validateFixResultQuality, validateUnderstandResultQuality } from "@/lib/quality";
+import { getUnderstandRepairPlan, validateFixResultQuality, validateUnderstandResultQuality } from "@/lib/quality";
 import { FixWorkspaceResultSchema } from "@/lib/schemas";
 import type { RedefinedResult } from "@/lib/redefined";
 import type { FixWorkspaceResult } from "@/types/redefined";
@@ -220,7 +220,38 @@ export async function runLensPipeline(args: {
 
     // Attempt 2 — repair once with a stricter instruction.
     if (isRepairable) {
-      const repairResult = await attemptTargetedRepair(lens, prompt, sourceContext, result, quality, forbidden);
+      let repairResult;
+      const understandPlan = lens === "understand" ? getUnderstandRepairPlan(result) : null;
+      if (lens === "understand" && understandPlan && (understandPlan.mode === "full" || understandPlan.mode === "fallback")) {
+        try {
+          const rawForbidden: string[] = [];
+          const repaired = await generateForLens(
+            lens,
+            prompt,
+            sourceContext,
+            `${strictRepairInstruction(lens, forbidden)}\nFull regeneration is required because multiple major learning sections are weak or missing.`,
+            rawForbidden
+          );
+          repairResult = {
+            repaired,
+            quality: qualityFor(lens, repaired),
+            forbidden: Array.from(new Set([...detectForbiddenSections(repaired, lens), ...rawForbidden]))
+          };
+        } catch {
+          repairResult = null;
+        }
+      } else {
+        repairResult = await attemptTargetedRepair(
+          lens,
+          prompt,
+          sourceContext,
+          result,
+          lens === "understand" && understandPlan
+            ? { ...quality, issues: [...quality.issues, `Repair only these weak sections: ${understandPlan.weakSections.join(", ")}.`] }
+            : quality,
+          forbidden
+        );
+      }
       if (repairResult) {
         const { repaired, quality: repairedQuality, forbidden: repairedForbidden } = repairResult;
         if (repairedQuality.ok && repairedForbidden.length === 0) {

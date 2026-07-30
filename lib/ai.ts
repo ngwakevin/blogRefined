@@ -14,6 +14,7 @@ import {
   UnderstandWorkspaceResultSchema
 } from "@/lib/schemas";
 import { validateFixResultQuality, validateFollowUpQuality, validateUnderstandResultQuality } from "@/lib/quality";
+import { normalizeUnderstandResult } from "@/lib/understand";
 import type {
   EvidenceBranch,
   EvidenceSignal,
@@ -63,7 +64,18 @@ export async function generateUnderstandWorkspaceWithAI(
   });
   const rawJson = safeParseJson(aiText);
   collectRawForbidden(rawJson, "understand", rawForbiddenOut);
-  const normalized = normalizeUnderstandWorkspaceResult(rawJson, prompt);
+  const legacyNormalized = normalizeUnderstandWorkspaceResult(rawJson, prompt);
+  const normalized = normalizeUnderstandResult({
+    ...(isObj(rawJson) ? rawJson : {}),
+    ...(isObj(legacyNormalized) ? legacyNormalized : {}),
+    mentalModel: {
+      ...recordOf(recordOf(rawJson).mentalModel),
+      ...recordOf(recordOf(legacyNormalized).mentalModel),
+      flow: isObj(recordOf(rawJson).mentalModel)
+        ? recordOf(recordOf(rawJson).mentalModel).flow
+        : undefined
+    }
+  }, prompt);
   return UnderstandWorkspaceResultSchema.parse(normalized) as RedefinedResult;
 }
 
@@ -173,7 +185,18 @@ export async function repairUnderstandResultWithAI(args: {
     userPrompt: JSON.stringify(args)
   });
   const rawJson = safeParseJson(aiText);
-  const normalized = normalizeUnderstandWorkspaceResult(rawJson, args.prompt);
+  const legacyNormalized = normalizeUnderstandWorkspaceResult(rawJson, args.prompt);
+  const normalized = normalizeUnderstandResult({
+    ...(isObj(rawJson) ? rawJson : {}),
+    ...(isObj(legacyNormalized) ? legacyNormalized : {}),
+    mentalModel: {
+      ...recordOf(recordOf(rawJson).mentalModel),
+      ...recordOf(recordOf(legacyNormalized).mentalModel),
+      flow: isObj(recordOf(rawJson).mentalModel)
+        ? recordOf(recordOf(rawJson).mentalModel).flow
+        : undefined
+    }
+  }, args.prompt);
   const repaired = UnderstandWorkspaceResultSchema.parse(normalized) as RedefinedResult;
   const quality = validateUnderstandResultQuality(repaired);
 
@@ -532,13 +555,17 @@ You must generate:
 - domain: one of cloud, business, finance, product, education, operations, general
 - classification: { mode: "understand", confidence: 0.9, source: "ai", reason: "...", topic: "..." }
 - clarity: { level: "high" | "medium" | "low", score: 0-100 }
-- mentalModel: { title: "...", steps: [ { id, label, description } ] }
+- conceptSnapshot: { oneLineMeaning, whyItMatters, keyIdea }
+- depthProfiles: { eli5, practitioner, expert }, each with { summary, analogy, example }
+- mentalModel: { title: "...", analogy, steps, flow }
+  - steps and flow contain the same nodes: { id, label, description, whatHappens, whyItExists, whatIsPassed, commonFailure }
   - 4-7 steps forming a logical causal chain showing HOW the concept works
   - cloud networking: Client → VNet → Private Endpoint → DNS resolution → Target service
   - business strategy: Market → Problem → Differentiation → Capabilities → Trade-offs → Execution → Metrics
   - finance: Money in → Money out → Timing gap → Net cash position → Cash runway
   - Adapt to the topic. Never use generic steps like Step 1, Step 2.
 - coreBuildingBlocks: 4-6 objects { id, title, description, blockType, confidence }
+  - also return the same items as buildingBlocks
   - blockType: "output" | "result" | "mechanism" | "process" | "concept" | "constraint" | "risk" | "input" | "component" | "principle" | "term" | "pattern"
     - output/result = what the concept produces or enables
     - mechanism/process/component = how it works internally
@@ -549,11 +576,17 @@ You must generate:
   - Descriptions must be practical, not dictionary-style
   - Vary blockType across cards so the workspace shows a mix of colors
 - misconceptions: 2-4 objects { id, misconception, reality }. Generate at least 2 misconceptions.
+  - also return commonMisunderstandings as true/false traps { id, statement, correctAnswer, explanation, myth, reality }
   - Real wrong beliefs, not trivially obvious ones
 - realWorldExample: { title, scenario, explanation }
+  - also return practicalExample { title, scenario, steps, outcome }
   - Concrete domain-specific example. scenario is 1-2 sentences. explanation applies the concept.
 - decisionQuestions: 4-6 strings, actionable and specific
+- checkYourUnderstanding: 3-5 objects { id, question, expectedKeywords }
+- compareWith: 2-3 objects { id, concept, summary, similarities, differences, whenToUse }
 - nextActions: 3-5 objects { label, targetMode, prompt }
+  - also return the same items as whereToGoNext
+  - rail: { nextBestQuestion, relatedPrompts }
   - targetMode: "build" | "fix" | "artifact" | "understand"
   - prompt: a ready-to-use prompt string for the target mode
 - userLevelCheck: { question: string, options: [ { id, label, description } ] }
@@ -606,6 +639,7 @@ You must generate:
 
 Rules:
 - All content must be specific to the user's question. No generic filler.
+- Generate a structured learning result that supports tracing, testing, comparison, and adaptive learning, not a generic chatbot answer or dictionary definition.
 - Do not import Fix workspace patterns or terms. Never use terms like: "diagnosis", "failure branch", "diagnostic terminal", "logs", "evidence", "root cause".
 - Never use generic or rejected phrases: "this concept is important", "it depends on context", "you should understand the basics", "a key concept in this field", "this is used in many situations".
 - Domain guidelines:
@@ -997,6 +1031,10 @@ function normalizeUnderstandWorkspaceResult(raw: unknown, prompt: string): unkno
 
 function isObj(value: unknown): value is object {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function recordOf(value: unknown): Record<string, unknown> {
+  return isObj(value) ? value as Record<string, unknown> : {};
 }
 
 type NormalizedUnderstandSpark = {

@@ -614,6 +614,12 @@ export function validateUnderstandResultQuality(result: RedefinedResult): Qualit
       quality.issues.push("Mental model has generic step labels.");
     }
   }
+  if (!result.conceptSnapshot?.oneLineMeaning || !result.conceptSnapshot.whyItMatters) {
+    quality.issues.push("Concept snapshot is missing or incomplete.");
+  }
+  if (!mentalModel?.flow?.length || mentalModel.flow.some((node) => !node.whatHappens || !node.whyItExists)) {
+    quality.issues.push("Mental model flow is missing executable trace details.");
+  }
 
   const blocks = result.coreBuildingBlocks ?? [];
   if (blocks.length < 4) {
@@ -627,10 +633,25 @@ export function validateUnderstandResultQuality(result: RedefinedResult): Qualit
   if (misconceptions.length < 2) {
     quality.issues.push("Misconceptions must have at least 2 items.");
   }
+  if (!result.commonMisunderstandings?.length) {
+    quality.issues.push("Common misunderstandings are missing trap-compatible fields.");
+  }
 
   const example = result.realWorldExample;
   if (!example || !example.scenario || !example.explanation) {
     quality.warnings.push("Real world example is incomplete.");
+  }
+  if (!result.practicalExample?.scenario || !result.practicalExample.outcome) {
+    quality.issues.push("Practical example is incomplete.");
+  }
+  if (!result.checkYourUnderstanding?.length) {
+    quality.issues.push("Active recall questions are missing.");
+  }
+  if (!result.compareWith?.length) {
+    quality.issues.push("Compare With options are missing.");
+  }
+  if (!result.whereToGoNext?.length || !result.rail?.nextBestQuestion) {
+    quality.issues.push("Adaptive next-step content is missing.");
   }
 
   const questions = result.decisionQuestions ?? [];
@@ -741,7 +762,53 @@ export function validateUnderstandResultQuality(result: RedefinedResult): Qualit
     }
   }
 
-  return finalize(quality);
+  const summaryLower = (result.summary || "").toLowerCase().trim();
+  const titleLower = (result.title || "").toLowerCase().trim();
+  const dictionaryLike =
+    summaryLower.startsWith(`${titleLower} is `)
+    || summaryLower.startsWith(`${titleLower} refers to`)
+    || summaryLower.startsWith("is defined as");
+  const categories = [
+    Boolean(result.originalPrompt?.trim() && result.title?.trim().length >= 3),
+    Boolean(result.conceptSnapshot?.oneLineMeaning && result.conceptSnapshot.whyItMatters),
+    Boolean(result.summary?.trim().length >= 40 && !dictionaryLike),
+    Boolean(result.mentalModel && result.mentalModel.steps.length >= 4),
+    Boolean(result.mentalModel?.flow?.length && result.mentalModel.flow.every((node) => node.whatHappens && node.whyItExists)),
+    (result.buildingBlocks ?? result.coreBuildingBlocks ?? []).length >= 4,
+    Boolean(result.practicalExample?.scenario && result.practicalExample.outcome),
+    Boolean(result.commonMisunderstandings?.length && result.commonMisunderstandings.every((item) => item.statement && typeof item.correctAnswer === "boolean")),
+    Boolean(result.checkYourUnderstanding?.length),
+    Boolean(result.compareWith?.length),
+    Boolean(result.whereToGoNext?.length && result.rail?.nextBestQuestion)
+  ];
+  const score = Math.round((categories.filter(Boolean).length / categories.length) * 100);
+  const finalized = finalize(quality);
+  return { ...finalized, score, ok: score >= 75 };
+}
+
+export type UnderstandRepairPlan = {
+  mode: "none" | "targeted" | "full" | "fallback";
+  weakSections: string[];
+};
+
+export function getUnderstandRepairPlan(result: RedefinedResult): UnderstandRepairPlan {
+  const quality = validateUnderstandResultQuality(result);
+  const issues = quality.issues.join(" ").toLowerCase();
+  const sections = [
+    ["conceptSnapshot", "snapshot|summary"],
+    ["mentalModel", "mental model"],
+    ["buildingBlocks", "building block"],
+    ["practicalExample", "practical example"],
+    ["commonMisunderstandings", "misconception"],
+    ["checkYourUnderstanding", "recall"],
+    ["compareWith", "compare"],
+    ["whereToGoNext", "next-step"]
+  ].filter(([, tokens]) => tokens.split("|").some((token) => issues.includes(token))).map(([section]) => section);
+  const score = quality.score ?? 0;
+  if (score >= 75) return { mode: "none", weakSections: sections };
+  if (score >= 60) return { mode: "targeted", weakSections: sections };
+  if (score >= 40) return { mode: "full", weakSections: sections };
+  return { mode: "fallback", weakSections: sections };
 }
 
 export function validateFollowUpQuality(
