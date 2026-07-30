@@ -5770,16 +5770,18 @@ body.stage-artifact .artifact-tick {
   margin: 0 auto;
 }
 
+/* FLATTENED: was a glass-translucent hero card (pre-migration style, never
+   touched since this page has no live links in the current nav). */
 .journey-history-hero {
   display: flex;
   gap: 24px;
   align-items: flex-start;
   justify-content: space-between;
   padding: 28px;
-  border: 1px solid rgba(178, 165, 255, 0.22);
+  border: none;
   border-radius: 30px;
-  background: rgba(255, 255, 255, 0.56);
-  box-shadow: 0 22px 70px rgba(47, 52, 65, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.76);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .journey-history-hero h1 {
@@ -5817,13 +5819,16 @@ body.stage-artifact .artifact-tick {
   text-decoration: none;
 }
 
+/* NOTE: this referenced an undefined --accent token, so its background was
+   already invalid (falling back to transparent) before this pass — given
+   soft material anyway, so it's fixed here rather than left broken. */
 .journey-primary-link {
   flex: 0 0 auto;
   padding: 13px 16px;
-  background: var(--accent);
-  color: var(--text);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   font-size: 12px;
-  box-shadow: 0 12px 28px rgba(255, 213, 30, 0.26);
 }
 
 .journey-history-list {
@@ -5844,7 +5849,8 @@ body.stage-artifact .artifact-tick {
 .journey-history-topline a,
 .journey-detail-topline a {
   padding: 10px 12px;
-  background: rgba(255, 255, 255, 0.56);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
 }
 
@@ -5860,19 +5866,21 @@ body.stage-artifact .artifact-tick {
   align-content: space-between;
   min-height: 260px;
   padding: 22px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
+  border: none;
   border-radius: 26px;
-  background: rgba(255, 255, 255, 0.5);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
+/* soft-tag-style, static */
 .journey-card-mode {
   width: fit-content;
   margin: 0 0 12px;
   padding: 7px 9px;
   border-radius: 999px;
-  background: rgba(178, 165, 255, 0.14);
-  color: var(--brand);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--soft-purple);
   font-family: var(--font-code);
   font-size: 11px;
 }
@@ -5912,16 +5920,16 @@ body.stage-artifact .artifact-tick {
 .empty-journey-history a {
   padding: 11px 13px;
   font-size: 11px;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
 }
 
 .journey-card-actions a,
 .empty-journey-history a {
-  background: var(--text);
-  color: #ffffff;
+  color: var(--soft-purple);
 }
 
 .journey-card-actions button {
-  background: var(--accent);
   color: var(--text);
 }
 
@@ -5941,9 +5949,10 @@ body.stage-artifact .artifact-tick {
 .project-create-inline input,
 .journey-card-actions select {
   min-height: 36px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
+  border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   color: var(--text);
   font-family: var(--font-code);
   font-size: 11px;
@@ -5954,8 +5963,9 @@ body.stage-artifact .artifact-tick {
 .project-card .journey-card-actions button {
   border: 0;
   border-radius: 999px;
-  background: var(--text);
-  color: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--soft-purple);
   cursor: pointer;
   font-family: var(--font-code);
   font-size: 11px;
@@ -5964,7 +5974,7 @@ body.stage-artifact .artifact-tick {
 }
 
 .project-card {
-  border-color: rgba(56, 182, 255, 0.22);
+  box-shadow: var(--raised), inset 4px 0 0 var(--blue);
 }
 
 .project-workspace-list {
@@ -5974,9 +5984,10 @@ body.stage-artifact .artifact-tick {
 }
 
 .project-workspace-list a {
-  border: 1px solid rgba(47, 52, 65, 0.08);
+  border: none;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.58);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
   color: var(--text);
   font-size: 13px;
   line-height: 1.35;
@@ -5988,9 +5999,10 @@ body.stage-artifact .artifact-tick {
   width: min(720px, 100%);
   margin: 0 auto;
   padding: 28px;
-  border: 1px solid rgba(178, 165, 255, 0.2);
+  border: none;
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.52);
+  background: var(--background);
+  box-shadow: var(--inset);
   text-align: center;
 }
 
