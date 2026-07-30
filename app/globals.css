@@ -12323,33 +12323,38 @@ body.stage-artifact .artifact-tick {
   letter-spacing: -0.04em;
 }
 
-.dash-page-head > div > p { margin: 6px 0 0; color: var(--landing-muted); font-size: 14px; }
-.dash-breadcrumb { margin: 0 0 4px; color: var(--landing-muted); font-size: 12.5px; }
-.dash-breadcrumb a { color: #7c6cf0; text-decoration: none; }
+.dash-page-head > div > p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.dash-breadcrumb { margin: 0 0 4px; color: var(--muted); font-size: 12.5px; }
+.dash-breadcrumb a { color: var(--soft-purple); text-decoration: none; }
 
 .dash-page-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .dash-page-actions button {
   padding: 11px 16px;
-  border: 1px solid rgba(47, 52, 65, 0.12);
+  border: none;
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
+  transition: box-shadow 120ms ease;
 }
 
-.dash-page-actions button:hover { background: rgba(47, 52, 65, 0.04); }
+.dash-page-actions button:hover { box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.18); }
+.dash-page-actions button:active { box-shadow: var(--pressed); }
 
 .dash-btn-danger {
-  border: 1px solid rgba(224, 53, 75, 0.2);
-  background: rgba(224, 53, 75, 0.08);
-  color: #c52e45;
+  border: none;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
+  color: var(--danger);
 }
 
-.dash-btn-danger:hover { background: rgba(224, 53, 75, 0.14); }
+.dash-btn-danger:hover { box-shadow: var(--raised-sm), 0 0 0 2px rgba(255, 80, 80, 0.22); }
+.dash-btn-danger:active { box-shadow: var(--pressed); }
 
 .dash-modal-danger h2 {
   margin: 0;
@@ -12360,7 +12365,7 @@ body.stage-artifact .artifact-tick {
 
 .dash-modal-danger p {
   margin: 10px 0 0;
-  color: var(--landing-muted);
+  color: var(--muted);
   line-height: 1.55;
 }
 
@@ -12376,7 +12381,7 @@ body.stage-artifact .artifact-tick {
   align-items: center;
   gap: 10px 14px;
   margin: 0;
-  color: var(--landing-muted);
+  color: var(--muted);
   font-size: 12.5px;
   font-weight: 600;
 }
@@ -12390,18 +12395,10 @@ body.stage-artifact .artifact-tick {
   position: relative;
   overflow: hidden;
   padding: 28px 28px 26px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
+  border: none;
   border-radius: 28px;
-  background: #ffffff;
-  box-shadow: 0 22px 60px rgba(47, 52, 65, 0.07);
-}
-
-.project-hub-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 8px;
-  background: var(--project-color);
+  background: var(--background);
+  box-shadow: var(--raised), inset 6px 0 0 var(--project-color);
 }
 
 .project-hub-hero-head {
@@ -12421,7 +12418,7 @@ body.stage-artifact .artifact-tick {
 
 .project-hub-label {
   margin: 0;
-  color: rgba(47, 52, 65, 0.58);
+  color: var(--project-color);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
@@ -12440,7 +12437,7 @@ body.stage-artifact .artifact-tick {
 .project-hub-desc {
   margin: 0;
   max-width: 760px;
-  color: #4b5563;
+  color: var(--body);
   font-size: 15px;
   font-weight: 500;
   line-height: 1.5;
@@ -12452,23 +12449,23 @@ body.stage-artifact .artifact-tick {
   gap: 8px;
 }
 
+/* soft-tag-style, static */
 .project-hub-chip {
   display: inline-flex;
   align-items: center;
   min-height: 28px;
   padding: 0 12px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
+  border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.82);
-  color: var(--landing-muted);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 700;
 }
 
 .project-hub-chip-filled {
-  border-color: rgba(47, 52, 65, 0.12);
-  background: rgba(47, 52, 65, 0.04);
   color: var(--text);
 }
 
@@ -12482,19 +12479,25 @@ body.stage-artifact .artifact-tick {
 
 .project-hub-actions button {
   padding: 10px 14px;
-  border: 1px solid rgba(47, 52, 65, 0.12);
+  border: none;
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--raised-sm);
   color: var(--text);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
+  transition: box-shadow 120ms ease;
 }
 
 .project-hub-actions button:hover {
-  background: rgba(47, 52, 65, 0.04);
+  box-shadow: var(--raised-sm), 0 0 0 2px rgba(139, 124, 240, 0.18);
+}
+
+.project-hub-actions button:active {
+  box-shadow: var(--pressed);
 }
 
 .project-hub-more {
@@ -12514,10 +12517,10 @@ body.stage-artifact .artifact-tick {
   gap: 4px;
   min-width: 200px;
   padding: 8px;
-  border: 1px solid rgba(47, 52, 65, 0.1);
+  border: none;
   border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 24px 60px rgba(47, 52, 65, 0.14);
+  background: var(--background);
+  box-shadow: var(--raised);
 }
 
 .project-hub-more-menu button {
@@ -12528,8 +12531,16 @@ body.stage-artifact .artifact-tick {
   text-align: left;
 }
 
+.project-hub-more-menu button:hover:not(:disabled) {
+  box-shadow: var(--inset-sm);
+}
+
+.project-hub-more-menu button.danger {
+  color: var(--danger);
+}
+
 .project-hub-more-menu button:disabled {
-  color: rgba(47, 52, 65, 0.38);
+  color: var(--faint);
   cursor: not-allowed;
 }
 
@@ -12543,14 +12554,14 @@ body.stage-artifact .artifact-tick {
   display: grid;
   gap: 4px;
   padding: 14px 16px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
+  border: none;
   border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 10px 28px rgba(47, 52, 65, 0.05);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
 }
 
 .project-hub-stat span {
-  color: var(--landing-muted);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
@@ -12586,7 +12597,7 @@ body.stage-artifact .artifact-tick {
 
 .project-hub-section-head p {
   margin: 0;
-  color: var(--landing-muted);
+  color: var(--muted);
   font-family: var(--font-code);
   font-size: 11px;
   font-weight: 800;
@@ -12612,9 +12623,10 @@ body.stage-artifact .artifact-tick {
   display: grid;
   gap: 10px;
   padding: 24px;
-  border: 1px dashed rgba(47, 52, 65, 0.14);
+  border: none;
   border-radius: 22px;
-  background: #ffffff;
+  background: var(--background);
+  box-shadow: var(--inset);
 }
 
 .project-hub-empty h3,
@@ -12630,7 +12642,7 @@ body.stage-artifact .artifact-tick {
 .project-hub-empty p,
 .project-hub-activity-empty p {
   margin: 0;
-  color: var(--landing-muted);
+  color: var(--muted);
   font-size: 14px;
   line-height: 1.55;
 }
@@ -12656,10 +12668,10 @@ body.stage-artifact .artifact-tick {
   display: flex;
   gap: 12px;
   padding: 14px 16px;
-  border: 1px solid rgba(47, 52, 65, 0.08);
+  border: none;
   border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 10px 24px rgba(47, 52, 65, 0.05);
+  background: var(--background);
+  box-shadow: var(--raised-sm);
 }
 
 .project-hub-activity-icon {
@@ -12669,8 +12681,9 @@ body.stage-artifact .artifact-tick {
   flex-shrink: 0;
   place-items: center;
   border-radius: 12px;
-  background: rgba(47, 52, 65, 0.06);
-  color: var(--text);
+  background: var(--background);
+  box-shadow: var(--inset-sm);
+  color: var(--muted);
 }
 
 .project-hub-activity-icon svg {
@@ -12693,7 +12706,7 @@ body.stage-artifact .artifact-tick {
 
 .project-hub-activity-body p {
   margin: 0;
-  color: var(--landing-muted);
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -12708,12 +12721,12 @@ body.stage-artifact .artifact-tick {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
-  color: var(--landing-muted);
+  color: var(--muted);
   font-size: 12px;
 }
 
 .project-hub-activity-meta a {
-  color: #7c6cf0;
+  color: var(--soft-purple);
   font-weight: 700;
   text-decoration: none;
 }
